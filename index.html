@@ -55,15 +55,15 @@
   /* 🎫 事件卡片顏色 */
   --event-default-bg: var(--kikyo-primary);      /* 預設事件背景 */
   --event-default-text: var(--text-light);       /* 預設事件文字 */
-  --event-blocked-bg: #E74C3C;                   /* 不約時段背景 */
+  --event-blocked-bg: #CC6341;                   /* 不約時段背景 */
   --event-blocked-text: var(--text-light);       /* 不約時段文字 */
   
   /* 👥 設計師專屬顏色 (已更新) */
-  --stylist-1-bg: #77428D;                       /* 店長  */
+  --stylist-1-bg: #958BCB;                       /* 店長  */
   --stylist-1-text: var(--text-light);
-  --stylist-2-bg: #9B59B6;                       /* 雅婷  */
+  --stylist-2-bg: #C47BB4;                       /* 雅婷  */
   --stylist-2-text: var(--text-light);
-  --stylist-3-bg: #5c5b6d;                       /* 小白  */
+  --stylist-3-bg: #69689F;                       /* 小白  */
   --stylist-3-text: var(--text-light);
   
   /* 🔘 按鈕顏色 */
@@ -1206,11 +1206,15 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxexZ8B
             id: eventId
           };
 
-          fetch(APPS_SCRIPT_WEB_APP_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          })
+        // ✅ 修正後的寫法
+fetch(APPS_SCRIPT_WEB_APP_URL, {
+  method: 'POST',
+  // 【核心修正】將 Content-Type 改為 text/plain，繞過 CORS 預檢
+  headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+  body: JSON.stringify(payload) // body 內容不變
+})
+// ...
+
           .then(r => r.json())
           .then(res => {
             if (res.status === 'success') {
@@ -1255,12 +1259,15 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxexZ8B
             notes: formData.get('notes')
           };
 
-          // 🚀 提交表單到後端
-          fetch(APPS_SCRIPT_WEB_APP_URL, { 
-            method:'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          })
+          // ✅ 修正後的寫法
+fetch(APPS_SCRIPT_WEB_APP_URL, { 
+  method:'POST',
+  // 【核心修正】將 Content-Type 改為 text/plain，繞過 CORS 預檢
+  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+  body: JSON.stringify(payload) // body 內容不變
+})
+// ...
+
           .then(r => r.json())
           .then(data => {
             if (data.status === 'success') {
