@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>預約管理日曆 - 桔梗主題</title>
+    <title>世紀髮廊  景美店</title>
     
     <!-- FullCalendar 相關 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
@@ -16,7 +16,7 @@
     
 <style>
 /* ==================== 🎨 桔梗主題配色設定區 ==================== */
-/* 所有顏色都集中在這裡，方便統一調整 */
+/* 所有顏色都集中在這裡 ，方便統一調整 */
 :root {
   /* 🌸 主要桔梗色系 */
   --kikyo-primary: #5D4E75;           /* 桔梗主色 - 優雅紫色 */
@@ -58,12 +58,12 @@
   --event-blocked-bg: #E74C3C;                   /* 不約時段背景 */
   --event-blocked-text: var(--text-light);       /* 不約時段文字 */
   
-  /* 👥 設計師專屬顏色 */
-  --stylist-1-bg: #3498DB;                       /* 店長 - 藍色 */
+  /* 👥 設計師專屬顏色 (已更新) */
+  --stylist-1-bg: #77428D;                       /* 店長  */
   --stylist-1-text: var(--text-light);
-  --stylist-2-bg: #9B59B6;                       /* 雅婷 - 紫色 */
+  --stylist-2-bg: #9B59B6;                       /* 雅婷  */
   --stylist-2-text: var(--text-light);
-  --stylist-3-bg: #E91E63;                       /* 小白 - 粉色 */
+  --stylist-3-bg: #5c5b6d;                       /* 小白  */
   --stylist-3-text: var(--text-light);
   
   /* 🔘 按鈕顏色 */
@@ -272,8 +272,7 @@ html, body {
 }
 
 /* 提交按鈕樣式 */
-#submit-btn {
-  background: linear-gradient(135deg, var(--kikyo-primary) 0%, var(--kikyo-light) 100%);
+#submit-btn, #deleteBtn {
   color: var(--button-primary-text);
   border: none;
   padding: 12px 24px;
@@ -285,13 +284,24 @@ html, body {
   box-shadow: var(--shadow-soft);
 }
 
-#submit-btn:hover {
+#submit-btn {
+  background: linear-gradient(135deg, var(--kikyo-primary) 0%, var(--kikyo-light) 100%);
+}
+
+#submit-btn:hover, #deleteBtn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
 
-#submit-btn:active {
+#submit-btn:active, #deleteBtn:active {
   transform: translateY(0);
+}
+
+#deleteBtn {
+    background: #C0392B;
+}
+#deleteBtn:hover {
+    background: #E74C3C;
 }
 
 /* ==================== 📅 FullCalendar 工具列樣式 ==================== */
@@ -734,7 +744,6 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--kikyo-primary);
 }
-
 </style>
 
 </head>
@@ -747,15 +756,16 @@ html, body {
         <div id="appointmentModal" class="modal">
           <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h3>✨ 新增預約</h3>
+            <h3>✨ 新增/編輯預約</h3>
             <form id="appointmentForm">
-              <!-- 隱藏欄位：開始時間和員工ID -->
+              <!-- 隱藏欄位：事件ID, 開始時間, 員工ID -->
+              <input type="hidden" id="event_id" name="event_id">
               <input type="hidden" id="start_time" name="start_time">
               <input type="hidden" id="employee_id" name="employee_id">
 
               <!-- 開始分鐘選擇 -->
               <label for="minute_select">🕐 開始分鐘</label>
-              <select id="minute_select"></select>
+              <select id="minute_select" name="minute_select"></select>
 
               <!-- 預約類型選擇 -->
               <div class="appointment-type-section">
@@ -796,11 +806,10 @@ html, body {
               <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
 
               <!-- 提交按鈕 -->
-              <div style="margin-top: 20px; text-align: right;">
-  <input type="hidden" id="edit_id">
-  <button type="button" id="primaryBtn">💾 儲存預約</button>
-  <button type="button" id="deleteBtn" style="display:none">🗑️ 刪除預約</button>
-</div>
+              <div style="margin-top: 20px; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="deleteBtn" style="display:none;">🗑️ 刪除預約</button>
+                <button type="submit" id="submit-btn">💾 儲存預約</button>
+              </div>
             </form>
           </div>
         </div>
@@ -830,11 +839,12 @@ html, body {
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
 
     <script>
-    // 🔗 Google Apps Script Web App URL (後端 API 端點)
-    const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzC2kGwWTsAB4I8Z0VjeNTZPugoAUFZw3_4MMCDR_1SD1gIvCVW-VwExNtmaVLXU11xaA/exec';
-    
-    // 🚀 主要 JavaScript 程式碼區域
-    (function(){
+// 🔗 Google Apps Script Web App URL (後端 API 端點)
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzC2kGwWTsAB4I8Z0VjeNTZPugoAUFZw3_4MMCDR_1SD1gIvCVW-VwExNtmaVLXU11xaA/exec';
+
+// 🚀 主要 JavaScript 程式碼區域
+(function( ){
+
       // 📅 等待 DOM 載入完成後執行
       document.addEventListener('DOMContentLoaded', function(){
         // 🔍 取得頁面元素
@@ -843,21 +853,10 @@ html, body {
         var closeButton = document.querySelector('.close-button');
         var calendarEl = document.getElementById('calendar');
         var customerFields = document.getElementById('customer-fields');
-        var primaryBtn = document.getElementById('primaryBtn');
+        var submitBtn = document.getElementById('submit-btn');
         var deleteBtn = document.getElementById('deleteBtn');
-        var editIdInput = document.getElementById('edit_id');
+        var eventIdInput = document.getElementById('event_id');
         var notesTextarea = document.getElementById('notes-content');
-        function setCreateMode(){
-          editIdInput.value = '';
-          primaryBtn.textContent = '💾 儲存預約';
-          deleteBtn.style.display = 'none';
-        }
-        function setEditMode(id){
-          editIdInput.value = id;
-          primaryBtn.textContent = '✅ 更新預約';
-          deleteBtn.style.display = 'inline-flex';
-        }
-
 
         // 💾 從 localStorage 載入儲存的留言內容
         const savedNotes = localStorage.getItem('userNotes');
@@ -920,16 +919,18 @@ html, body {
         var appointmentTypeRadios = document.querySelectorAll('input[name="appointment_type"]');
         appointmentTypeRadios.forEach(function(radio) {
           radio.addEventListener('change', function() {
-            if (this.value === 'blocked') {
-              // 🚫 不約時段：隱藏客戶資訊欄位
-              customerFields.style.display = 'none';
-              primaryBtn.innerHTML = '🚫 設定不約時段';
-              document.getElementById('notes').placeholder = '請輸入不約原因 (例如：設計師請假、店內會議等)';
+            const isBlocked = this.value === 'blocked';
+            customerFields.style.display = isBlocked ? 'none' : 'block';
+            document.getElementById('notes').placeholder = isBlocked 
+                ? '請輸入不約原因 (例如：設計師請假、店內會議等)' 
+                : '請輸入備註資訊...';
+            
+            // 更新按鈕文字
+            const isEditing = !!eventIdInput.value;
+            if (isBlocked) {
+                submitBtn.innerHTML = '🚫 設定不約時段';
             } else {
-              // ✅ 一般預約：顯示客戶資訊欄位
-              customerFields.style.display = 'block';
-              primaryBtn.innerHTML = '💾 儲存預約';
-              document.getElementById('notes').placeholder = '請輸入備註資訊...';
+                submitBtn.innerHTML = isEditing ? '✅ 更新預約' : '💾 儲存預約';
             }
           });
         });
@@ -940,65 +941,67 @@ html, body {
           
           // 🔄 重置表單
           form.reset();
+          eventIdInput.value = ''; // 確保是新增模式
           
-          
-          setCreateMode();
-// 🎯 預設選擇一般預約
+          // 🎨 設定為新增模式的 UI
+          submitBtn.innerHTML = '💾 儲存預約';
+          deleteBtn.style.display = 'none';
           document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
           customerFields.style.display = 'block';
-          primaryBtn.innerHTML = '💾 儲存預約';
           document.getElementById('notes').placeholder = '請輸入備註資訊...';
 
           // 📝 設定員工ID
           document.getElementById('employee_id').value = resourceId;
 
-          // --- BEGIN: 「開始分鐘」下拉選單邏輯 (已包含修正) ---
+          // --- BEGIN: 「開始分鐘」下拉選單邏輯 ---
           const minuteSelect = document.getElementById('minute_select');
           minuteSelect.innerHTML = '';
 
-          // 使用 Intl.DateTimeFormat 確保取得的是 'Asia/Taipei' 時區的小時和分鐘
-          const options = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' };
-          const formattedTime = new Intl.DateTimeFormat('zh-TW', options).format(startDate);
-          const [calendarHourStr, calendarMinuteStr] = formattedTime.split(':');
-          const baseHour = parseInt(calendarHourStr, 10);
-          const baseMin = parseInt(calendarMinuteStr, 10);
+          const baseHour = startDate.getHours();
+          const baseMin = startDate.getMinutes();
 
           // 產生三個選項 (以5分鐘為間隔)，從點擊的 15 分鐘區間開始
           for (let i = 0; i < 3; i++) { 
             const currentMinute = baseMin + (i * 5); 
-            
             const opt = document.createElement('option');
             opt.value = currentMinute; 
-            opt.textContent = String(currentMinute).padStart(2, '0'); // 只顯示分鐘，不顯示小時
-            
-            // 預選點擊的確切開始時間（即第一個選項）
-            if (i === 0) {
-              opt.selected = true;
-            }
-            
+            opt.textContent = String(currentMinute).padStart(2, '0');
+            if (i === 0) opt.selected = true;
             minuteSelect.appendChild(opt);
           }
           
-          // 用於設定 hidden input #start_time 的基礎日期部分
-          const year = startDate.getFullYear();
-          const month = String(startDate.getMonth() + 1).padStart(2, '0');
-          const day = String(startDate.getDate()).padStart(2, '0');
-
-          // 函數用於根據下拉選單選擇的值更新隱藏的 start_time
-          function updateHiddenStartTime() {
-              const selectedMinute = minuteSelect.value;
-              const composedHour = String(baseHour).padStart(2, '0'); // 使用時區校正過的小時
-              document.getElementById('start_time').value = `${year}-${month}-${day}T${composedHour}:${String(selectedMinute).padStart(2, '0')}:00`;
-          }
-          
           // 初始設定 hidden input 的值
-          updateHiddenStartTime();
+          updateHiddenStartTime(startDate);
           // 當下拉選單改變時，更新 hidden input 的值
-          minuteSelect.onchange = updateHiddenStartTime;
+          minuteSelect.onchange = () => updateHiddenStartTime(startDate);
           // --- END: 「開始分鐘」下拉選單邏輯 ---
           
           // 🪟 顯示彈窗
           modal.style.display = 'block';
+        }
+
+        // 🕒 更新隱藏的 start_time 欄位值 (包含時區修正)
+        function updateHiddenStartTime(baseDate) {
+            const selectedMinute = document.getElementById('minute_select').value;
+            const newDate = new Date(baseDate);
+            newDate.setMinutes(parseInt(selectedMinute, 10));
+            newDate.setSeconds(0);
+            newDate.setMilliseconds(0);
+
+            // 產生包含時區偏移的 ISO 8601 字串 (e.g., "2025-09-24T14:05:00+08:00")
+            const timezoneOffset = -newDate.getTimezoneOffset();
+            const diff = timezoneOffset >= 0 ? '+' : '-';
+            const pad = (num) => (num < 10 ? '0' : '') + num;
+            const isoString = newDate.getFullYear() +
+                '-' + pad(newDate.getMonth() + 1) +
+                '-' + pad(newDate.getDate()) +
+                'T' + pad(newDate.getHours()) +
+                ':' + pad(newDate.getMinutes()) +
+                ':' + pad(newDate.getSeconds()) +
+                diff + pad(Math.floor(Math.abs(timezoneOffset) / 60)) +
+                ':' + pad(Math.abs(timezoneOffset) % 60);
+            
+            document.getElementById('start_time').value = isoString;
         }
 
         // 📅 初始化 FullCalendar
@@ -1112,69 +1115,59 @@ html, body {
             return { html: `<div class='fc-event-title'>${contentText}</div>` };
           },
           
-          // 🚫 禁用事件編輯功能
+          // 🚫 禁用事件拖曳編輯功能
           editable: false,
-          eventDurationEditable: false,
 
-          // 👆 點擊事件時的處理 (刪除確認)
+          // 👆 點擊事件時的處理 (開啟編輯彈窗)
           eventClick: function(info){
-            setEditMode(info.event.id);
-            var ep = info.event.extendedProps || {};
+            form.reset();
+            const event = info.event;
+            const ep = event.extendedProps || {};
+
+            // 🎨 設定為編輯模式的 UI
+            eventIdInput.value = event.id;
+            deleteBtn.style.display = 'inline-block';
+
+            // 📝 填充表單資料
+            document.getElementById('employee_id').value = event.getResources()[0]?.id || '';
             document.getElementById('customer_phone').value = ep.customer_phone || '';
             document.getElementById('customer_name').value  = ep.customer_name  || '';
             document.getElementById('service_id').value    = ep.service_id    || '';
             document.getElementById('notes').value         = ep.notes         || '';
-            if (ep.status === 'blocked') {
-              document.querySelector('input[name="appointment_type"][value="blocked"]').checked = true;
-              document.getElementById('customer-fields').style.display = 'none';
-              document.getElementById('notes').placeholder = '請輸入「不約時段」說明，例如：店內會議等';
-            } else {
-              document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
-              document.getElementById('customer-fields').style.display = 'block';
-              document.getElementById('notes').placeholder = '請輸入備註資訊...';
+
+            // 處理預約類型
+            const isBlocked = ep.status === 'blocked';
+            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
+            customerFields.style.display = isBlocked ? 'none' : 'block';
+            submitBtn.innerHTML = isBlocked ? '🚫 更新不約時段' : '✅ 更新預約';
+            
+            // 填充時間相關欄位
+            const startDate = event.start;
+            const minuteSelect = document.getElementById('minute_select');
+            minuteSelect.innerHTML = ''; // 清空
+            const startMinute = startDate.getMinutes();
+            
+            // 建立 00, 05, 10... 55 的選項
+            for (let m = 0; m < 60; m += 5) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = String(m).padStart(2, '0');
+                if (m === startMinute) opt.selected = true;
+                minuteSelect.appendChild(opt);
             }
-            document.getElementById('appointmentModal').style.display = 'block';
+            
+            // 更新隱藏的 start_time
+            updateHiddenStartTime(startDate);
+            minuteSelect.onchange = () => updateHiddenStartTime(startDate);
 
-              fetch(APPS_SCRIPT_WEB_APP_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ action: "delete", id: info.event.id })
-})
-.then(r => r.json())
-.then(res => {
-  if (res.status === "success") info.view.calendar.refetchEvents();
-  else alert("刪除失敗");
-})
-.catch(() => alert("刪除失敗"));
-
+            modal.style.display = 'block';
           },
-
-          // 🔄 拖拽事件時的處理
           
-
-          // 📏 調整事件大小時的處理
-          
-
-          // 👥 設計師資源設定
+          // 👥 設計師資源設定 (已移除顏色，由 CSS 控制)
           resources: [
-            { 
-              id: '1', 
-              title: ' 店長', 
-              eventColor: '#3498DB', 
-              eventTextColor: '#ffffff' 
-            },
-            { 
-              id: '2', 
-              title: '雅婷', 
-              eventColor: '#9B59B6', 
-              eventTextColor: '#ffffff' 
-            },
-            { 
-              id: '3', 
-              title: '小白', 
-              eventColor: '#E91E63', 
-              eventTextColor: '#ffffff' 
-            }
+            { id: '1', title: '店長' },
+            { id: '2', title: '雅婷' },
+            { id: '3', title: '小白' }
           ],
 
           // 📊 事件資料來源 URL
@@ -1202,86 +1195,71 @@ html, body {
           if(e.target === modal) modal.style.display = 'none'; 
         };
 
-        
-        // 🔘 按鈕行為：新增或更新
-        primaryBtn.onclick = function(){
-          var id = editIdInput.value.trim();
-          if (!id){
-            // 新增：沿用原本 submit 流程
-            document.getElementById('appointmentForm').requestSubmit();
-            return;
-          }
-          // 更新：只送需要的欄位
-          var payload = {
-            action: 'edit',
-            id: id,
-            customer_phone: document.getElementById('customer_phone').value.trim(),
-            customer_name:  document.getElementById('customer_name').value.trim(),
-            service_id:     document.getElementById('service_id').value.trim(),
-            notes:          document.getElementById('notes').value.trim(),
-            appointment_type: document.querySelector('input[name="appointment_type"]:checked').value
+        // 🗑️ 刪除按鈕事件
+        deleteBtn.onclick = function(){
+          var eventId = eventIdInput.value.trim();
+          if (!eventId) return;
+          if (!confirm('確定要刪除這筆預約嗎？此操作無法復原。')) return;
+
+          const payload = {
+            action: 'delete',
+            id: eventId
           };
+
           fetch(APPS_SCRIPT_WEB_APP_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(r=>r.json())
-          .then(res=>{
-            if (res.status === 'success') { document.getElementById('appointmentModal').style.display='none'; calendar.refetchEvents(); }
-            else alert('更新失敗');
+          .then(r => r.json())
+          .then(res => {
+            if (res.status === 'success') {
+              modal.style.display = 'none';
+              calendar.refetchEvents();
+            } else {
+              alert('❌ 刪除失敗: ' + (res.message || '未知錯誤'));
+            }
           })
-          .catch(()=>alert('更新失敗'));
+          .catch(err => {
+            console.error('Delete Error:', err);
+            alert('❌ 刪除請求失敗，請檢查網路連線');
+          });
         };
 
-        // 🗑️ 刪除
-        deleteBtn.onclick = function(){
-          var id = editIdInput.value.trim();
-          if (!id) return;
-          if (!confirm('確定刪除這筆預約？')) return;
-          fetch(APPS_SCRIPT_WEB_APP_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action:'delete', id })
-          })
-          .then(r=>r.json())
-          .then(res=>{
-            if (res.status === 'success') { document.getElementById('appointmentModal').style.display='none'; calendar.refetchEvents(); }
-            else alert('刪除失敗');
-          })
-          .catch(()=>alert('刪除失敗'));
-        };
-// 📝 表單提交處理
+        // 📝 表單提交處理 (統一處理新增與更新)
         form.addEventListener('submit', function(e){
           e.preventDefault();
-          var fd = new FormData(form);
-          
-          // 🎯 根據預約類型進行不同的驗證
-          var appointmentType = document.querySelector('input[name="appointment_type"]:checked').value;
-          
+          const formData = new FormData(form);
+          const eventId = formData.get('event_id');
+          const isEditing = !!eventId;
+
+          // 根據預約類型進行驗證
+          const appointmentType = formData.get('appointment_type');
           if (appointmentType === 'normal') {
-            // ✅ 一般預約：檢查客戶資訊
-            var customerName = fd.get('customer_name');
-            var customerPhone = fd.get('customer_phone');
-            
-            if (!customerName && !customerPhone) {
+            if (!formData.get('customer_name') && !formData.get('customer_phone')) {
               alert('⚠️ 請至少填寫客戶姓名或電話');
               return;
             }
-          } else {
-            // 🚫 不約時段：清空客戶相關欄位
-            fd.set('customer_name', '');
-            fd.set('customer_phone', '');
-            fd.set('service_id', '');
           }
-          
-          // 📝 添加預約類型到表單資料
-          fd.append('appointment_type', appointmentType);
-          
+
+          // 準備要發送的資料
+          const payload = {
+            action: isEditing ? 'edit' : 'create',
+            id: eventId,
+            employee_id: formData.get('employee_id'),
+            start: formData.get('start_time'), // 已包含時區資訊
+            appointment_type: appointmentType,
+            customer_name: formData.get('customer_name'),
+            customer_phone: formData.get('customer_phone'),
+            service_id: formData.get('service_id'),
+            notes: formData.get('notes')
+          };
+
           // 🚀 提交表單到後端
           fetch(APPS_SCRIPT_WEB_APP_URL, { 
-            method:'POST', 
-            body: fd 
+            method:'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
           })
           .then(r => r.json())
           .then(data => {
@@ -1295,7 +1273,7 @@ html, body {
             }
           })
           .catch(err => { 
-            console.error(err); 
+            console.error('Submit Error:', err); 
             alert('❌ 提交失敗，請檢查網路連線'); 
           });
         });
@@ -1303,4 +1281,4 @@ html, body {
     })();
     </script>
 </body>
-</html>
+</html>    
