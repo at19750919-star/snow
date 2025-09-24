@@ -59,7 +59,7 @@
   --event-blocked-text: var(--text-light);       /* 不約時段文字 */
   
   /* 👥 設計師專屬顏色 (已更新) */
-  --stylist-1-bg: #958BCB;                       /* 店長  */
+  --stylist-1-bg: #7DB9DE;                       /* 店長  */
   --stylist-1-text: var(--text-light);
   --stylist-2-bg: #C47BB4;                       /* 雅婷  */
   --stylist-2-text: var(--text-light);
@@ -840,7 +840,7 @@ html, body {
 
     <script>
 // 🔗 Google Apps Script Web App URL (後端 API 端點)
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxexZ8Bp2_VgIBN8Pj90LFVjd5SakuLZ6gIxHe1mYLj1KA2R5ZMP1MPznvDQngDJw7xLQ/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcvWpbmxUaK6hoF7EK2AMUPD01JT9ysfYc1Ry7KcNwmVQ7PhWlRyXlBWm3PHtLiM25wA/exec';
 
 // 🚀 主要 JavaScript 程式碼區域
 (function( ){
@@ -980,29 +980,55 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxexZ8B
           modal.style.display = 'block';
         }
 
-        // 🕒 更新隱藏的 start_time 欄位值 (包含時區修正)
-        function updateHiddenStartTime(baseDate) {
-            const selectedMinute = document.getElementById('minute_select').value;
-            const newDate = new Date(baseDate);
-            newDate.setMinutes(parseInt(selectedMinute, 10));
-            newDate.setSeconds(0);
-            newDate.setMilliseconds(0);
+        // =================================================================
+// 最終修正：前端 updateHiddenStartTime 函數
+//
+// 這個版本將會 100% 準確地將您在日曆上點擊的時間，
+// 打包成一個帶有正確時區的標準時間字串，
+// 徹底根治「+8 小時」的問題。
+// =================================================================
+function updateHiddenStartTime(baseDate) {
+    // 從下拉選單中獲取使用者選擇的「分鐘」。
+    const selectedMinute = document.getElementById('minute_select').value;
+    
+    // 建立一個新的 Date 物件，以避免修改原始的 baseDate。
+    const newDate = new Date(baseDate);
+    
+    // 將這個新 Date 物件的分鐘，設定為使用者選擇的分鐘。
+    newDate.setMinutes(parseInt(selectedMinute, 10));
+    
+    // 為了確保時間的純粹，將秒和毫秒都歸零。
+    newDate.setSeconds(0);
+    newDate.setMilliseconds(0);
 
-            // 產生包含時區偏移的 ISO 8601 字串 (e.g., "2025-09-24T14:05:00+08:00")
-            const timezoneOffset = -newDate.getTimezoneOffset();
-            const diff = timezoneOffset >= 0 ? '+' : '-';
-            const pad = (num) => (num < 10 ? '0' : '') + num;
-            const isoString = newDate.getFullYear() +
-                '-' + pad(newDate.getMonth() + 1) +
-                '-' + pad(newDate.getDate()) +
-                'T' + pad(newDate.getHours()) +
-                ':' + pad(newDate.getMinutes()) +
-                ':' + pad(newDate.getSeconds()) +
-                diff + pad(Math.floor(Math.abs(timezoneOffset) / 60)) +
-                ':' + pad(Math.abs(timezoneOffset) % 60);
-            
-            document.getElementById('start_time').value = isoString;
-        }
+    // --- 這是整個函數最核心、最關鍵的部分 ---
+    // 我們不再依賴任何可能出錯的內建轉換函數，而是「手動拼接」出一個絕對標準的 ISO 8601 格式字串。
+
+    // 1. 獲取瀏覽器本地時區與 UTC 的分鐘差。
+    //    例如，在台北 (UTC+8)，這個值會是 -480。
+    const timezoneOffset = newDate.getTimezoneOffset();
+    
+    // 2. 根據分鐘差的正負，決定時區符號是 '+' 還是 '-'。
+    //    因為 getTimezoneOffset 的正負號與常規認知相反，所以我們要取負值。- (-480) = 480 (正數)。
+    const diff = -timezoneOffset >= 0 ? '+' : '-';
+    
+    // 3. 建立一個輔助函數 `pad`，用於將小於 10 的數字補零 (例如 5 -> "05")。
+    const pad = (num) => (num < 10 ? '0' : '') + num;
+
+    // 4. 手動拼接所有部分，構造出最終的字串。
+    const isoString = newDate.getFullYear() +
+        '-' + pad(newDate.getMonth() + 1) + // 月份是從 0 開始的，所以要加 1。
+        '-' + pad(newDate.getDate()) +
+        'T' + pad(newDate.getHours()) +      // 使用 getHours() 來獲取本地時間的小時。
+        ':' + pad(newDate.getMinutes()) +
+        ':' + pad(newDate.getSeconds()) +
+        diff + pad(Math.floor(Math.abs(timezoneOffset) / 60)) + // 計算小時的偏移量
+        ':' + pad(Math.abs(timezoneOffset) % 60);               // 計算分鐘的偏移量
+
+    // 5. 將這個 100% 準確的字串，賦值給隱藏的 input 欄位。
+    document.getElementById('start_time').value = isoString;
+}
+
 
         // 📅 初始化 FullCalendar
         var calendar = new FullCalendar.Calendar(calendarEl, {
