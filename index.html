@@ -3,98 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世紀髮廊  景美店</title>
+    <title>世紀髮廊 景美店</title>
     
-    <!-- FullCalendar 相關 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.css">
     
-    <!-- Google Fonts - 優雅的中文字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
 <style>
-/* ==================== 🎨 桔梗主題配色設定區 ==================== */
-/* 所有顏色都集中在這裡 ，方便統一調整 */
+/* ==================== 🎨 主題配色設定 ==================== */
 :root {
-  /* 🌸 主要桔梗色系 */
-  --kikyo-primary: #5D4E75;           /* 桔梗主色 - 優雅紫色 */
-  --kikyo-light: #8B7CA3;             /* 桔梗淺色 - 用於懸停效果 */
-  --kikyo-dark: #4A3D5C;              /* 桔梗深色 - 用於強調 */
-  --kikyo-ultra-light: #F5F3F8;       /* 桔梗極淺色 - 用於背景 */
-  
-  /* 🎭 輔助色彩 */
-  --accent-gold: #D4AF37;             /* 金色 - 用於重點裝飾 */
-  --accent-cream: #FFF8DC;            /* 奶油色 - 溫暖背景 */
-  --accent-lavender: #E6E0F0;         /* 薰衣草色 - 柔和背景 */
-  
-  /* 📝 文字顏色 */
-  --text-primary: #2D2D2D;            /* 主要文字 - 深灰色 */
-  --text-secondary: #666666;          /* 次要文字 - 中灰色 */
-  --text-light: #FFFFFF;              /* 淺色文字 - 白色 */
-  --text-muted: #999999;              /* 淡化文字 - 淺灰色 */
-  
-  /* 🏠 背景顏色 */
-  --bg-main: linear-gradient(135deg, #F8F6FB 0%, #EDE7F6 100%);  /* 主背景漸層 */
-  --bg-card: #FFFFFF;                 /* 卡片背景 */
-  --bg-hover: #F0EDF5;                /* 懸停背景 */
-  --bg-active: var(--kikyo-ultra-light); /* 活動背景 */
-  
-  /* 📅 日曆專用色彩 */
-  --calendar-header-bg: var(--kikyo-primary);     /* 日曆表頭背景 */
-  --calendar-header-text: var(--text-light);      /* 日曆表頭文字 */
-  --calendar-content-odd: #FFFFFF;                 /* 日曆奇數行背景 */
-  --calendar-content-even: var(--accent-cream);   /* 日曆偶數行背景 */
-  --calendar-border: #E0D4E8;                     /* 日曆邊框 */
-  
-  /* ⏰ 時間標籤顏色 */
-  --time-major: var(--text-primary);             /* 整點時間文字 */
-  --time-minor: var(--text-muted);               /* 15/45分時間文字 */
-  
-  /* 🎫 事件卡片顏色 */
-  --event-default-bg: var(--kikyo-primary);      /* 預設事件背景 */
-  --event-default-text: var(--text-light);       /* 預設事件文字 */
-  --event-blocked-bg: #CC6341;                   /* 不約時段背景 */
-  --event-blocked-text: var(--text-light);       /* 不約時段文字 */
-  
-  /* 👥 設計師專屬顏色 (已更新) */
-  --stylist-1-bg: #7DB9DE;                       /* 店長  */
+  --kikyo-primary: #5D4E75;
+  --kikyo-light: #8B7CA3;
+  --kikyo-dark: #4A3D5C;
+  --kikyo-ultra-light: #F5F3F8;
+  --accent-gold: #D4AF37;
+  --accent-cream: #FFF8DC;
+  --accent-lavender: #E6E0F0;
+  --text-primary: #2D2D2D;
+  --text-secondary: #666666;
+  --text-light: #FFFFFF;
+  --text-muted: #999999;
+  --bg-main: linear-gradient(135deg, #F8F6FB 0%, #EDE7F6 100%);
+  --bg-card: #FFFFFF;
+  --bg-hover: #F0EDF5;
+  --bg-active: var(--kikyo-ultra-light);
+  --calendar-header-bg: var(--kikyo-primary);
+  --calendar-header-text: var(--text-light);
+  --calendar-content-odd: #FFFFFF;
+  --calendar-content-even: var(--accent-cream);
+  --calendar-border: #E0D4E8;
+  --time-major: var(--text-primary);
+  --time-minor: var(--text-muted);
+  --event-default-bg: var(--kikyo-primary);
+  --event-default-text: var(--text-light);
+  --event-blocked-bg: #CC6341;
+  --event-blocked-text: var(--text-light);
+  --stylist-1-bg: #7DB9DE;
   --stylist-1-text: var(--text-light);
-  --stylist-2-bg: #C47BB4;                       /* 雅婷  */
+  --stylist-2-bg: #C47BB4;
   --stylist-2-text: var(--text-light);
-  --stylist-3-bg: #69689F;                       /* 小白  */
+  --stylist-3-bg: #69689F;
   --stylist-3-text: var(--text-light);
-  
-  /* 🔘 按鈕顏色 */
-  --button-primary-bg: var(--kikyo-primary);     /* 主要按鈕背景 */
-  --button-primary-text: var(--text-light);      /* 主要按鈕文字 */
-  --button-secondary-bg: var(--bg-card);         /* 次要按鈕背景 */
-  --button-secondary-text: var(--text-primary);  /* 次要按鈕文字 */
-  --button-border: var(--calendar-border);       /* 按鈕邊框 */
-  
-  /* 🪟 彈窗顏色 */
-  --modal-overlay: rgba(93, 78, 117, 0.6);       /* 彈窗遮罩 */
-  --modal-bg: var(--bg-card);                    /* 彈窗背景 */
-  --modal-border: var(--calendar-border);        /* 彈窗邊框 */
-  
-  /* 💬 留言區顏色 */
-  --notes-bg: var(--bg-card);                    /* 留言區背景 */
-  --notes-border: var(--calendar-border);        /* 留言區邊框 */
-  --notes-shadow: 0 4px 12px rgba(93, 78, 117, 0.1); /* 留言區陰影 */
-  
-  /* 📏 尺寸設定 */
-  --border-radius: 12px;                         /* 圓角大小 */
-  --border-radius-small: 8px;                    /* 小圓角 */
-  --shadow-soft: 0 2px 8px rgba(93, 78, 117, 0.1); /* 柔和陰影 */
-  --shadow-medium: 0 4px 16px rgba(93, 78, 117, 0.15); /* 中等陰影 */
+  --button-primary-bg: var(--kikyo-primary);
+  --button-primary-text: var(--text-light);
+  --button-secondary-bg: var(--bg-card);
+  --button-secondary-text: var(--text-primary);
+  --button-border: var(--calendar-border);
+  --modal-overlay: rgba(93, 78, 117, 0.6);
+  --modal-bg: var(--bg-card);
+  --modal-border: var(--calendar-border);
+  --notes-bg: var(--bg-card);
+  --notes-border: var(--calendar-border);
+  --notes-shadow: 0 4px 12px rgba(93, 78, 117, 0.1);
+  --border-radius: 12px;
+  --border-radius-small: 8px;
+  --shadow-soft: 0 2px 8px rgba(93, 78, 117, 0.1);
+  --shadow-medium: 0 4px 16px rgba(93, 78, 117, 0.15);
 }
 
-/* ==================== 🌐 基礎樣式設定 ==================== */
+/* ==================== 🌐 基礎樣式 ==================== */
 html, body {
-  margin: 0; 
+  margin: 0;
   padding: 0;
-  /* 使用 Google Fonts 的 Noto Sans TC 字體，提供更好的中文顯示效果 */
   font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -104,11 +77,9 @@ html, body {
   color: var(--text-primary);
   background: var(--bg-main);
   line-height: 1.6;
-  /* 平滑滾動效果 */
   scroll-behavior: smooth;
 }
 
-/* 日曆容器樣式 - 佔滿螢幕寬度 */
 #calendar-container {
   position: relative;
   width: 100%;
@@ -116,9 +87,9 @@ html, body {
   padding-bottom: 10px;
   max-width: none;
   margin: 0;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-/* 日曆主體樣式 */
 #calendar {
   width: 100% !important;
   max-width: none;
@@ -130,15 +101,12 @@ html, body {
   overflow: hidden;
 }
 
-/* 修正 FullCalendar 的滾動設定 */
 .fc .fc-scroller {
-    overflow-y: visible !important;
-    height: auto !important;
+  overflow-y: visible !important;
+  height: auto !important;
 }
 
-.fc-view-harness {
-    height: auto !important;
-}
+.fc-view-harness { height: auto !important; }
 
 /* ==================== 🪟 彈窗樣式 ==================== */
 .modal {
@@ -148,7 +116,6 @@ html, body {
   inset: 0;
   overflow: auto;
   background: var(--modal-overlay);
-  /* 彈窗出現動畫 */
   backdrop-filter: blur(4px);
 }
 
@@ -163,18 +130,12 @@ html, body {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-medium);
-  /* 彈窗內容動畫 */
   transform: translateY(-20px);
   animation: modalSlideIn 0.3s ease-out forwards;
 }
 
-@keyframes modalSlideIn {
-  to {
-    transform: translateY(0);
-  }
-}
+@keyframes modalSlideIn { to { transform: translateY(0); } }
 
-/* 關閉按鈕樣式 */
 .close-button {
   color: var(--text-muted);
   float: right;
@@ -185,13 +146,11 @@ html, body {
   line-height: 1;
 }
 
-.close-button:hover,
-.close-button:focus {
+.close-button:hover, .close-button:focus {
   color: var(--kikyo-primary);
   transform: scale(1.1);
 }
 
-/* 表單樣式 */
 #appointmentForm h3 {
   color: var(--kikyo-primary);
   font-weight: 500;
@@ -229,7 +188,6 @@ html, body {
   box-shadow: 0 0 0 3px rgba(93, 78, 117, 0.1);
 }
 
-/* 預約類型選擇區域 */
 .appointment-type-section {
   margin: 20px 0;
   padding: 15px;
@@ -267,11 +225,8 @@ html, body {
   transition: color 0.3s ease;
 }
 
-.radio-group label:hover {
-  color: var(--kikyo-primary);
-}
+.radio-group label:hover { color: var(--kikyo-primary); }
 
-/* 提交按鈕樣式 */
 #submit-btn, #deleteBtn {
   color: var(--button-primary-text);
   border: none;
@@ -284,27 +239,16 @@ html, body {
   box-shadow: var(--shadow-soft);
 }
 
-#submit-btn {
-  background: linear-gradient(135deg, var(--kikyo-primary) 0%, var(--kikyo-light) 100%);
-}
-
+#submit-btn { background: linear-gradient(135deg, var(--kikyo-primary) 0%, var(--kikyo-light) 100%); }
 #submit-btn:hover, #deleteBtn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
+#submit-btn:active, #deleteBtn:active { transform: translateY(0); }
+#deleteBtn { background: #C0392B; }
+#deleteBtn:hover { background: #E74C3C; }
 
-#submit-btn:active, #deleteBtn:active {
-  transform: translateY(0);
-}
-
-#deleteBtn {
-    background: #C0392B;
-}
-#deleteBtn:hover {
-    background: #E74C3C;
-}
-
-/* ==================== 📅 FullCalendar 工具列樣式 ==================== */
+/* ==================== 📅 日曆工具列 ==================== */
 #calendar .fc-header-toolbar {
     display: flex;
     align-items: center;
@@ -329,11 +273,8 @@ html, body {
   font-size: 18px;
 }
 
-#calendar .fc-toolbar-chunk .fc-button {
-  color: var(--calendar-header-text);
-}
+#calendar .fc-toolbar-chunk .fc-button { color: var(--calendar-header-text); }
 
-/* 工具列按鈕樣式 */
 .fc-button {
   background-color: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -349,11 +290,9 @@ html, body {
   transform: translateY(-1px);
 }
 
-.fc-button:focus {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
-}
+.fc-button:focus { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important; }
 
-/* ==================== 📋 日曆表頭樣式 ==================== */
+/* ==================== 📋 日曆表頭 ==================== */
 #calendar .fc-col-header {
     height: 50px;
     background: var(--bg-card);
@@ -384,17 +323,10 @@ html, body {
   color: var(--kikyo-primary);
 }
 
-/* 避免表頭出現垂直滾動條 */
-#calendar .fc-scrollgrid-section-header .fc-scroller {
-  overflow-y: hidden !important;
-}
+#calendar .fc-scrollgrid-section-header .fc-scroller { overflow-y: hidden !important; }
+#calendar .fc-scrollgrid { border-top: 1px solid var(--calendar-border); }
 
-#calendar .fc-scrollgrid {
-  border-top: 1px solid var(--calendar-border);
-}
-
-/* ==================== 📊 日曆內容區樣式 ==================== */
-/* 移除內容表格的多餘邊距 */
+/* ==================== 📊 日曆內容區 ==================== */
 #calendar .fc-timegrid-slots table {
   margin: 0 !important;
   height: auto !important;
@@ -402,50 +334,32 @@ html, body {
   box-sizing: border-box !important;
 }
 
-/* 統一每格的行高 */
 #calendar .fc-timegrid-slot,
-#calendar .fc-timegrid-slot.fc-timegrid-slot-label {
-  height: 2.5em !important;
-}
+#calendar .fc-timegrid-slot.fc-timegrid-slot-label { height: 2.5em !important; }
+#calendar .fc-timegrid-slot-lane { background-color: transparent !important; }
+#calendar .fc-timegrid-slots tbody tr:nth-child(odd) td.fc-timegrid-slot-lane { background: var(--calendar-content-odd) !important; }
+#calendar .fc-timegrid-slots tbody tr:nth-child(even) td.fc-timegrid-slot-lane { background: var(--calendar-content-even) !important; }
 
-/* 清除預設背景色 */
-#calendar .fc-timegrid-slot-lane {
-  background-color: transparent !important;
-}
-
-/* 內容區交錯背景色 */
-#calendar .fc-timegrid-slots tbody tr:nth-child(odd) td.fc-timegrid-slot-lane {
-  background: var(--calendar-content-odd) !important;
-}
-
-#calendar .fc-timegrid-slots tbody tr:nth-child(even) td.fc-timegrid-slot-lane {
-  background: var(--calendar-content-even) !important;
-}
-
-/* ==================== ⏰ 時間標籤樣式 ==================== */
-/* 整點和半點時間標籤 */
+/* ==================== ⏰ 時間標籤 ==================== */
 #calendar .fc-timegrid-slot-label.slot-major-0030 .fc-timegrid-slot-label-cushion {
     font-size: 14px !important;
     font-weight: 600 !important;
     color: var(--time-major) !important;
 }
 
-/* 15分和45分時間標籤 */
 #calendar .fc-timegrid-slot.fc-minor .fc-timegrid-slot-label .fc-timegrid-slot-label-cushion {
     font-size: 12px !important;
     font-weight: 400 !important;
     color: var(--time-minor) !important;
 }
 
-/* 所有時間標籤的基礎樣式 */
 #calendar .fc-timegrid-slot-label .fc-timegrid-slot-label-cushion {
   font-size: 14px;
   font-weight: 400;
   color: var(--text-primary);
 }
 
-/* ==================== 🎫 事件卡片樣式 ==================== */
-/* 事件容器 - 固定寬度50% */
+/* ==================== 🎫 事件卡片 ==================== */
 #calendar .fc-timegrid-event-harness {
   width: calc(50% - 6px) !important;
   margin: 0 3px !important;
@@ -453,7 +367,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* 事件卡片本體 */
 #calendar .fc-timegrid-event {
   width: 100% !important;
   min-width: 0 !important;
@@ -470,7 +383,6 @@ html, body {
   box-shadow: var(--shadow-medium);
 }
 
-/* 事件文字樣式 */
 #calendar .fc-timegrid-event .fc-event-title {
   display: flex;
   align-items: center;
@@ -486,7 +398,6 @@ html, body {
   letter-spacing: 0.3px;
 }
 
-/* 不約時段特殊樣式 */
 #calendar .fc-event.blocked-time {
   background: var(--event-blocked-bg) !important;
   border-color: var(--event-blocked-bg) !important;
@@ -500,20 +411,16 @@ html, body {
   border-color: var(--stylist-1-bg);
   color: var(--stylist-1-text);
 }
-
 #calendar .fc-event.sty-2 {
   background: var(--stylist-2-bg);
   border-color: var(--stylist-2-bg);
   color: var(--stylist-2-text);
 }
-
 #calendar .fc-event.sty-3 {
   background: var(--stylist-3-bg);
   border-color: var(--stylist-3-bg);
   color: var(--stylist-3-text);
 }
-
-/* 不約時段強制覆蓋設計師顏色 */
 #calendar .fc-event.blocked-time {
   background-color: var(--event-blocked-bg) !important;
   border-color: var(--event-blocked-bg) !important;
@@ -522,39 +429,31 @@ html, body {
 
 /* ==================== 📱 手機版響應式設計 ==================== */
 @media (max-width: 768px) {
-  #calendar-container {
-    padding: 10px;
-  }
-  
+  #calendar-container { padding: 10px; }
   #calendar {
     width: 100vw !important;
     margin: 0 -10px;
     border-radius: 0;
   }
-  
   .modal-content {
     width: 95%;
     margin: 2% auto;
     padding: 20px;
   }
-  
   #calendar .fc-timegrid-event {
     min-height: 1.8em !important;
     max-height: 2.2em !important;
   }
-  
   #calendar .fc-timegrid-event .fc-event-title {
     font-size: 12px;
     line-height: 1.2;
     padding: 0 6px;
   }
-  
   #calendar .fc-header-toolbar {
     flex-wrap: nowrap;
     justify-content: space-between;
     padding: 10px 15px;
   }
-  
   .fc-button {
     font-size: 0.75em;
     padding: 0.3em 0.6em;
@@ -563,11 +462,7 @@ html, body {
 }
 
 /* ==================== 🔗 日曆欄位分隔線 ==================== */
-/* 在每個設計師欄位右側添加分隔線 */
-#calendar .fc-timegrid-body .fc-timegrid-col {
-  position: relative;
-}
-
+#calendar .fc-timegrid-body .fc-timegrid-col { position: relative; }
 #calendar .fc-timegrid-body .fc-timegrid-col:not(:last-child)::after {
   content: "";
   position: absolute;
@@ -580,12 +475,13 @@ html, body {
   z-index: 100;
 }
 
-/* ==================== 💬 留言區全新設計 ==================== */
+/* ==================== 💬 留言區 ==================== */
 #notes-section {
     width: 100%;
     max-width: none;
     margin: 10px 0;
     padding: 0 15px;
+    animation: fadeInUp 0.8s ease-out;
 }
 
 .notes-container {
@@ -667,55 +563,30 @@ html, body {
     font-style: italic;
 }
 
-/* 留言區響應式設計 */
 @media (max-width: 768px) {
     #notes-section {
         padding: 0 10px;
         margin: 20px auto;
     }
-    
-    .notes-container {
-        padding: 20px;
-    }
-    
+    .notes-container { padding: 20px; }
     .notes-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
-    
-    .notes-meta {
-        margin-left: 0;
-    }
-    
+    .notes-meta { margin-left: 0; }
     #notes-content {
         min-height: 150px;
         padding: 15px;
     }
 }
 
-/* ==================== ✨ 額外的視覺增強效果 ==================== */
-/* 平滑的載入動畫 */
+/* ==================== ✨ 視覺增強 ==================== */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-#calendar-container {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-#notes-section {
-  animation: fadeInUp 0.8s ease-out;
-}
-
-/* 選擇文字時的顏色 */
 ::selection {
   background-color: var(--kikyo-light);
   color: var(--text-light);
@@ -726,24 +597,16 @@ html, body {
   color: var(--text-light);
 }
 
-/* 滾動條美化 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
+::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track {
   background: var(--bg-active);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--kikyo-light);
   border-radius: 4px;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--kikyo-primary);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--kikyo-primary); }
 </style>
 
 </head>
@@ -758,16 +621,13 @@ html, body {
             <span class="close-button">&times;</span>
             <h3>✨ 新增/編輯預約</h3>
             <form id="appointmentForm">
-              <!-- 隱藏欄位：事件ID, 開始時間, 員工ID -->
               <input type="hidden" id="event_id" name="event_id">
               <input type="hidden" id="start_time" name="start_time">
               <input type="hidden" id="employee_id" name="employee_id">
 
-              <!-- 開始分鐘選擇 -->
               <label for="minute_select">🕐 開始分鐘</label>
               <select id="minute_select" name="minute_select"></select>
 
-              <!-- 預約類型選擇 -->
               <div class="appointment-type-section">
                 <label>📋 預約類型</label>
                 <div class="radio-group">
@@ -782,7 +642,6 @@ html, body {
                 </div>
               </div>
 
-              <!-- 客戶資訊欄位 -->
               <div id="customer-fields">
                 <label for="customer_phone">📞 顧客電話</label>
                 <input type="tel" id="customer_phone" name="customer_phone" placeholder="請輸入電話號碼">
@@ -801,11 +660,9 @@ html, body {
                 </select>
               </div>
 
-              <!-- 備註欄位 -->
               <label for="notes">📝 備註</label>
               <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
 
-              <!-- 提交按鈕 -->
               <div style="margin-top: 20px; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" id="deleteBtn" style="display:none;">🗑️ 刪除預約</button>
                 <button type="submit" id="submit-btn">💾 儲存預約</button>
@@ -815,7 +672,7 @@ html, body {
         </div>
     </div>
 
-    <!-- 全新設計的留言區 -->
+    <!-- 留言區 -->
     <div id="notes-section">
         <div class="notes-container">
             <div class="notes-header">
@@ -824,77 +681,53 @@ html, body {
                     <span>自動儲存</span>
                 </div>
             </div>
-            <textarea id="notes-content" placeholder="💭 在此輸入您的筆記、想法或重要提醒...
-
-✨ 小提示：
-• 這裡的內容會自動儲存到瀏覽器
-• 可以記錄客戶的特殊需求
-• 或是店內的重要事項提醒"></textarea>
+            <textarea id="notes-content" placeholder="💭 在此輸入您的筆記、想法或重要提醒..."></textarea>
         </div>
     </div>
 
-    <!-- FullCalendar JavaScript 檔案 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
 
     <script>
-// 🔗 Google Apps Script Web App URL (後端 API 端點)
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcvWpbmxUaK6hoF7EK2AMUPD01JT9ysfYc1Ry7KcNwmVQ7PhWlRyXlBWm3PHtLiM25wA/exec';
+// 後端 Google Apps Script 網址
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7aiAwgFnaC9oS9dvf0gsmyRROPsuhu8TkjDx-wSSgWZLZF1x5PxQn8bPYK6zh0fpm/exec';
 
-// 🚀 主要 JavaScript 程式碼區域
-(function( ){
-
-      // 📅 等待 DOM 載入完成後執行
+(function(){
       document.addEventListener('DOMContentLoaded', function(){
-        // 🔍 取得頁面元素
-        var modal = document.getElementById('appointmentModal');
-        var form = document.getElementById('appointmentForm');
-        var closeButton = document.querySelector('.close-button');
-        var calendarEl = document.getElementById('calendar');
-        var customerFields = document.getElementById('customer-fields');
-        var submitBtn = document.getElementById('submit-btn');
-        var deleteBtn = document.getElementById('deleteBtn');
-        var eventIdInput = document.getElementById('event_id');
-        var notesTextarea = document.getElementById('notes-content');
+        // --- 元素選擇 ---
+        const modal = document.getElementById('appointmentModal');
+        const form = document.getElementById('appointmentForm');
+        const closeButton = document.querySelector('.close-button');
+        const calendarEl = document.getElementById('calendar');
+        const customerFields = document.getElementById('customer-fields');
+        const submitBtn = document.getElementById('submit-btn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const eventIdInput = document.getElementById('event_id');
+        const notesTextarea = document.getElementById('notes-content');
 
-        // 💾 從 localStorage 載入儲存的留言內容
-        const savedNotes = localStorage.getItem('userNotes');
+        // --- 留言板功能 ---
+        const savedNotes = localStorage.getItem('userNotes'); // 從瀏覽器讀取儲存的留言
         if (savedNotes) {
             notesTextarea.value = savedNotes;
         }
-
-        // 💾 當留言內容變動時，自動儲存到 localStorage
         notesTextarea.addEventListener('input', function() {
-            localStorage.setItem('userNotes', notesTextarea.value);
-            // 🎯 更新儲存狀態提示
+            localStorage.setItem('userNotes', notesTextarea.value); // 將留言內容儲存到瀏覽器
             const metaElement = document.querySelector('.notes-meta span');
             metaElement.textContent = '已儲存 ✓';
-            setTimeout(() => {
-                metaElement.textContent = '自動儲存';
-            }, 2000);
+            setTimeout(() => { metaElement.textContent = '自動儲存'; }, 2000);
         });
 
-        // 🔧 修正兩個重疊事件的顯示問題
+        // --- 修正兩個事件重疊時的寬度 ---
         function fixTwoEvents() {
-          // 🎯 檢查兩個元素是否重疊
           function overlap(a, b) {
             const r1 = a.getBoundingClientRect();
             const r2 = b.getBoundingClientRect();
             return r1.top < r2.bottom && r2.top < r1.bottom;
           }
-
-          // 🔄 處理每個日曆欄位
           document.querySelectorAll('#calendar .fc-timegrid-col').forEach(col => {
             const harnesses = Array.from(col.querySelectorAll('.fc-timegrid-event-harness'));
-
-            // 🧹 清除舊的樣式設定
-            harnesses.forEach(h => { 
-              h.classList.remove('two-evt'); 
-              h.style.width = ''; 
-            });
-
-            // 🔍 找到 left:50% 的事件，配對同時段的 left:0% 事件
+            harnesses.forEach(h => { h.style.width = ''; });
             harnesses.forEach(h => {
               const s = (h.getAttribute('style') || '').replace(/\s+/g, '');
               if (s.includes('left:50%')) {
@@ -904,28 +737,23 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcvWpb
                   return sp.includes('left:0%') && overlap(p, h);
                 });
                 if (partner) {
-                  // 🎨 設定兩個事件的寬度為各50%
                   h.style.width = 'calc(50% - 4px)';
                   partner.style.width = 'calc(50% - 4px)';
-                  h.classList.add('two-evt');
-                  partner.classList.add('two-evt');
                 }
               }
             });
           });
         }
 
-        // 🔄 預約類型切換邏輯
-        var appointmentTypeRadios = document.querySelectorAll('input[name="appointment_type"]');
-        appointmentTypeRadios.forEach(function(radio) {
+        // --- 彈窗內預約類型切換邏輯 ---
+        document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
           radio.addEventListener('change', function() {
             const isBlocked = this.value === 'blocked';
             customerFields.style.display = isBlocked ? 'none' : 'block';
             document.getElementById('notes').placeholder = isBlocked 
-                ? '請輸入不約原因 (例如：設計師請假、店內會議等)' 
+                ? '請輸入不約原因 (例如：設計師請假)' 
                 : '請輸入備註資訊...';
             
-            // 更新按鈕文字
             const isEditing = !!eventIdInput.value;
             if (isBlocked) {
                 submitBtn.innerHTML = '🚫 設定不約時段';
@@ -935,32 +763,24 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcvWpb
           });
         });
         
-        // 🪟 開啟預約彈窗的函數
+        // --- 開啟預約彈窗 ---
         function openApptModal(startDate, resourceId) {
           if (!resourceId) return;
           
-          // 🔄 重置表單
           form.reset();
-          eventIdInput.value = ''; // 確保是新增模式
+          eventIdInput.value = '';
           
-          // 🎨 設定為新增模式的 UI
           submitBtn.innerHTML = '💾 儲存預約';
           deleteBtn.style.display = 'none';
           document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
           customerFields.style.display = 'block';
           document.getElementById('notes').placeholder = '請輸入備註資訊...';
-
-          // 📝 設定員工ID
           document.getElementById('employee_id').value = resourceId;
 
-          // --- BEGIN: 「開始分鐘」下拉選單邏輯 ---
           const minuteSelect = document.getElementById('minute_select');
           minuteSelect.innerHTML = '';
-
-          const baseHour = startDate.getHours();
           const baseMin = startDate.getMinutes();
 
-          // 產生三個選項 (以5分鐘為間隔)，從點擊的 15 分鐘區間開始
           for (let i = 0; i < 3; i++) { 
             const currentMinute = baseMin + (i * 5); 
             const opt = document.createElement('option');
@@ -970,348 +790,195 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcvWpb
             minuteSelect.appendChild(opt);
           }
           
-          // 初始設定 hidden input 的值
           updateHiddenStartTime(startDate);
-          // 當下拉選單改變時，更新 hidden input 的值
           minuteSelect.onchange = () => updateHiddenStartTime(startDate);
-          // --- END: 「開始分鐘」下拉選單邏輯 ---
           
-          // 🪟 顯示彈窗
           modal.style.display = 'block';
         }
 
-        // =================================================================
-// 最終修正：前端 updateHiddenStartTime 函數
-//
-// 這個版本將會 100% 準確地將您在日曆上點擊的時間，
-// 打包成一個帶有正確時區的標準時間字串，
-// 徹底根治「+8 小時」的問題。
-// =================================================================
-function updateHiddenStartTime(baseDate) {
-    // 從下拉選單中獲取使用者選擇的「分鐘」。
-    const selectedMinute = document.getElementById('minute_select').value;
-    
-    // 建立一個新的 Date 物件，以避免修改原始的 baseDate。
-    const newDate = new Date(baseDate);
-    
-    // 將這個新 Date 物件的分鐘，設定為使用者選擇的分鐘。
-    newDate.setMinutes(parseInt(selectedMinute, 10));
-    
-    // 為了確保時間的純粹，將秒和毫秒都歸零。
-    newDate.setSeconds(0);
-    newDate.setMilliseconds(0);
+        // --- 更新隱藏的開始時間欄位 (確保為台北時區) ---
+        function updateHiddenStartTime(baseDate) {
+          const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
+          const y  = baseDate.getFullYear();
+          const m  = String(baseDate.getMonth() + 1).padStart(2, '0');
+          const d  = String(baseDate.getDate()).padStart(2, '0');
+          const hh = String(baseDate.getHours()).padStart(2, '0');
+          const mm = String(selectedMinute).padStart(2, '0');
+          const taipeiISO = `${y}-${m}-${d}T${hh}:${mm}:00+08:00`;
+          document.getElementById('start_time').value = taipeiISO;
+        }
 
-    // --- 這是整個函數最核心、最關鍵的部分 ---
-    // 我們不再依賴任何可能出錯的內建轉換函數，而是「手動拼接」出一個絕對標準的 ISO 8601 格式字串。
-
-    // 1. 獲取瀏覽器本地時區與 UTC 的分鐘差。
-    //    例如，在台北 (UTC+8)，這個值會是 -480。
-    const timezoneOffset = newDate.getTimezoneOffset();
-    
-    // 2. 根據分鐘差的正負，決定時區符號是 '+' 還是 '-'。
-    //    因為 getTimezoneOffset 的正負號與常規認知相反，所以我們要取負值。- (-480) = 480 (正數)。
-    const diff = -timezoneOffset >= 0 ? '+' : '-';
-    
-    // 3. 建立一個輔助函數 `pad`，用於將小於 10 的數字補零 (例如 5 -> "05")。
-    const pad = (num) => (num < 10 ? '0' : '') + num;
-
-    // 4. 手動拼接所有部分，構造出最終的字串。
-    const isoString = newDate.getFullYear() +
-        '-' + pad(newDate.getMonth() + 1) + // 月份是從 0 開始的，所以要加 1。
-        '-' + pad(newDate.getDate()) +
-        'T' + pad(newDate.getHours()) +      // 使用 getHours() 來獲取本地時間的小時。
-        ':' + pad(newDate.getMinutes()) +
-        ':' + pad(newDate.getSeconds()) +
-        diff + pad(Math.floor(Math.abs(timezoneOffset) / 60)) + // 計算小時的偏移量
-        ':' + pad(Math.abs(timezoneOffset) % 60);               // 計算分鐘的偏移量
-
-    // 5. 將這個 100% 準確的字串，賦值給隱藏的 input 欄位。
-    document.getElementById('start_time').value = isoString;
-}
-
-
-        // 📅 初始化 FullCalendar
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-          // --- BEGIN: 修正 Scheduler 授權金鑰 ---
-          schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source', // 添加此行以移除開發期間的授權訊息
-          // --- END: 修正 Scheduler 授權金鑰 ---
-
-          // 🌏 基本設定
-          locale: 'zh-tw',
-          timeZone: 'Asia/Taipei',
-          initialView: 'resourceTimeGridDay',
-          
-          // 🎛️ 工具列設定
-          headerToolbar: { 
-            left: 'prev,next today', 
-            center: 'title', 
-            right: 'resourceTimeGridDay,resourceTimeGridWeek' 
-          },
-          
-          // ⏰ 時間設定
-          allDaySlot: false,                    // 不顯示全天事件欄
-          slotMinTime: '12:00:00',             // 最早時間 12:00
-          slotMaxTime: '21:00:00',             // 最晚時間 21:00
-          slotDuration: '00:15:00',            // 每格15分鐘
-          slotLabelInterval: '00:15:00',       // 時間標籤間隔15分鐘
-          slotLabelFormat: { 
-            hour:'2-digit', 
-            minute:'2-digit', 
-            hour12:false 
-          },
-          
-          // 🎨 顯示設定
-          displayEventTime: false,             // 不在事件上顯示時間
-          height: 'auto',                      // 自動高度
-          expandRows: false,                   // 不展開行
-          handleWindowResize: true,            // 處理視窗大小變化
-          
-          // 👆 互動設定
-          longPressDelay: 250,                 // 長按延遲
-          selectLongPressDelay: 250,           // 選擇長按延遲
-          selectMirror: true,                  // 選擇時顯示鏡像
-
-          // 🏷️ 時間標籤樣式設定
-          slotLabelDidMount: function (arg) {
-            const m = arg.date.getMinutes();
-            // 🎯 為整點和半點添加特殊樣式類別
-            arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
-            arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
-          },
-
-          // 🎨 視圖載入後的樣式調整
-          viewDidMount: function () {
-            // 🔧 修正重疊事件顯示
-            fixTwoEvents();
-          },
-          
-          // 👆 點擊日期時開啟預約彈窗
-          dateClick: function(info) {
-            openApptModal(info.date, info.resource ? info.resource.id : null);
-          },
-
-          // 🎫 事件載入後的處理
-          eventDidMount: function(info) {
-            // 🏷️ 設定事件的 tooltip
-            info.el.setAttribute("title", info.event.title);
-            
-            // 🚫 為不約時段添加特殊樣式
-            if (info.event.extendedProps && info.event.extendedProps.status === 'blocked') {
-              info.el.classList.add('blocked-time');
-            }
-            
-            // 🔧 修正重疊事件顯示
-            fixTwoEvents();
-          },
-
-          // 🎨 根據設計師設定事件樣式類別
-          eventClassNames: function(arg) {
-            const r = arg.event.getResources()[0];
-            return r ? ['sty-' + r.id] : [];
-          },
-
-          // 📝 自訂事件內容顯示格式
-          eventContent: function(arg) {
-            const event = arg.event;
-            const extendedProps = event.extendedProps;
-            let contentText = '';
-
-            // ⏰ 格式化開始時間 (確保使用日曆的時區)
-            const startTime = event.start ? event.start.toLocaleTimeString('zh-TW', { 
-              hour: '2-digit', 
-              minute: '2-digit', 
-              hour12: false,
-              timeZone: 'Asia/Taipei' // 確保時間顯示與日曆時區一致
-            }) : '';
-
-            if (extendedProps && extendedProps.status === 'blocked') {
-              // 🚫 不約時段的顯示格式
-              contentText = `🚫 ${startTime} ${event.title || '不約時段'}`;
-            } else {
-              // ✅ 一般預約的顯示格式
-              const service = extendedProps.service_id || '';
-              const customerName = extendedProps.customer_name || '無姓名';
-              const customerPhone = extendedProps.customer_phone || '無電話';
-              
-              // 🎯 根據服務項目組裝顯示字串
-              let serviceDisplay = service ? ` ${service}` : '';
-              contentText = `${startTime}${serviceDisplay} ${customerName} ${customerPhone}`;
-            }
-
-            return { html: `<div class='fc-event-title'>${contentText}</div>` };
-          },
-          
-          // 🚫 禁用事件拖曳編輯功能
-          editable: false,
-
-          // 👆 點擊事件時的處理 (開啟編輯彈窗)
-          eventClick: function(info){
-            form.reset();
-            const event = info.event;
-            const ep = event.extendedProps || {};
-
-            // 🎨 設定為編輯模式的 UI
-            eventIdInput.value = event.id;
-            deleteBtn.style.display = 'inline-block';
-
-            // 📝 填充表單資料
-            document.getElementById('employee_id').value = event.getResources()[0]?.id || '';
-            document.getElementById('customer_phone').value = ep.customer_phone || '';
-            document.getElementById('customer_name').value  = ep.customer_name  || '';
-            document.getElementById('service_id').value    = ep.service_id    || '';
-            document.getElementById('notes').value         = ep.notes         || '';
-
-            // 處理預約類型
-            const isBlocked = ep.status === 'blocked';
-            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
-            customerFields.style.display = isBlocked ? 'none' : 'block';
-            submitBtn.innerHTML = isBlocked ? '🚫 更新不約時段' : '✅ 更新預約';
-            
-            // 填充時間相關欄位
-            const startDate = event.start;
-            const minuteSelect = document.getElementById('minute_select');
-            minuteSelect.innerHTML = ''; // 清空
-            const startMinute = startDate.getMinutes();
-            
-            // 建立 00, 05, 10... 55 的選項
-            for (let m = 0; m < 60; m += 5) {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = String(m).padStart(2, '0');
-                if (m === startMinute) opt.selected = true;
-                minuteSelect.appendChild(opt);
-            }
-            
-            // 更新隱藏的 start_time
-            updateHiddenStartTime(startDate);
-            minuteSelect.onchange = () => updateHiddenStartTime(startDate);
-
-            modal.style.display = 'block';
-          },
-          
-          // 👥 設計師資源設定 (已移除顏色，由 CSS 控制)
-          resources: [
-            { id: '1', title: '店長' },
-            { id: '2', title: '雅婷' },
-            { id: '3', title: '小白' }
-          ],
-
-          // 📊 事件資料來源 URL
-          events: `${APPS_SCRIPT_WEB_APP_URL}?action=get`,
-
-          // 👆 選擇功能設定
-          selectable: true,
-          select: function (info) {
-            openApptModal(info.start, info.resource ? info.resource.id : null);
-          },
-        });
-
-        // 🚀 渲染日曆
-        calendar.render();
-        
-        // 🔧 初始修正重疊事件
+    // --- 初始化 FullCalendar ---
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+      locale: 'zh-tw',
+      timeZone: 'Asia/Taipei',
+      initialView: 'resourceTimeGridDay',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'resourceTimeGridDay,resourceTimeGridWeek'
+      },
+      allDaySlot: false,
+      slotMinTime: '12:00:00',
+      slotMaxTime: '21:00:00',
+      slotDuration: '00:15:00',
+      slotLabelInterval: '00:15:00',
+      slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+      displayEventTime: false,
+      height: 'auto',
+      expandRows: false,
+      handleWindowResize: true,
+      slotLabelDidMount: arg => {
+        const m = arg.date.getMinutes();
+        arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
+        arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
+      },
+      viewDidMount: () => fixTwoEvents(),
+      dateClick: info => openApptModal(info.date, info.resource ? info.resource.id : null),
+      eventDidMount: info => {
+        info.el.setAttribute('title', info.event.title);
+        if (info.event.extendedProps?.status === 'blocked') {
+          info.el.classList.add('blocked-time');
+        }
         fixTwoEvents();
-        
-        // 🪟 關閉彈窗的事件處理
-        closeButton.onclick = function(){ 
-          modal.style.display = 'none'; 
-        };
-        
-        window.onclick = function(e){ 
-          if(e.target === modal) modal.style.display = 'none'; 
-        };
+      },
+      eventClassNames: arg => {
+        const r = arg.event.getResources();
+        return r ? ['sty-' + r.id] : [];
+      },
+      eventContent: arg => {
+        const { event } = arg;
+        const ep = event.extendedProps || {};
+        const startTime = event.start?.toLocaleTimeString('zh-TW', {
+            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei'
+        }) || '';
 
-        // 🗑️ 刪除按鈕事件
-        deleteBtn.onclick = function(){
-          var eventId = eventIdInput.value.trim();
-          if (!eventId) return;
-          if (!confirm('確定要刪除這筆預約嗎？此操作無法復原。')) return;
+        if (ep.status === 'blocked') {
+          return { html: `<div class='fc-event-title'>🚫 ${startTime} ${event.title || '不約時段'}</div>` };
+        }
+        const service = ep.service_id ? ` ${ep.service_id}` : '';
+        const name = ep.customer_name || '無姓名';
+        const phone = ep.customer_phone || '無電話';
+        return { html: `<div class='fc-event-title'>${startTime}${service} ${name} ${phone}</div>` };
+      },
+      editable: false,
+      eventClick: info => {
+        form.reset();
+        const { event } = info;
+        const ep = event.extendedProps || {};
 
-          const payload = {
-            action: 'delete',
-            id: eventId
-          };
+        eventIdInput.value = event.id;
+        deleteBtn.style.display = 'inline-block';
 
-        // ✅ 修正後的寫法
-fetch(APPS_SCRIPT_WEB_APP_URL, {
-  method: 'POST',
-  // 【核心修正】將 Content-Type 改為 text/plain，繞過 CORS 預檢
-  headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-  body: JSON.stringify(payload) // body 內容不變
-})
-// ...
+        document.getElementById('employee_id').value = event.getResources()?.id || '';
+        document.getElementById('customer_phone').value = ep.customer_phone || '';
+        document.getElementById('customer_name').value  = ep.customer_name  || '';
+        document.getElementById('service_id').value    = ep.service_id    || '';
+        document.getElementById('notes').value         = ep.notes         || '';
 
-          .then(r => r.json())
-          .then(res => {
-            if (res.status === 'success') {
-              modal.style.display = 'none';
-              calendar.refetchEvents();
-            } else {
-              alert('❌ 刪除失敗: ' + (res.message || '未知錯誤'));
-            }
-          })
-          .catch(err => {
-            console.error('Delete Error:', err);
-            alert('❌ 刪除請求失敗，請檢查網路連線');
-          });
-        };
+        const isBlocked = ep.status === 'blocked';
+        document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
+        customerFields.style.display = isBlocked ? 'none' : 'block';
+        submitBtn.innerHTML = isBlocked ? '🚫 更新不約時段' : '✅ 更新預約';
 
-        // 📝 表單提交處理 (統一處理新增與更新)
-        form.addEventListener('submit', function(e){
-          e.preventDefault();
-          const formData = new FormData(form);
-          const eventId = formData.get('event_id');
-          const isEditing = !!eventId;
+        const startDate = event.start;
+        const minuteSelect = document.getElementById('minute_select');
+        minuteSelect.innerHTML = '';
+        const startMinute = startDate.getMinutes();
+        for (let m = 0; m < 60; m += 5) {
+          const opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = String(m).padStart(2, '0');
+          if (m === startMinute) opt.selected = true;
+          minuteSelect.appendChild(opt);
+        }
+        updateHiddenStartTime(startDate);
+        minuteSelect.onchange = () => updateHiddenStartTime(startDate);
 
-          // 根據預約類型進行驗證
-          const appointmentType = formData.get('appointment_type');
-          if (appointmentType === 'normal') {
-            if (!formData.get('customer_name') && !formData.get('customer_phone')) {
-              alert('⚠️ 請至少填寫客戶姓名或電話');
-              return;
-            }
-          }
+        modal.style.display = 'block';
+      },
+      resources: [
+        { id: '1', title: '店長' },
+        { id: '2', title: '雅婷' },
+        { id: '3', title: '小白' }
+      ],
+      events: `${APPS_SCRIPT_WEB_APP_URL}?action=get`, // 設定日曆事件的資料來源
+      selectable: true,
+      select: info => openApptModal(info.start, info.resource ? info.resource.id : null)
+    });
 
-          // 準備要發送的資料
-          const payload = {
-            action: isEditing ? 'edit' : 'create',
-            id: eventId,
-            employee_id: formData.get('employee_id'),
-            start: formData.get('start_time'), // 已包含時區資訊
-            appointment_type: appointmentType,
-            customer_name: formData.get('customer_name'),
-            customer_phone: formData.get('customer_phone'),
-            service_id: formData.get('service_id'),
-            notes: formData.get('notes')
-          };
+    calendar.render();
+    fixTwoEvents();
 
-          // ✅ 修正後的寫法
-fetch(APPS_SCRIPT_WEB_APP_URL, { 
-  method:'POST',
-  // 【核心修正】將 Content-Type 改為 text/plain，繞過 CORS 預檢
-  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-  body: JSON.stringify(payload) // body 內容不變
-})
-// ...
+    // --- 彈窗關閉邏輯 ---
+    closeButton.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
-          .then(r => r.json())
-          .then(data => {
-            if (data.status === 'success') {
-              // ✅ 成功：關閉彈窗並重新載入事件
-              modal.style.display = 'none';
-              calendar.refetchEvents();
-            } else {
-              // ❌ 失敗：顯示錯誤訊息
-              alert('❌ 錯誤: ' + (data.message || '未知錯誤'));
-            }
-          })
-          .catch(err => { 
-            console.error('Submit Error:', err); 
-            alert('❌ 提交失敗，請檢查網路連線'); 
-          });
+    // --- 刪除預約 ---
+    deleteBtn.onclick = async function () {
+      const eventId = eventIdInput.value.trim();
+      if (!eventId || !confirm('確定要刪除這筆預約嗎？此操作無法復原。')) return;
+
+      try {
+        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { // 發送請求到後端
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: eventId })
         });
-      });
-    })();
+        const data = await res.json(); // 解析後端回傳的 JSON 結果
+        if (!res.ok || data.status !== 'success') {
+          throw new Error(data.message || '刪除失敗');
+        }
+      } catch (err) {
+        console.error('Delete Error:', err);
+        alert('❌ 刪除失敗：' + err.message);
+      } finally {
+        modal.style.display = 'none';
+        calendar.refetchEvents();
+      }
+    };
+
+    // --- 表單提交 (新增/編輯) ---
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const isEditing = !!eventIdInput.value;
+      const fd = new FormData(form);
+      const payload = {
+        action: isEditing ? 'edit' : 'create',
+        ...(isEditing ? { id: eventIdInput.value } : {}),
+        employee_id: fd.get('employee_id'),
+        start: fd.get('start_time'),
+        appointment_type: fd.get('appointment_type'),
+        customer_name: fd.get('customer_name') || '',
+        customer_phone: fd.get('customer_phone') || '',
+        service_id: fd.get('service_id') || '',
+        notes: fd.get('notes') || ''
+      };
+
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { // 發送請求到後端
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json(); // 解析後端回傳的 JSON 結果
+        if (!res.ok || data.status !== 'success') {
+          throw new Error(data.message || '儲存失敗');
+        }
+      } catch (err) {
+        console.error('Submit Error:', err);
+        alert('❌ 儲存失敗：' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        modal.style.display = 'none';
+        calendar.refetchEvents();
+      }
+    });
+
+  });
+})();
     </script>
 </body>
-</html>    
+</html>
