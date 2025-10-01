@@ -65,7 +65,7 @@ html, body {
   overflow-y: auto;
   color: var(--text-primary);
   background: var(--bg-main);
-  line-height: 1.6;
+  line-height: 2;
   scroll-behavior: smooth;
 }
 
@@ -134,6 +134,9 @@ html, body {
   font-weight: 700;
   font-size: 28px;
   letter-spacing: 1px;
+    white-space: nowrap;        /* 防止換行 */
+  overflow: hidden;           /* 超出隱藏 */
+  text-overflow: ellipsis;    /* 省略號 */
 }
 
 /* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
@@ -200,6 +203,9 @@ html, body {
 font-weight: 400;
 font-family: "Arial Black", Gadget, sans-serif;
 letter-spacing: 40px; /* 水平間距 */
+  white-space: nowrap;        /* 防止換行 */
+  overflow: hidden;           /* 超出隱藏 */
+  text-overflow: ellipsis;    /* 省略號 */
   
 }
 
@@ -374,9 +380,18 @@ letter-spacing: 40px; /* 水平間距 */
     #calendar { width: 100vw !important; margin: 0 -10px; border-radius: 0; }
 
     /* 工具列調整 */
-    #calendar .fc-header-toolbar { flex-wrap: nowrap; justify-content: space-between; padding: 8px 30px; }
-    .fc-button { font-size: 0.75em; padding: 0.3em 0.6em; line-height: 1; }
-
+     #calendar .fc-header-toolbar {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    padding: 8px 16px;
+    gap: clamp(0.5rem, 2.5vw, 1.5rem);
+  }
+     #calendar .fc-toolbar-title {
+    white-space: nowrap;
+    font-size: clamp(16px, 6vw, 24px);     /* 依螢幕自動縮放 */
+    letter-spacing: clamp(0px, 0.3vw, 1px); /* 防止字距過寬 */
+    min-width: 0;                           /* 允許縮小以避免被擠出 */
+  }
     /* 表頭調整 */
     :root{
       --col-header-height: 30px;
@@ -409,6 +424,13 @@ letter-spacing: 40px; /* 水平間距 */
     /* 彈窗調整 */
     .modal-content { width: 95%; margin: 2% auto; padding: 20px; }
 }
+ /* 表頭：字級、字距、間距皆可縮放，維持單行不換行 */
+  #calendar .fc-col-header-cell-cushion{
+    white-space: nowrap;
+    font-size: clamp(12px, 4.2vw, 18px);
+    letter-spacing: clamp(2px, 0.8vw, 20px);
+    gap: clamp(0.5rem, 3vw, 2rem);
+  }
 
 /* ==================== 🪟 彈窗樣式 (Modal) - 未包含在排序內，置於此處 ==================== */
 :root {
