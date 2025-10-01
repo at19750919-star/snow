@@ -116,17 +116,13 @@ html, body {
     align-items: center;
     gap: 5rem;
     background: var(--calendar-header-bg);
-    padding: 5px 10px;
+    padding: 5px 30px 5px 20px;
     margin-bottom: 0 !important;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 /* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
-#calendar .fc-toolbar-chunk {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
+#calendar .fc-toolbar-chunk {display: flex;align-items: center;ap: 0.8rem;}
 
 /* 工具列標題樣式 - 顯示當前日期的標題文字 */
 #calendar .fc-toolbar-title {
@@ -139,11 +135,10 @@ html, body {
 }
 
 /* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
-#calendar .fc-toolbar-title .ym-gap{display:inline-block;width:1.5em;}
-#calendar .fc-toolbar-title .md-gap{display:inline-block;width:1.5em;}
+#calendar .fc-toolbar-title .ym-gap{display:inline-block;width:2em;}
+#calendar .fc-toolbar-title .md-gap{display:inline-block;width:2em;}
 
-/* 工具列按鈕文字顏色 */
-#calendar .fc-toolbar-chunk .fc-button { color: #ffffff !important; }
+
 
 /* 日曆按鈕樣式 - 導航按鈕的基本樣式與效果 */
 .fc-button {
@@ -151,7 +146,9 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   color: var(--text-light) !important;
   height: 36px;
+  width: 36px;
   border-radius: var(--border-radius-small) !important;
+  padding: 0px !important; /* 例如：上下 6px，左右 10px */
   font-weight: 400;
   transition: all 0.3s ease;
 }
@@ -708,18 +705,23 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz35yv1
           document.getElementById('start_time').value = dt.toISOString();
         }
 
-        // --- 標題格式化：把「YYYY年M月D日」轉成「YYYY年  MM月  DD日」 ---
+       
 function formatToolbarTitle() {
   const el = document.querySelector('#calendar .fc-toolbar-title');
   if (!el) return;
-  const t = el.textContent.trim();                          // 例：2025年9月30日
-  const m = t.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
-  if (!m) return;                                           // 非預期格式則不處理
+  const t = el.textContent.trim();
+  const allDateMatches = t.match(/\d{4}年\d{1,2}月\d{1,2}日/g);
+  if (!allDateMatches) return;
+  const lastDateStr = allDateMatches[allDateMatches.length - 1];
+  const m = lastDateStr.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
+  if (!m) return; // 安全檢查
+
   const year  = m[1];
-  const month = m[2].padStart(2, '0');                      // 補 0 → 09
-  const day   = m[3];                                       // 依需求不補 0
-  el.innerHTML = `${year}年<span class="ym-gap"></span>${month}月`
-               + `<span class="md-gap"></span>${day}日`;
+  const month = m[2].padStart(2, '0');
+  const day   = m[3].padStart(2, '0'); // 第一處修改：將「日」補零
+
+  // 第二處修改：用實際空格替換 span 標籤
+el.innerHTML = `${year}&nbsp;&nbsp;年&nbsp;&nbsp;${month}&nbsp;&nbsp;月&nbsp;&nbsp;${day}&nbsp;&nbsp;日`;
 }
 
 
@@ -751,7 +753,7 @@ function formatToolbarTitle() {
             arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
           },
           viewDidMount: function() { fixTwoEvents(); formatToolbarTitle(); },
-datesSet: function() { formatToolbarTitle(); },
+          datesSet: function() { formatToolbarTitle(); },
           dateClick: function(info) { openApptModal(info.date, info.resource ? info.resource.id : null) },
           eventDidMount: function(info) {
             info.el.setAttribute('title', info.event.title);
