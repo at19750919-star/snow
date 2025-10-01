@@ -41,7 +41,7 @@
 
   /* 框線/陰影/圓角 */
   --calendar-border:       #E0D4E8;
-  --border-radius:       5px;  /* 卡片圓角 */
+  --border-radius:       8px;  /* 卡片圓角 */
   --border-radius-small: 5px;   /* 小型元件圓角 */
   --shadow-soft:   0 4px 8px  rgba(93,78,117,0.1);
   --shadow-medium: 0 8px 16px rgba(93,78,117,0.15);
@@ -73,7 +73,7 @@ html, body {
 #calendar-container {
   position: relative;
   width: 100%;
-  padding: 2px 5px;
+  padding: 0px 0px;
   padding-bottom: 10px;
   max-width: none;
   margin: 0;
@@ -90,6 +90,7 @@ html, body {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-medium);
   overflow: hidden;
+  border: 2px solid var(--calendar-border);
 }
 
 /* 日曆捲動設定 - 還原由 FullCalendar 自行管理高度與捲動 */
@@ -116,9 +117,10 @@ html, body {
     align-items: center;
     gap: 5rem;
     background: var(--calendar-header-bg);
-    padding: 5px 30px 5px 20px;
+    padding: 0px 20px 0px 10px;
     margin-bottom: 0 !important;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
+  
 }
 
 /* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
@@ -159,16 +161,14 @@ html, body {
 
 /* ==================== 📋 表頭 (Header) ==================== */
 #calendar .fc-col-header {
-    height: 50px;
+    height: 40px;
     background: #592C63;
-    border-bottom: 2px solid var(--calendar-border);
+    border-bottom: 1px solid var(--calendar-border);
     background: linear-gradient(135deg, #66327C, 6px,#592C63 6px 12px),
             repeating-linear-gradient(135deg,  #70649A 6px, #b474a2 6px 12px);
-
-   
+  
 }
 /*text-shadow: 0.71px 0.71px 0 rgba(222, 201, 232, 0.42), 1.41px 1.41px 0 rgba(198, 180, 206, 0.42), 2.12px 2.12px 0 rgba(173, 158, 180, 0.42), 2.83px 2.83px 0 rgba(149, 137, 154, 0.42), 3.54px 3.54px 0 rgba(124, 115, 129, 0.42), 4.24px 4.24px 0 rgba(100, 94, 103, 0.42), 4.95px 4.95px 0 rgba(75, 72, 77, 0.42), 5.66px 5.66px 0 rgba(51, 51, 51, 0.42);
-
 
 
 /* 表頭單元格 */
@@ -212,8 +212,6 @@ letter-spacing: 40px; /* 水平間距 */
   text-shadow: 0 1px 0 #fff, 0 3px 10px rgba(0,0,0,.28);
   transform: translateY(-1px);
 }
-
-
 
 /* ==================== ⏰ 時間欄 (Time Column) ==================== */
 :root {
@@ -266,22 +264,13 @@ letter-spacing: 40px; /* 水平間距 */
   /* 設計師顏色 */
   --stylist-1-bg: #0089A7;
   --stylist-1-text: #f8f1f1;
-  --stylist-1-bg-light:  #5ca9bb;
+  --stylist-1-bg-light:  #0088a7a2;
   --stylist-2-bg: #E16B8C;
-  --stylist-2-text: var(--text-light);
-  --stylist-2-bg-light: #df8aa2;
-  --stylist-3-bg: #5b546e;
-  --stylist-3-text: var(--text-light);
-  --stylist-3-bg-light: #8a82a0;
-}
-
-/* --- A. 事件卡片的結構與互動 --- */
-/* 事件卡片容器 */
-#calendar .fc-timegrid-event-harness {
-  width: calc(50% - 6px) !important;
-  margin: 0 3px !important;
-  padding: 0 !important;
-  box-sizing: border-box;
+  --stylist-2-text: #f8f1f1;
+  --stylist-2-bg-light: #e16b8ca6;
+  --stylist-3-bg: #53365f;
+  --stylist-3-text: #f8f1f1;
+  --stylist-3-bg-light: #53365fd4;
 }
 
 /* --- B. 事件卡片的文字與內容排版 (合併版) --- */
@@ -291,17 +280,20 @@ letter-spacing: 40px; /* 水平間距 */
 #calendar .fc-event.blocked-time .fc-event-title {
   /* --- 以下是它們共用的樣式 --- */
   display: flex;
-  align-items: center;     /* 垂直置中 */
-  justify-content: center; /* 水平置中 */
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 0 0px;
+    font-weight: 400;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0px;
+}
+#calendar .fc-timegrid-event {
   height: 100%;
-  width: 100%; /* 確保填滿容器以便置中 */
-  padding: 0 8px;
-  font-weight: 400;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.3px;
 }
 
 /* --- C. 針對不同卡片的【差異化】樣式 --- */
@@ -322,8 +314,6 @@ letter-spacing: 40px; /* 水平間距 */
   box-shadow: var(--shadow-medium);
 }
 
-
-
 /* 服務徽章樣式 */
 .svc-badge{
   font-size: 20px; font-weight: 700; margin-right: 6px; line-height: 1;
@@ -336,7 +326,7 @@ letter-spacing: 40px; /* 水平間距 */
 }
 .evt-svc{ font-size:20px; font-weight:700; gap:10px; }
 .evt-time{ min-width:48px; text-align:right; }
-.evt-phone{ letter-spacing:0.5px; }
+.evt-phone{ letter-spacing:1px; }
 
 /* --- C. 設計師顏色套用規則 --- */
 #calendar .fc-event.sty-1{ background: var(--stylist-1-bg) !important; border-color: var(--stylist-1-bg) !important; color: var(--stylist-1-text) !important; }
@@ -378,18 +368,18 @@ letter-spacing: 40px; /* 水平間距 */
 
 
 /* ==================== 📱 手機版響應式設計 (Mobile) ==================== */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     /* 全局調整 */
-    /*#calendar-container { padding: 10px; }
+    #calendar-container { padding: 3px; }
     #calendar { width: 100vw !important; margin: 0 -10px; border-radius: 0; }
 
     /* 工具列調整 */
-    /*#calendar .fc-header-toolbar { flex-wrap: nowrap; justify-content: space-between; padding: 8px 30px; }
+    #calendar .fc-header-toolbar { flex-wrap: nowrap; justify-content: space-between; padding: 8px 30px; }
     .fc-button { font-size: 0.75em; padding: 0.3em 0.6em; line-height: 1; }
 
     /* 表頭調整 */
-    /*:root{
-      --col-header-height: 48px;
+    :root{
+      --col-header-height: 30px;
       --col-header-size:   16px;
     }
     #calendar .fc-col-header-cell-cushion{
@@ -397,11 +387,24 @@ letter-spacing: 40px; /* 水平間距 */
     }
 
     /* 事件卡片調整 */
-    /*#calendar .fc-timegrid-event { min-height: 1.8em !important; max-height: 2.2em !important; }
+    *#calendar .fc-timegrid-event { height: 100% !important; }
     #calendar .fc-timegrid-event .fc-event-title { font-size: 12px; line-height: 1.2; padding: 0 6px; }
-    .svc-badge{ font-size: 20px; }
-    .fc-timegrid-event .fc-event-title.evt-line{ gap:6px; }
-    .evt-svc{ font-size:22px; }
+    .svc-badge{ font-size: 12px; }
+    .fc-timegrid-event .fc-event-title.evt-line{ gap:3px; }
+    .evt-svc{ font-size:12px; }
+    /* ↓↓↓ 新增這段來讓卡片填滿高度 ↓↓↓ */
+#calendar .fc-timegrid-event {
+  height: 100%;
+}
+#calendar .fc-timegrid-event-harness {
+  width: calc(100% - 10px) !important; /* 總寬度減少10px */
+  left: 5px !important;                /* 從左邊推移5px來置中 */
+}
+
+/* 服務徽章樣式 */
+.svc-badge{
+  font-size: 12px; font-weight: 500; margin-right: 2px; line-height: 1;
+}
 
     /* 彈窗調整 */
     .modal-content { width: 95%; margin: 2% auto; padding: 20px; }
@@ -457,7 +460,11 @@ letter-spacing: 40px; /* 水平間距 */
   --calendar-line-color: #E0D4E8; /* 統一線條顏色 */
   --calendar-line-width: 1px;      /* 統一線條粗細 */
 }
-
+/* --- 新增這段來移除事件容器的左右外邊距 --- */
+#calendar .fc-timegrid-col-events {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
 
 /* --- 1. 統一設定【垂直線】 --- */
 
@@ -752,13 +759,12 @@ el.innerHTML = `${year}&nbsp;&nbsp;年&nbsp;&nbsp;${month}&nbsp;&nbsp;月&nbsp;&
             arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
             arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
           },
-          viewDidMount: function() { fixTwoEvents(); formatToolbarTitle(); },
+          viewDidMount: function() { formatToolbarTitle(); },
           datesSet: function() { formatToolbarTitle(); },
           dateClick: function(info) { openApptModal(info.date, info.resource ? info.resource.id : null) },
           eventDidMount: function(info) {
-            info.el.setAttribute('title', info.event.title);
-            fixTwoEvents();
-          },
+  info.el.setAttribute('title', info.event.title);
+},
           eventClassNames: function(arg) {
             const r = arg.event.getResources();
             const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
@@ -832,8 +838,7 @@ el.innerHTML = `${year}&nbsp;&nbsp;年&nbsp;&nbsp;${month}&nbsp;&nbsp;月&nbsp;&
         });
 
         calendar.render();
-        fixTwoEvents();
-
+     
         // --- 彈窗關閉邏輯 ---
         closeButton.onclick = function() { modal.style.display = 'none'; };
         window.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
