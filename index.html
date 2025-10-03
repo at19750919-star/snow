@@ -271,15 +271,15 @@ html, body {
   --event-default-text: var(--text-light);
 
   /* 設計師顏色 */
-  --stylist-1-bg: #0089A7;
+  --stylist-1-bg: #005CAF;
   --stylist-1-text: #f8f1f1;
-  --stylist-1-bg-light:  #29aecc;
-  --stylist-2-bg: #E16B8C;
+  --stylist-1-bg-light: #51A8DD;
+  --stylist-2-bg: #E03C8A;
   --stylist-2-text: #f8f1f1;
-  --stylist-2-bg-light: #f080a0;
-  --stylist-3-bg: #53365f;
+  --stylist-2-bg-light: #f082a1;
+  --stylist-3-bg: #42602D;
   --stylist-3-text: #f8f1f1;
-  --stylist-3-bg-light: #6e517a;
+  --stylist-3-bg-light: #7BA23F;
 }
 
 /* --- B. 事件卡片的文字與內容排版 (合併版) --- */
@@ -314,7 +314,8 @@ html, body {
 }
 
 /* 讓事件卡片右邊多一些距離 inset 值 */
-/*#calendar .fc-timegrid-event-harness { right: 5% !important; }/*
+#calendar .fc-timegrid-event-harness { right: 5% !important; } 
+
 
 
 /* 針對【一般預約】卡片的文字大小 */
@@ -426,28 +427,20 @@ html, body {
 
     /* 事件卡片調整 */
     *#calendar .fc-timegrid-event { height: 100% !important; }
-    #calendar .fc-timegrid-event .fc-event-title { font-size: 12px; line-height: 1.2; padding: 0 6px; }
+    #calendar .fc-timegrid-event .fc-event-title { font-size: 16px; line-height: 1.2; padding: 0 6px; }
     .svc-badge{ font-size: 12px; }
     .fc-timegrid-event .fc-event-title.evt-line{ gap:3px; }
-    .evt-svc{ font-size:12px; }
+    .evt-svc{ font-size:18px; }
     
 #calendar .fc-timegrid-event-harness {
   width: calc(100% - 10px) !important; /* 總寬度減少10px */
   left: 5px !important;                /* 從左邊推移5px來置中 */
 }
 
-/* 服務徽章樣式 */
-.svc-badge{
-  .svc-badge{
-    font-size: 12px; font-weight: 500; margin-right: 2px; line-height: 1;
-  }
 }
     
     /* 彈窗調整 */
     .modal-content { width: 95%; margin: 2% auto; padding: 20px; }
-}
-
-
 /* ==================== 🪟 彈窗樣式 (Modal) - 未包含在排序內，置於此處 ==================== */
 :root {
   /* 按鈕顏色 */
@@ -698,117 +691,328 @@ html, body {
 // =======================================================================
 
 // 後端 Google Apps Script 網址
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz35yv10YIDyeT6a77bMY1okWfiUvyODw9A309gaSZAZUTE2i45Vn-EbTINrytvp8ZB4Q/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCackbyBCBb8UfbM5ID5xqdGMnUMDfhpeF-7y_e1zwf3zTllj19kLyzqPW6r_kfpXAw/exec';
 
 (function(){
-  // ==================== 全域變數與資料管理 ====================
-  // 從瀏覽器儲存中讀取排休資料，若沒有則建立空陣列
-  let employeeLeaveData = JSON.parse(localStorage.getItem('centuryHairSalonLeave')) || [];
+  // ==================== 全域變數 ====================
+  let employeeLeaveData = []; // 用來存放從後端取回的排休資料
+  let calendar; // 將 calendar 宣告在外面，方便各函式使用
 
-  // 儲存排休資料到瀏覽器的函式
-  function saveLeaveData() {
-    localStorage.setItem('centuryHairSalonLeave', JSON.stringify(employeeLeaveData));
-  }
-  
   // ==================== DOMContentLoaded Event Listener ====================
   document.addEventListener('DOMContentLoaded', function(){
-    // --- 元素選擇 ---
-    const modal = document.getElementById('appointmentModal');
-    const form = document.getElementById('appointmentForm');
-    const closeButton = document.querySelector('.close-button');
+    // --- 元素選擇 (完整版) ---
     const calendarEl = document.getElementById('calendar');
+    const appointmentModal = document.getElementById('appointmentModal');
+    const leaveModal = document.getElementById('leaveModal');
+    const form = document.getElementById('appointmentForm');
+    const leaveForm = document.getElementById('leaveForm');
+    const notesTextarea = document.getElementById('notes-content');
+    const phoneEl = document.getElementById('customer_phone');
     const customerFields = document.getElementById('customer-fields');
     const submitBtn = document.getElementById('submit-btn');
     const deleteBtn = document.getElementById('deleteBtn');
     const eventIdInput = document.getElementById('event_id');
-    const notesTextarea = document.getElementById('notes-content');
-    const phoneEl = document.getElementById('customer_phone');
-    const appointmentModal = document.getElementById('appointmentModal');
-    const leaveModal = document.getElementById('leaveModal');
+    const appointmentCloseButton = appointmentModal.querySelector('.close-button');
+    const leaveCloseButton = leaveModal.querySelector('.leave-close-button');
+    const deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
-    phoneEl.addEventListener('input', (e) => {
-      let d = e.target.value.replace(/\D/g,'').slice(0,10);
-      if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, function(_,a,b,c){ return c ? `${a}-${b}-${c}` : `${a}-${b}` });
-      else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
-      else e.target.value = d;
-    });
+    // --- 程式一開始執行的三個主要動作 ---
+    initializeCalendar();
+    fetchAllCloudData();
+    bindEventListeners();
+    
+    // ========================================================
+    // 以下全部是函式的詳細定義
+    // ========================================================
 
-    // --- 留言板功能 ---
-    const savedNotes = localStorage.getItem('userNotes');
-    if (savedNotes) {
-        notesTextarea.value = savedNotes;
-    }
-    notesTextarea.addEventListener('input', function() {
-        localStorage.setItem('userNotes', notesTextarea.value);
-        const metaElement = document.querySelector('.notes-meta span');
-        metaElement.textContent = '已儲存 ✓';
-        setTimeout(() => { metaElement.textContent = '自動儲存'; }, 2000);
-    });
+    function initializeCalendar() {
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+        locale: 'zh-tw',
+        timeZone: 'Asia/Taipei',
+        initialView: 'resourceTimeGridDay',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'resourceTimeGridDay,resourceTimeGridWeek'
+        },
+        buttonText: { today: '今' },
+        allDaySlot: false,
+        slotMinTime: '12:00:00',
+        slotMaxTime: '21:00:00',
+        slotDuration: '00:15:00',
+        slotLabelInterval: '00:15:00',
+        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        displayEventTime: false,
+        height: 'auto',
+        expandRows: false,
+        handleWindowResize: true,
+        businessHours: [ { daysOfWeek: [0,2,3,4,5,6], startTime: '00:00', endTime: '24:00' } ],
+        resources: [ { id: '1', title: '店長' }, { id: '2', title: '雅婷' }, { id: '3', title: '小白' } ],
+        
+        events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
+        selectable: true,
 
-    // --- 修正兩個事件重疊時的寬度 ---
-    function fixTwoEvents() {
-      function overlap(a, b) {
-        const r1 = a.getBoundingClientRect();
-        const r2 = b.getBoundingClientRect();
-        return r1.top < r2.bottom && r2.top < r1.bottom;
-      }
-      document.querySelectorAll('#calendar .fc-timegrid-col').forEach(col => {
-        const harnesses = Array.from(col.querySelectorAll('.fc-timegrid-event-harness'));
-        harnesses.forEach(h => { h.style.width = ''; });
-        harnesses.forEach(h => {
-          const s = (h.getAttribute('style') || '').replace(/\s+/g, '');
-          if (s.includes('left:50%')) {
-            const partner = harnesses.find(p => {
-              if (p === h) return false;
-              const sp = (p.getAttribute('style') || '').replace(/\s+/g, '');
-              return sp.includes('left:0%') && overlap(p, h);
-            });
-            if (partner) {
-              h.style.width = 'calc(50% - 4px)';
-              partner.style.width = 'calc(50% - 4px)';
+        datesSet: function(info) {
+  updateToolbarTitle(info);
+  syncTimeLabelClosedBg(info);
+  paintMondayClosed(info);
+  paintEmployeeLeave();
+},
+
+        resourceLabelDidMount: function(arg) {
+          const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
+          if (!cushionEl) return;
+          const leaveIconButton = document.createElement('span');
+          leaveIconButton.className = 'leave-icon-button';
+          leaveIconButton.innerHTML = ' 📅';
+          cushionEl.appendChild(leaveIconButton);
+          leaveIconButton.addEventListener('mousedown', function(event) {
+            event.stopPropagation();
+            setTimeout(() => {
+              openLeaveModal(calendar.view.currentStart, arg.resource);
+            }, 0);
+          });
+        },
+
+        eventClick: function(info) { openApptModalForEdit(info.event); },
+        select: function(info) { openApptModalForCreate(info.start, info.resource); },
+
+        eventContent: function(arg) {
+             const ep = arg.event.extendedProps || {};
+             const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
+             const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
+             return {
+               html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
+             };
+        },
+        
+        slotLabelDidMount: function(arg) {
+            const m = arg.date.getMinutes();
+            arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
+            arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
+        },
+
+        eventClassNames: function(arg) {
+            const r = arg.event.getResources();
+            const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
+            if (arg.event.extendedProps && arg.event.extendedProps.appointment_type === 'blocked') { 
+              cls.push('blocked-time');
             }
+            return cls;
+        },
+      });
+      calendar.render();
+    }
+
+    async function fetchAllCloudData() {
+        try {
+            const [leaveRes, notesRes] = await Promise.all([
+                fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getLeave'),
+                fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes')
+            ]);
+
+            if (!leaveRes.ok || !notesRes.ok) {
+                throw new Error('無法從後端獲取資料');
+            }
+
+            employeeLeaveData = await leaveRes.json();
+            paintEmployeeLeave();
+
+            const notesData = await notesRes.json();
+            notesTextarea.value = notesData.content || '';
+
+        } catch (error) {
+            console.error('讀取雲端資料失敗:', error);
+            alert('讀取雲端資料失敗，請檢查網路連線或後端設定。');
+        }
+    }
+    
+    function bindEventListeners() {
+        phoneEl.addEventListener('input', (e) => {
+          let d = e.target.value.replace(/\D/g,'').slice(0,10);
+          if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, function(_,a,b,c){ return c ? `${a}-${b}-${c}` : `${a}-${b}` });
+          else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+          else e.target.value = d;
+        });
+
+        let notesSaveTimeout;
+        notesTextarea.addEventListener('input', function() {
+            clearTimeout(notesSaveTimeout);
+            const metaElement = document.querySelector('.notes-meta span');
+            metaElement.textContent = '輸入中...';
+            notesSaveTimeout = setTimeout(() => {
+                metaElement.textContent = '儲存中...';
+                try {
+                    const payload = { action: 'saveNotes', content: notesTextarea.value };
+                    // 使用 sendBeacon 確保在關閉頁面時也能嘗試發送
+                    navigator.sendBeacon(APPS_SCRIPT_WEB_APP_URL, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+                    metaElement.textContent = '已儲存 ✓';
+                } catch (error) {
+                    metaElement.textContent = '儲存失敗 ❌';
+                }
+            }, 1500);
+        });
+        
+        leaveForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const payload = {
+                action: 'saveLeave',
+                resourceId: document.getElementById('leaveResourceId').value,
+                date: document.getElementById('leaveDate').value,
+                reason: document.getElementById('leaveReason').value.trim() || '排休'
+            };
+            try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+                const result = await res.json();
+                if (result.status !== 'success') throw new Error(result.message);
+                calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
+                leaveModal.style.display = 'none';
+
+            } catch (error) {
+                alert('儲存排休失敗: ' + error.message);
+            }
+        });
+
+        deleteLeaveBtn.addEventListener('click', async function() {
+            if (!confirm('確定要取消這筆排休嗎？')) return;
+            const payload = {
+                action: 'deleteLeave',
+                resourceId: document.getElementById('leaveResourceId').value,
+                date: document.getElementById('leaveDate').value
+            };
+            try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+                const result = await res.json();
+                if (result.status !== 'success') throw new Error(result.message);
+                calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
+                leaveModal.style.display = 'none';
+
+            } catch (error) {
+                alert('刪除排休失敗: ' + error.message);
+            }
+        });
+        
+        calendarEl.addEventListener('click', function(e) {
+            if (e.target.matches('.leave-overlay')) {
+                const { resourceId, date } = e.target.dataset;
+                const resource = calendar.getResourceById(resourceId);
+                if(resource) { openLeaveModal(new Date(date + 'T00:00:00'), resource); }
+            }
+        });
+
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const isEditing = !!eventIdInput.value;
+          const fd = new FormData(form);
+          const payload = {
+            action: isEditing ? 'edit' : 'create',
+            id: fd.get('event_id') || undefined,
+            employee_id: fd.get('employee_id'),
+            start: fd.get('start_time'),
+            appointment_type: fd.get('appointment_type'),
+            customer_name: fd.get('customer_name') || '',
+            customer_phone: (fd.get('customer_phone') || '').replace(/\D/g,''),
+            service_id: fd.get('service_id') || '',
+            notes: fd.get('notes') || ''
+          };
+          submitBtn.disabled = true;
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+          } catch (err) {
+            alert('❌ 儲存失敗：' + err.message);
+          } finally {
+            submitBtn.disabled = false;
+            appointmentModal.style.display = 'none';
+            calendar.refetchEvents();
           }
         });
+
+        deleteBtn.onclick = async function () {
+          const eventId = eventIdInput.value.trim();
+          if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') throw new Error(data.message || '刪除失敗');
+          } catch (err) {
+            alert('❌ 刪除失敗：' + err.message);
+          } finally {
+            appointmentModal.style.display = 'none';
+            calendar.refetchEvents();
+          }
+        };
+
+        appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
+        leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
+        window.addEventListener('click', (e) => {
+          if (e.target === appointmentModal || e.target === leaveModal) {
+            appointmentModal.style.display = 'none';
+            leaveModal.style.display = 'none';
+          }
+        });
+
+        document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
+          radio.addEventListener('change', function() {
+            const isBlocked = this.value === 'blocked';
+            customerFields.style.display = isBlocked ? 'none' : 'block';
+            document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
+            const isEditing = !!eventIdInput.value;
+            if (isBlocked) {
+                submitBtn.innerHTML = '🚫 設定不約時段';
+            } else {
+                submitBtn.innerHTML = isEditing ? '✅ 更新預約' : '💾 儲存預約';
+            }
+          });
+        });
+    }
+
+    function paintEmployeeLeave() {
+      document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
+      if (!Array.isArray(employeeLeaveData)) return;
+      employeeLeaveData.forEach(leave => {
+        const targetColumn = document.querySelector(
+  `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
+);
+if (!targetColumn) return;
+const ov = document.createElement('div');
+ov.className = 'closed-overlay leave-overlay';
+ov.textContent = leave.reason;
+ov.dataset.resourceId = leave.resourceId;
+ov.dataset.date = leave.date;
+targetColumn.appendChild(ov);
+
       });
     }
 
-    // --- 彈窗內預約類型切換邏輯 ---
-    document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
-      radio.addEventListener('change', function() {
-        const isBlocked = this.value === 'blocked';
-        customerFields.style.display = isBlocked ? 'none' : 'block';
-        document.getElementById('notes').placeholder = isBlocked
-         ? '不約時段備註...'
-         : '請輸入備註資訊...';
+    function openLeaveModal(date, resource) {
+        const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const dateStr = ymd(date);
+        const existingLeave = Array.isArray(employeeLeaveData) ? employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id) : null;
+        document.getElementById('leaveResourceId').value = resource.id;
+        document.getElementById('leaveDate').value = dateStr;
+        document.getElementById('leaveModalResourceName').textContent = resource.title;
+        document.getElementById('leaveModalDate').textContent = dateStr;
+        document.getElementById('leaveReason').value = existingLeave ? existingLeave.reason : resource.title + '排休';
+        deleteLeaveBtn.style.display = existingLeave ? 'inline-block' : 'none';
+        leaveModal.style.display = 'block';
+    }
 
-
-        const isEditing = !!eventIdInput.value;
-        if (isBlocked) {
-            submitBtn.innerHTML = '🚫 設定不約時段';
-        } else {
-            submitBtn.innerHTML = isEditing ? '✅ 更新預約' : '💾 儲存預約';
-        }
-      });
-    });
-    
-    // --- 開啟預約彈窗 ---
-    function openApptModal(startDate, resourceId) {
-      if (!resourceId) return;
-      
+    function openApptModalForCreate(startDate, resource) {
+      if (!resource) return;
       form.reset();
       eventIdInput.value = '';
-      
       submitBtn.innerHTML = '💾 儲存預約';
       deleteBtn.style.display = 'none';
       document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
       customerFields.style.display = 'block';
-      document.getElementById('notes').placeholder = '請輸入備註資訊...';
-      document.getElementById('employee_id').value = resourceId;
-
+      document.getElementById('notes').placeholder = '請輸入備註資訊.';
+      document.getElementById('employee_id').value = resource.id;
       const minuteSelect = document.getElementById('minute_select');
       minuteSelect.innerHTML = '';
       const baseMin = startDate.getMinutes();
-
       for (let i = 0; i < 3; i++) { 
         const currentMinute = baseMin + (i * 5); 
         const opt = document.createElement('option');
@@ -817,212 +1021,26 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz35yv1
         if (i === 0) opt.selected = true;
         minuteSelect.appendChild(opt);
       }
-      
       updateHiddenStartTime(startDate);
       minuteSelect.onchange = function() { updateHiddenStartTime(startDate) };
-      
-      modal.style.display = 'block';
+      appointmentModal.style.display = 'block';
     }
 
-    // --- 更新隱藏的開始時間欄位（以 UTC ISO8601 傳給後端）---
-    function updateHiddenStartTime(baseDate) {
-      const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
-      const dt = new Date(baseDate.getTime());
-      dt.setMinutes(selectedMinute, 0, 0);
-      document.getElementById('start_time').value = dt.toISOString();
-    }
-
-    // 加上星期幾 <X> //   
-    function formatToolbarTitle() {
-      const el = document.querySelector('#calendar .fc-toolbar-title');
-      if (!el) return;
-      const t = el.textContent.trim();
-      const allDateMatches = t.match(/\d{4}年\d{1,2}月\d{1,2}日/g);
-      if (!allDateMatches) return;
-      const lastDateStr = allDateMatches[allDateMatches.length - 1];
-      const m = lastDateStr.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
-      if (!m) return;
-      const year  = m[1];
-      const month = m[2].padStart(2, '0');
-      const day   = m[3].padStart(2, '0');
-
-      const wdMap = ['日','一','二','三','四','五','六'];
-      const dObj = new Date(`${year}-${month}-${day}T00:00:00`);
-      const wd = wdMap[dObj.getDay()];
-      el.innerHTML =
-      `${year}&nbsp;&nbsp;年&nbsp;&nbsp;${month}&nbsp;&nbsp;月&nbsp;&nbsp;${day}&nbsp;&nbsp;日&nbsp;&nbsp;＜&nbsp;${wd}&nbsp;＞`;
-    }
-
-    // 讓「日視圖的星期一」時，時間欄也套用公休日底色
-    function syncTimeLabelClosedBg(info) {
-      const cal = document.getElementById('calendar');
-      if (!cal) return;
-      cal.classList.remove('is-closed-day');
-      const isDayView = info && info.view && info.view.type === 'resourceTimeGridDay';
-      if (!isDayView) return;
-      const start = info.start;
-      if (start && start.getDay && start.getDay() === 1) {
-        cal.classList.add('is-closed-day');
-      }
-    }
-
-    function paintMondayClosed(info){
-      document.querySelectorAll('#calendar .closed-overlay').forEach(n=>n.remove());
-      const start = info.start, end = info.end;
-      const pad = n => String(n).padStart(2,'0');
-      const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-      for (let d = new Date(start); d < end; d.setDate(d.getDate()+1)) {
-        if (d.getDay() !== 1) continue;
-        const dateStr = ymd(d);
-        document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`)
-          .forEach(col => {
-            const ov = document.createElement('div');
-            ov.className = 'closed-overlay';
-            ov.textContent = '公休';
-            col.appendChild(ov);
-          });
-        if (info.view && info.view.type === 'resourceTimeGridDay' && info.start.getDay() === 1) {
-          const axis = document.querySelector('#calendar .fc-timegrid-axis');
-          if (axis) {
-            const ax = document.createElement('div');
-            ax.className = 'closed-overlay axis-overlay';
-            axis.appendChild(ax);
-          }
-        }  
-      }
-    }
-
-    // --- 排休繪製函式 ---
-    function paintEmployeeLeave() {
-      document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
-      const resources = calendar.getResources();
-      const resourceIds = resources.map(r => r.id);
-
-      employeeLeaveData.forEach(leave => {
-        const resourceIndex = resourceIds.indexOf(leave.resourceId);
-        if (resourceIndex === -1) return;
-        
-        const columnsForDate = document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${leave.date}"]`);
-        const targetColumn = columnsForDate[resourceIndex];
-
-        if (targetColumn) {
-          const ov = document.createElement('div');
-          ov.className = 'closed-overlay leave-overlay';
-          ov.textContent = leave.reason;
-          ov.dataset.resourceId = leave.resourceId; // 綁定資料以便點擊
-          ov.dataset.date = leave.date; // 綁定資料以便點擊
-          targetColumn.appendChild(ov);
-        }
-      });
-    }
-
-    // --- 初始化 FullCalendar ---
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-      locale: 'zh-tw',
-      timeZone: 'Asia/Taipei',
-      buttonText: { today: '今' }, 
-      initialView: 'resourceTimeGridDay',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'resourceTimeGridDay,resourceTimeGridWeek'
-      },
-      businessHours: [
-        { daysOfWeek: [0,2,3,4,5,6], startTime: '00:00', endTime: '24:00' }
-      ],
-      allDaySlot: false,
-      slotMinTime: '12:00:00',
-      slotMaxTime: '21:00:00',
-      slotDuration: '00:15:00',
-      slotLabelInterval: '00:15:00',
-      defaultTimedEventDuration: '00:15:00',
-      slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-      displayEventTime: false,
-      height: 'auto',
-      expandRows: false,
-      handleWindowResize: true,
-      slotLabelDidMount: function(arg) {
-        const m = arg.date.getMinutes();
-        arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
-        arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
-      },
-      viewDidMount: function(info) { /* 初次渲染交由 datesSet 處理 */ },
-      datesSet: function(info){
-        formatToolbarTitle();
-        syncTimeLabelClosedBg(info);
-        paintMondayClosed(info);
-        paintEmployeeLeave(); // ⭐呼叫繪製排休的函式
-       },
-      // ⭐新增：當設計師表頭被渲染時，為其加上專屬的點擊事件
-      // 【修改此處】：將舊的 resourceLabelDidMount 整個換成這個全新的版本
-// 【修改此處】：將舊的 resourceLabelDidMount 整個換成這個最終版本
-resourceLabelDidMount: function(arg) {
-  const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
-  if (!cushionEl) return;
-
-  const leaveIconButton = document.createElement('span');
-  leaveIconButton.className = 'leave-icon-button';
-  leaveIconButton.innerHTML = '📅';
-  
-  cushionEl.appendChild(leaveIconButton);
-
-  leaveIconButton.addEventListener('mousedown', function(event) {
-    event.stopPropagation();
-    
-    // ⭐用 setTimeout 延遲執行，確保在所有日曆內部事件處理完畢後才跳出視窗
-    setTimeout(() => {
-      openLeaveModal(calendar.view.currentStart, arg.resource);
-    }, 0);
-  });
-},
-  
-      eventClassNames: function(arg) {
-        const r = arg.event.getResources();
-        const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
-        if (arg.event.extendedProps && arg.event.extendedProps.appointment_type === 'blocked') { 
-          cls.push('blocked-time');
-        }
-        return cls;
-      },
-      eventContent: function(arg) {
-        const ep = arg.event.extendedProps || {};
-        const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
-        const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
-        const name = ep.customer_name || '';
-        const phone = ep.customer_phone || '';
-        const notes = ep.notes || ''; 
-
-        return {
-          html: `<div class="fc-event-title evt-line">
-                   <span class="evt-svc">${svc}</span>
-                   <span>${name}</span>
-                   <span class="evt-phone">${phone}</span>
-                   ${notes ? `<span class="evt-notes">📝 ${notes}</span>` : ''}
-                 </div>`
-        };
-      },
-      editable: false,
-      eventClick: function(info) {
+    function openApptModalForEdit(event) {
         form.reset();
-        const { event } = info;
         const ep = event.extendedProps || {};
-
         eventIdInput.value = event.id;
         deleteBtn.style.display = 'inline-block';
-
         const rs = event.getResources();
         document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
         document.getElementById('customer_phone').value = ep.customer_phone || '';
         document.getElementById('customer_name').value  = ep.customer_name  || '';
         document.getElementById('service_id').value    = ep.service_id    || '';
         document.getElementById('notes').value         = ep.notes         || '';
-        
         const isBlocked = ep.appointment_type === 'blocked';
         document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
         customerFields.style.display = isBlocked ? 'none' : 'block';
         submitBtn.innerHTML = isBlocked ? '🚫 更新不約時段' : '✅ 更新預約';
-
         const startDate = event.start;
         const minuteSelect = document.getElementById('minute_select');
         minuteSelect.innerHTML = '';
@@ -1036,185 +1054,57 @@ resourceLabelDidMount: function(arg) {
         }
         updateHiddenStartTime(startDate);
         minuteSelect.onchange = function() { updateHiddenStartTime(startDate) };
+        appointmentModal.style.display = 'block';
+    }
 
-        modal.style.display = 'block';
-      },
-      resources: [
-        { id: '1', title: '店長' },
-        { id: '2', title: '雅婷' },
-        { id: '3', title: '小白' }
-      ],
-      events: APPS_SCRIPT_WEB_APP_URL,
-      selectable: true,
-
-      select: function(info) {
-        console.log('2.【偵錯】日曆的「選取時間」功能被觸發'); // ⭐在此加入監視器
-        openApptModal(info.start, info.resource ? info.resource.id : null) }
-    });
-
-    calendar.render();
-    // --- ⭐新的、統一的彈窗關閉邏輯 ---
-const appointmentCloseButton = appointmentModal.querySelector('.close-button');
-const leaveCloseButton = leaveModal.querySelector('.leave-close-button');
-
-// 預約彈窗的關閉按鈕
-appointmentCloseButton.onclick = function() {
-    appointmentModal.style.display = 'none';
-};
-
-// 排休彈窗的關閉按鈕
-leaveCloseButton.onclick = function() {
-    leaveModal.style.display = 'none';
-};
-
-// 點擊彈窗外的灰色區域也可以關閉
-window.addEventListener('click', (e) => {
-  if (e.target === appointmentModal || e.target === leaveModal) {
-    appointmentModal.style.display = 'none';
-    leaveModal.style.display = 'none';
-  }
-});
- 
+    function updateHiddenStartTime(baseDate) {
+      const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
+      const dt = new Date(baseDate.getTime());
+      dt.setMinutes(selectedMinute, 0, 0);
+      document.getElementById('start_time').value = dt.toISOString();
+    }
   
-    // --- 刪除預約 ---
-    deleteBtn.onclick = async function () {
-      const eventId = eventIdInput.value.trim();
-      if (!eventId || !confirm('確定要刪除這筆預約嗎？此操作無法復原。')) return;
+    function updateToolbarTitle(info) {
+  const el = document.querySelector('#calendar .fc-toolbar-title');
+  if (!el || !info || !info.view) return;
+  const isDay = info.view.type === 'resourceTimeGridDay';
+  if (!isDay) return; // 週視圖維持原生區間標題
+  const d = info.view.currentStart; // 可視區起始日
+  const wdMap = ['日','一','二','三','四','五','六'];
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
+}
 
-      try {
-        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-          redirect: 'follow',
-          body: JSON.stringify({ action: 'delete', id: eventId })
-        });
-        const data = await res.json();
-        if (!res.ok || data.status !== 'success') {
-          throw new Error(data.message || '刪除失敗');
-        }
-      } catch (err) {
-        console.error('Delete Error:', err);
-        alert('❌ 刪除失敗：' + err.message);
-      } finally {
-        modal.style.display = 'none';
-        calendar.refetchEvents();
+    function syncTimeLabelClosedBg(info) {
+      const cal = document.getElementById('calendar');
+      if (!cal) return;
+      cal.classList.remove('is-closed-day');
+      const isDayView = info && info.view && info.view.type === 'resourceTimeGridDay';
+      if (isDayView && info.start && info.start.getDay() === 1) {
+        cal.classList.add('is-closed-day');
       }
-    };
-
-    // --- 表單提交 (新增/編輯) ---
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const isEditing = !!eventIdInput.value;
-      const fd = new FormData(form);
-      const payload = {
-        action: isEditing ? 'edit' : 'create',
-        id: fd.get('event_id') || undefined,
-        employee_id: fd.get('employee_id'),
-        start: fd.get('start_time'),
-        appointment_type: fd.get('appointment_type'),
-        customer_name: fd.get('customer_name') || '',
-        customer_phone: (fd.get('customer_phone') || '').replace(/\D/g,''),
-        service_id: fd.get('service_id') || '',
-        notes: fd.get('notes') || ''
-      };
-
-      if (!payload.start || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(payload.start)) {
-        alert('開始時間遺失或格式錯誤，請重新點選時間格後再儲存');
-        return;
-      }
-
-      if (!payload.employee_id) {
-        alert('請選擇一位設計師');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      try {
-        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok || data.status !== 'success') {
-          throw new Error(data.message || '儲存失敗');
-        }
-      } catch (err) {
-        console.error('Submit Error:', err);
-        alert('❌ 儲存失敗：' + err.message);
-      } finally {
-        submitBtn.disabled = false;
-        modal.style.display = 'none';
-        calendar.refetchEvents();
-      }
-    });
-
-    // --- ⭐新增：排休 modal 的互動邏輯 ---
-    const leaveForm = document.getElementById('leaveForm');
-    const deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
-
-    function openLeaveModal(date, resource) {
-      const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      const dateStr = ymd(date);
-
-      // 檢查是否已有排休
-      const existingLeave = employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id);
-
-      document.getElementById('leaveResourceId').value = resource.id;
-      document.getElementById('leaveDate').value = dateStr;
-      document.getElementById('leaveModalResourceName').textContent = resource.title;
-      document.getElementById('leaveModalDate').textContent = dateStr;
-      document.getElementById('leaveReason').value = existingLeave ? existingLeave.reason : resource.title + '排休';
-      deleteLeaveBtn.style.display = existingLeave ? 'inline-block' : 'none';
-      
-      leaveModal.style.display = 'block';
     }
-    // 【修改此處】將舊的 calendarEl.addEventListener 整個換成這個版本
-// 監聽日曆上的點擊事件（只用來處理取消排休）
-calendarEl.addEventListener('click', function(e) {
-    // 只保留：點擊已存在的排休覆蓋層 (用來取消或修改)
-    if (e.target.matches('.leave-overlay')) {
-        const { resourceId, date } = e.target.dataset;
-        const resource = calendar.getResourceById(resourceId);
-        const viewDate = new new Date(date + 'T00:00:00');
-        if(resource) {
-          openLeaveModal(viewDate, resource);
-        }
+
+    function paintMondayClosed(info){
+      document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
+      const start = info.start, end = info.end;
+      const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      for (let d = new Date(start); d < end; d.setDate(d.getDate()+1)) {
+        if (d.getDay() !== 1) continue;
+        const dateStr = ymd(d);
+        document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+          const ov = document.createElement('div');
+          ov.className = 'closed-overlay';
+          ov.textContent = '公休';
+          col.appendChild(ov);
+        });
+      }
     }
 });
-    // 儲存排休按鈕
-    leaveForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const resourceId = document.getElementById('leaveResourceId').value;
-      const date = document.getElementById('leaveDate').value;
-      const reason = document.getElementById('leaveReason').value.trim() || '排休';
-      
-      // 如果已存在，就更新；否則就新增
-      const existingLeaveIndex = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId);
-      if (existingLeaveIndex > -1) {
-        employeeLeaveData[existingLeaveIndex].reason = reason;
-      } else {
-        employeeLeaveData.push({ date, resourceId, reason });
-      }
-      saveLeaveData();
-      paintEmployeeLeave();
-      leaveModal.style.display = 'none';
-    });
-
-    // 刪除排休按鈕
-    deleteLeaveBtn.addEventListener('click', function() {
-      const resourceId = document.getElementById('leaveResourceId').value;
-      const date = document.getElementById('leaveDate').value;
-
-      employeeLeaveData = employeeLeaveData.filter(l => !(l.date === date && l.resourceId === resourceId));
-      saveLeaveData();
-      paintEmployeeLeave();
-      leaveModal.style.display = 'none';
-    });
-
-  });
 })();
-</script>
-</body>
-</html>
+  </script>  
+  </body>
+ </html>
 
