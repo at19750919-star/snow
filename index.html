@@ -672,12 +672,11 @@ html, body {
     <div id="notes-section">
         <div class="notes-container">
             <div class="notes-header">
-                <h4>留言板</h4>
-                <div class="notes-meta">
-                    <span>自動儲存</span>
-                </div>
-            </div>
-            <textarea id="notes-content" placeholder="💭 在此輸入您的筆記、想法或重要提醒..."></textarea>
+  <h4>留言板</h4>
+  <div class="notes-meta"><span>未儲存</span></div>
+  <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
+</div>
+<textarea id="notes-content" ...></textarea>
         </div>
     </div>
 
@@ -696,6 +695,8 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
 (function(){
   // ==================== 全域變數 ====================
   let employeeLeaveData = []; // 用來存放從後端取回的排休資料
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let currentYmd = null;
   let calendar; // 將 calendar 宣告在外面，方便各函式使用
 
   // ==================== DOMContentLoaded Event Listener ====================
@@ -724,6 +725,16 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
     // ========================================================
     // 以下全部是函式的詳細定義
     // ========================================================
+    async function fetchDailyNote(dStr){
+  try{
+    const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
+    const j = await r.json();
+    notesTextarea.value = j.content || '';
+    document.querySelector('.notes-meta span').textContent = '已載入';
+  }catch{
+    document.querySelector('.notes-meta span').textContent = '載入失敗';
+  }
+}
 
     function initializeCalendar() {
       calendar = new FullCalendar.Calendar(calendarEl, {
@@ -758,6 +769,8 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
   syncTimeLabelClosedBg(info);
   paintMondayClosed(info);
   paintEmployeeLeave();
+  currentYmd = ymd(info.start);
+  fetchDailyNote(currentYmd);
 },
 
         resourceLabelDidMount: function(arg) {
@@ -783,7 +796,7 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
              const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
              const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
              return {
-               html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
+              html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span>${ep.notes || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
              };
         },
         
@@ -819,9 +832,6 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
             employeeLeaveData = await leaveRes.json();
             paintEmployeeLeave();
 
-            const notesData = await notesRes.json();
-            notesTextarea.value = notesData.content || '';
-
         } catch (error) {
             console.error('讀取雲端資料失敗:', error);
             alert('讀取雲端資料失敗，請檢查網路連線或後端設定。');
@@ -837,22 +847,28 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCack
         });
 
         let notesSaveTimeout;
-        notesTextarea.addEventListener('input', function() {
-            clearTimeout(notesSaveTimeout);
-            const metaElement = document.querySelector('.notes-meta span');
-            metaElement.textContent = '輸入中...';
-            notesSaveTimeout = setTimeout(() => {
-                metaElement.textContent = '儲存中...';
-                try {
-                    const payload = { action: 'saveNotes', content: notesTextarea.value };
-                    // 使用 sendBeacon 確保在關閉頁面時也能嘗試發送
-                    navigator.sendBeacon(APPS_SCRIPT_WEB_APP_URL, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
-                    metaElement.textContent = '已儲存 ✓';
-                } catch (error) {
-                    metaElement.textContent = '儲存失敗 ❌';
-                }
-            }, 1500);
-        });
+        notesTextarea.addEventListener('input', function () {
+  document.querySelector('.notes-meta span').textContent = '未儲存';
+});
+
+        
+
+document.getElementById('save-notes-btn').addEventListener('click', async function(){
+  const meta = document.querySelector('.notes-meta span');
+  meta.textContent = '儲存中...';
+  try{
+    const payload = { action:'saveNotes', date: currentYmd, content: notesTextarea.value };
+    const r = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+      method:'POST', mode:'cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (j.status !== 'success') throw new Error(j.message||'寫入失敗');
+    meta.textContent = '已儲存 ✓';
+  }catch{ meta.textContent = '儲存失敗 ❌'; }
+});
+
+
         
         leaveForm.addEventListener('submit', async function(e) {
             e.preventDefault();
