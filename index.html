@@ -567,7 +567,8 @@ html, body {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ⭐新增：凍結(固定)頂部工具列與表頭 */
+/* ==================== ✨ 新增：凍結頂部工具列與表頭 ==================== */
+/* ⭐新增：凍結(固定)頂部工具列 */
 #calendar .fc-header-toolbar {
   position: -webkit-sticky; /* 支援 Safari 等舊版瀏覽器 */
   position: sticky;
@@ -575,11 +576,12 @@ html, body {
   z-index: 100; /* 確保工具列在最上層，不會被其他內容蓋住 */
 }
 
+/* ⭐新增：凍結(固定)日期/資源表頭 */
 #calendar .fc-scrollgrid-section-header {
   position: -webkit-sticky; /* 支援 Safari 等舊版瀏覽器 */
   position: sticky;
   top: 48px; /* 工具列的高度為 48px，讓表頭剛好固定在它下面 */
-  z-index: 99; /* 確保表頭也在上層 */
+  z-index: 99; /* 確保表頭也在上層，但比工具列低一層 */
 }
 
 
@@ -676,7 +678,7 @@ html, body {
   <div class="notes-meta"><span>未儲存</span></div>
   <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
 </div>
-<textarea id="notes-content" ...></textarea>
+<textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
         </div>
     </div>
 
@@ -690,7 +692,7 @@ html, body {
 // =======================================================================
 
 // 後端 Google Apps Script 網址
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwdCackbyBCBb8UfbM5ID5xqdGMnUMDfhpeF-7y_e1zwf3zTllj19kLyzqPW6r_kfpXAw/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoORmKDxoasxiK9qcjaofSnt34qL9OxED4Qd-hRLAGzH4assOXmyF_Ab_tBz13-v3NdA/exec';
 
 (function(){
   // ==================== 全域變數 ====================
@@ -726,15 +728,30 @@ let currentYmd = null;
     // 以下全部是函式的詳細定義
     // ========================================================
     async function fetchDailyNote(dStr){
-  try{
-    const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
-    const j = await r.json();
-    notesTextarea.value = j.content || '';
-    document.querySelector('.notes-meta span').textContent = '已載入';
-  }catch{
-    document.querySelector('.notes-meta span').textContent = '載入失敗';
-  }
-}
+      const meta = document.querySelector('.notes-meta span');
+      const notesTextarea = document.getElementById('notes-content'); // 確保抓到最新的元素
+
+      // 1. 立即清空留言區並顯示載入中，避免舊資料殘留
+      notesTextarea.value = '';
+      notesTextarea.placeholder = '留言載入中...';
+      meta.textContent = '載入中...';
+
+      try{
+        const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
+        const j = await r.json();
+
+        // 2. 載入成功後，填入新資料
+        notesTextarea.value = j.content || '';
+        meta.textContent = '已載入';
+      } catch(e) {
+        // 3. 載入失敗的處理
+        meta.textContent = '載入失敗';
+        console.error("讀取留言失敗:", e); // 在主控台顯示詳細錯誤，方便除錯
+      } finally {
+        // 4. 無論成功或失敗，都恢復預設提示文字
+        notesTextarea.placeholder = '請輸入備註資訊...';
+      }
+    }
 
     function initializeCalendar() {
       calendar = new FullCalendar.Calendar(calendarEl, {
@@ -850,24 +867,30 @@ let currentYmd = null;
         notesTextarea.addEventListener('input', function () {
   document.querySelector('.notes-meta span').textContent = '未儲存';
 });
-
-        
-
+     
 document.getElementById('save-notes-btn').addEventListener('click', async function(){
   const meta = document.querySelector('.notes-meta span');
   meta.textContent = '儲存中...';
   try{
-    const payload = { action:'saveNotes', date: currentYmd, content: notesTextarea.value };
+    const payload = { 
+      action:'saveNotes', 
+      date: currentYmd || ymd(new Date()),
+      content: notesTextarea.value 
+    };
     const r = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-      method:'POST', mode:'cors', headers:{'Content-Type':'application/json'},
+      method:'POST', 
+      mode:'cors', 
       body: JSON.stringify(payload)
     });
     const j = await r.json();
-    if (j.status !== 'success') throw new Error(j.message||'寫入失敗');
+    if (j.status !== 'success') {
+      throw new Error(j.message || '寫入失敗');
+    }
     meta.textContent = '已儲存 ✓';
-  }catch{ meta.textContent = '儲存失敗 ❌'; }
+  } catch (e) { 
+    meta.textContent = '儲存失敗 ❌'; 
+  }
 });
-
 
         
         leaveForm.addEventListener('submit', async function(e) {
