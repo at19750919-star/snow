@@ -238,7 +238,7 @@ html, body {
 
 
 /* 用餐時段：17:30、17:45、18:00 變色（含左側時間標籤與右側欄位） */
-:root { --meal-slot-bg: rgba(120, 65, 133, 0.35); } /* ⭐改成紫色半透明 */
+:root { --meal-slot-bg: rgba(230, 231, 178, 0.35); } /* ⭐改成紫色半透明 */
 
 /* 用餐時段（命中 td；提高特異性；放在奇偶列規則之後） */
 /* 右側內容欄 */
@@ -388,12 +388,12 @@ html, body {
 /* 筆記輸入框 */
 #notes-content {width: 100%; min-height: 200px; padding: 20px; box-sizing: border-box; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); font-size: 14px; line-height: 1.6; font-family: inherit; background: var(--bg-card); color: var(--text-primary); resize: vertical; transition: all 0.3s ease;}
 #notes-content:focus {outline: none; border-color: var(--kikyo-primary); box-shadow: 0 0 0 3px rgba(93, 78, 117, 0.1);}
+
 #notes-content {
     font-size: 22px;
     color: #110677;
 font-weight: 500;letter-spacing: 1px;
 } 
-
 /* ==================== 📱 手機版響應式設計 (Mobile) ==================== */
 @media (max-width: 1024px) {
     /* 全局調整 */
@@ -418,6 +418,9 @@ font-weight: 500;letter-spacing: 1px;
       --col-header-height: 30px;
       --col-header-size:   16px;
     }
+
+   /* 直接覆寫桌面 40px，鎖定為 30px */
+#calendar .fc-col-header { height: var(--col-header-height) !important; } 
    #calendar .fc-col-header-cell-cushion{
   text-shadow: 0 1px 0 #fff, 0 1px 4px rgba(0,0,0,.18);
   font-size: 22px;              /* 手機固定值，可再調 */
@@ -430,7 +433,7 @@ font-weight: 500;letter-spacing: 1px;
 }
 
     /* 事件卡片調整 */
-    *#calendar .fc-timegrid-event { height: 100% !important; }
+    #calendar .fc-timegrid-event { height: 100% !important; }
     #calendar .fc-timegrid-event .fc-event-title { font-size: 16px; line-height: 1.2; padding: 0 6px; }
     .svc-badge{ font-size: 12px; }
     .fc-timegrid-event .fc-event-title.evt-line{ gap:3px; }
@@ -440,6 +443,7 @@ font-weight: 500;letter-spacing: 1px;
   width: calc(100% - 10px) !important; /* 總寬度減少10px */
   left: 5px !important;                /* 從左邊推移5px來置中 */
 }
+
 
 }
     
@@ -548,6 +552,7 @@ font-weight: 500;letter-spacing: 1px;
   text-shadow:0 2px 6px rgba(0,0,0,.3);/* 文字陰影，提升對比 */
   z-index:20;                   /* 疊層順序；若被其他元素蓋掉就調大，如 20 或 100 */
   pointer-events:none;         /* 不擋滑鼠操作；若要鎖住底下操作改成 auto */
+  text-align:center; /* ⭐新增：文字水平置中 */
 }
 /* 讓時間欄能放絕對定位覆蓋層 */
 #calendar .fc-timegrid-axis{ position:relative; }
@@ -566,10 +571,42 @@ font-weight: 500;letter-spacing: 1px;
   padding: 2px 6px;
   border-radius: 4px;
   transition: background-color 0.2s;
+  letter-spacing:0;
 }
 .leave-icon-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+/* 約滿按鈕樣式 */
+.fully-booked-button{
+  display:inline-block;
+  width:42px; height:42px;
+  padding:0 5px; border-radius:4px; cursor:pointer;
+  vertical-align:middle;   /* 避免 baseline 空隙 */
+  line-height:0;           /* 行盒不留下降部 */
+  background: rgba(255,255,255,0.2) url("icon_pause_white_42h.png?v=1") no-repeat center/contain;
+  color:transparent; font-size:0; overflow:hidden;
+  margin-left: 18px;
+}
+.fully-booked-button.fb-active{
+  background:#ff4d4f url("icon_pause_white_42h.png?v=1") no-repeat center/contain;
+}
+
+/* 約滿欄位外框 */
+.fc-timegrid-col.fully-booked-col{
+  outline: 4px solid #ff4d4f; outline-offset: -2px;
+  box-shadow: inset 0 0 0 2px rgba(255,77,79,.45);
+}
+
+/* 約滿外框（不擋點擊） */
+#calendar .fully-booked-outline{
+  position:absolute; inset:0;
+  border:4px solid #ff4d4f;
+  box-shadow: inset 0 0 0 2px rgba(255,77,79,.4);
+  pointer-events:none;
+  z-index:50;           /* 蓋過格線與事件 */
+  border-radius:2px;
+}
+
 
 /* ==================== ✨ 新增：凍結頂部工具列與表頭 ==================== */
 /* ⭐新增：凍結(固定)頂部工具列 */
@@ -586,6 +623,63 @@ font-weight: 500;letter-spacing: 1px;
   position: sticky;
   top: 48px; /* 工具列的高度為 48px，讓表頭剛好固定在它下面 */
   z-index: 99; /* 確保表頭也在上層，但比工具列低一層 */
+}
+
+/* === 月視圖：固定休假底色與標籤文字 === */
+#calendar { touch-action: manipulation; } /* 僅優化點擊，與月視圖無衝突 */
+
+/* 週一公休：底色 + 右下角「公休」 */
+.fc-dayGridMonth-view .closed-day-bg { 
+  background-color: #e0e0e0 !important; 
+  color: #333; 
+  position: relative;
+}
+.fc-dayGridMonth-view .closed-day-bg::after {
+  content: '公休';
+  position: absolute;
+  right: 6px; bottom: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.12);
+}
+
+/* 週四店長休：底色 + 右下角「店長休」 */
+.fc-dayGridMonth-view .leave-boss { 
+  background-color: #e0f0ff !important; 
+  position: relative;
+}
+.fc-dayGridMonth-view .leave-boss::after {
+  content: '店長休';
+  position: absolute;
+  right: 6px; bottom: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.08);
+}
+
+/* 週日雅婷休：僅底色 */
+.fc-dayGridMonth-view .leave-yatting { 
+  background-color: #ffe0e0 !important; 
+}
+
+/* 週二小白休：僅底色 */
+.fc-dayGridMonth-view .leave-xiaobai { 
+  background-color: #e0f8ff !important; 
+}
+
+/* 強制保險：月視圖隱藏所有事件元素 */
+.fc-dayGridMonth-view .fc-event,
+.fc-dayGridMonth-view .fc-daygrid-event,
+.fc-dayGridMonth-view .fc-daygrid-dot-event,
+.fc-dayGridMonth-view .fc-daygrid-block-event {
+  display: none !important;
+}
+
+/* 月視圖標題配色 */
+#calendar .fc-toolbar-title.is-month-title .title-month-text{
+  color: #FFD166;              /* 月份文字顏色 */
 }
 
 
@@ -691,9 +785,6 @@ font-weight: 500;letter-spacing: 1px;
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
 
 <script>
-// ==================== 員工排休資料庫 (現在由瀏覽器儲存管理) ====================
-// (此處為註解，您不需要手動修改)
-// =======================================================================
 
 // 後端 Google Apps Script 網址
 const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoORmKDxoasxiK9qcjaofSnt34qL9OxED4Qd-hRLAGzH4assOXmyF_Ab_tBz13-v3NdA/exec';
@@ -764,10 +855,11 @@ let currentYmd = null;
         timeZone: 'Asia/Taipei',
         initialView: 'resourceTimeGridDay',
         headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'resourceTimeGridDay,resourceTimeGridWeek'
-        },
+  left: 'prev,next today',
+  center: 'title',
+  right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth' // 加入月視圖
+},
+
         buttonText: { today: '今' },
         allDaySlot: false,
         slotMinTime: '12:00:00',
@@ -783,9 +875,43 @@ let currentYmd = null;
         resources: [ { id: '1', title: '店長' }, { id: '2', title: '雅婷' }, { id: '3', title: '小白' } ],
         
         events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-        selectable: true,
 
-        datesSet: function(info) {
+// 月視圖不顯示事件卡片
+views: {
+  dayGridMonth: {
+    eventDisplay: 'none',
+    displayEventTime: false
+  }
+},
+
+selectable: true,
+
+
+// 月視圖：點日期 → 跳到該天的日視圖；日/週視圖：輕點立即開新增視窗
+dateClick: function(info){
+  if (info.view.type === 'dayGridMonth') {
+    calendar.changeView('resourceTimeGridDay', info.date);
+    return; // 【新增】保留月視圖行為，避免往下執行
+  }
+  if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
+    openApptModalForCreate(info.date, info.resource); // 【新增】日/週視圖單擊立即開窗，移除長按等待
+  }
+},
+
+// 月視圖：依星期顯示固定休假底色（含文字：週一=公休、週四=店長休）
+dayCellDidMount: function(arg){
+  if (arg.view.type !== 'dayGridMonth') return;
+  const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
+  if (d === 1) arg.el.classList.add('closed-day-bg');   // 全店公休（顯示「公休」文字）
+  if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
+  if (d === 0) arg.el.classList.add('leave-yatting');   // 雅婷休（僅底色）
+  if (d === 2) arg.el.classList.add('leave-xiaobai');   // 小白休（僅底色）
+},
+
+selectable: true,
+selectLongPressDelay: 0, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
+
+datesSet: function(info) {
   updateToolbarTitle(info);
   syncTimeLabelClosedBg(info);
   paintMondayClosed(info);
@@ -795,19 +921,67 @@ let currentYmd = null;
 },
 
         resourceLabelDidMount: function(arg) {
-          const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
-          if (!cushionEl) return;
-          const leaveIconButton = document.createElement('span');
-          leaveIconButton.className = 'leave-icon-button';
-          leaveIconButton.innerHTML = ' 📅';
-          cushionEl.appendChild(leaveIconButton);
-          leaveIconButton.addEventListener('mousedown', function(event) {
-            event.stopPropagation();
-            setTimeout(() => {
-              openLeaveModal(calendar.view.currentStart, arg.resource);
-            }, 0);
-          });
-        },
+  const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
+  if (!cushionEl) return;
+
+  // 📅 排休
+  const leaveIconButton = document.createElement('span');
+  leaveIconButton.className = 'leave-icon-button';
+  leaveIconButton.innerHTML = ' 📅';
+  cushionEl.appendChild(leaveIconButton);
+  leaveIconButton.addEventListener('mousedown', function(event) {
+    event.stopPropagation();
+    setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
+  });
+
+  // ✅ 約滿（切換）
+  const dStr = ymd(calendar.view.currentStart);
+  const isFB = Array.isArray(employeeLeaveData) &&
+    employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
+
+  const fbBtn = document.createElement('span');
+  fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
+  fbBtn.textContent = isFB ? '已約滿' : '約滿';
+  cushionEl.appendChild(fbBtn);
+
+  fbBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const date = ymd(calendar.view.currentStart);
+    const resourceId = arg.resource.id;
+    try {
+      if (fbBtn.classList.contains('fb-active')) {
+        // 取消約滿
+        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+          method:'POST', mode:'cors',
+          body: JSON.stringify({ action:'deleteLeave', resourceId, date })
+        });
+        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+        // 更新快取
+        if (Array.isArray(employeeLeaveData)) {
+          const i = employeeLeaveData.findIndex(l => l.date===date && l.resourceId===resourceId && l.reason==='已約滿');
+          if (i !== -1) employeeLeaveData.splice(i,1);
+        }
+        fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
+      } else {
+        // 設為約滿
+        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+          method:'POST', mode:'cors',
+          body: JSON.stringify({ action:'saveLeave', resourceId, date, reason:'已約滿' })
+        });
+        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+        if (Array.isArray(employeeLeaveData)) {
+          employeeLeaveData.push({ date, resourceId, reason:'已約滿' });
+        }
+        fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
+      }
+      // 立即重繪欄位樣式
+      paintEmployeeLeave();
+    } catch(err) {
+      alert('切換約滿失敗：' + err.message);
+    }
+  });
+},
+
 
         eventClick: function(info) { openApptModalForEdit(info.event); },
         select: function(info) { openApptModalForCreate(info.start, info.resource); },
@@ -1013,22 +1187,35 @@ document.getElementById('save-notes-btn').addEventListener('click', async functi
     }
 
     function paintEmployeeLeave() {
-      document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
-      if (!Array.isArray(employeeLeaveData)) return;
-      employeeLeaveData.forEach(leave => {
-        const targetColumn = document.querySelector(
-  `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
-);
-if (!targetColumn) return;
-const ov = document.createElement('div');
-ov.className = 'closed-overlay leave-overlay';
-ov.textContent = leave.reason;
-ov.dataset.resourceId = leave.resourceId;
-ov.dataset.date = leave.date;
-targetColumn.appendChild(ov);
+  // 先清掉舊層
+  document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
+  document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
+  if (!Array.isArray(employeeLeaveData)) return;
 
-      });
+  employeeLeaveData.forEach(leave => {
+    const targetColumn = document.querySelector(
+      `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
+    );
+    if (!targetColumn) return;
+
+    if (leave.reason === '已約滿') {
+      // 只畫外框，不覆蓋內容
+      const o = document.createElement('div');
+      o.className = 'fully-booked-outline';
+      targetColumn.appendChild(o);
+      return;
     }
+
+    const ov = document.createElement('div');
+    ov.className = 'closed-overlay leave-overlay';
+    ov.textContent = leave.reason;
+    ov.dataset.resourceId = leave.resourceId;
+    ov.dataset.date = leave.date;
+    targetColumn.appendChild(ov);
+  });
+}
+
+
 
     function openLeaveModal(date, resource) {
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1110,15 +1297,26 @@ targetColumn.appendChild(ov);
     function updateToolbarTitle(info) {
   const el = document.querySelector('#calendar .fc-toolbar-title');
   if (!el || !info || !info.view) return;
-  const isDay = info.view.type === 'resourceTimeGridDay';
-  if (!isDay) return; // 週視圖維持原生區間標題
-  const d = info.view.currentStart; // 可視區起始日
-  const wdMap = ['日','一','二','三','四','五','六'];
+
+  const type = info.view.type;
+  const d = info.view.currentStart;
   const y = d.getFullYear();
   const m = d.getMonth() + 1;
   const day = d.getDate();
-  el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
+  const wdMap = ['日','一','二','三','四','五','六'];
+
+  if (type === 'dayGridMonth') {
+    el.classList.add('is-month-title');
+    el.innerHTML = `<span class="title-month-text">${y} 年 ${m} 月</span>`;
+    return;
+  }
+
+  el.classList.remove('is-month-title');
+  if (type === 'resourceTimeGridDay') {
+    el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
+  }
 }
+
 
     function syncTimeLabelClosedBg(info) {
       const cal = document.getElementById('calendar');
