@@ -580,12 +580,10 @@ font-weight: 500;letter-spacing: 1px;
 .fully-booked-button{
   display:inline-block;
   width:42px; height:42px;
-  padding:0 5px; border-radius:4px; cursor:pointer;
+  padding:0 30px;
   vertical-align:middle;   /* 避免 baseline 空隙 */
-  line-height:0;           /* 行盒不留下降部 */
-  background: rgba(255,255,255,0.2) url("icon_pause_white_42h.png?v=1") no-repeat center/contain;
-  color:transparent; font-size:0; overflow:hidden;
-  margin-left: 18px;
+  background: rgba(89,44,99,0.2) url("icon_pause_white_42h.png?v=1") no-repeat center/contain;
+  color:transparent; 
 }
 .fully-booked-button.fb-active{
   background:#ff4d4f url("icon_pause_white_42h.png?v=1") no-repeat center/contain;
@@ -894,8 +892,9 @@ dateClick: function(info){
     return; // 【新增】保留月視圖行為，避免往下執行
   }
   if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-    openApptModalForCreate(info.date, info.resource); // 【新增】日/週視圖單擊立即開窗，移除長按等待
-  }
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
+  openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
+}
 },
 
 // 月視圖：依星期顯示固定休假底色（含文字：週一=公休、週四=店長休）
