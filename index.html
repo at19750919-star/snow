@@ -13,32 +13,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
 <style>
-/* ==================== 🎨 主題配色設定（可調整整站風格） ==================== */
-/* CSS變數定義區塊 - 統一管理整個網站的顏色配置 */
+/* =====CSS變數定義區塊 - 統一管理整個網站的顏色配置 =====*/
 :root {
   /* 品牌主色系（主要/較亮/較深/極淺背景） */
   --kikyo-primary: #5D4E75;      /* 主要色，用在標題列、重點按鈕 */
   --kikyo-light:   #8B7CA3;      /* 較亮點綴 */
   --kikyo-dark:    #4A3D5C;      /* 較深對比 */
   --kikyo-ultra-light: #F5F3F8;  /* 超淺底色（區塊背景） */
-
   /* 輔助色（卡片底/間隔用，可自行替換） */
-  --accent-gold:     #D4AF37;
   --accent-cream:    #f8f4fc;    /* 時段偶數列背景 */
   --accent-lavender: #E6E0F0;
-
   /* 文字色系 */
-  /*--text-primary:   #784d8b;     /* 主要文字 */
-  /*--text-secondary: #f3b8f3;     /* 次要文字 */
-  --text-light:     #ffffff;     /* 深底上的白字 */
-  --text-muted:     #c9b8b8;     /* 註解/灰字 */
-
+  --text-light:     #ffffff;     /* 深底上的白字 */--text-muted:     #c9b8b8;     /* 註解/灰字 */
   /* 全站背景與卡片 */
   --bg-main:  linear-gradient(135deg, #F8F6FB 0%, #EDE7F6 100%);
   --bg-card:  #FfffFF;
-  --bg-hover: #FfffFF;
   --bg-active: var(--kikyo-ultra-light);
-
   /* 框線/陰影/圓角 */
   --calendar-border:       #E0D4E8;
   --border-radius:       5px;  /* 卡片圓角 */
@@ -121,27 +111,21 @@ html, body {
     padding: 0px 20px 0px 10px;
     margin-bottom: 0 !important;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
-    height: 48px;
+    height: 60px;
       
 }
 
 /* 只移除「今天」按鈕的預設 13.5px 左邊距 */
-#calendar .fc-header-toolbar .fc-today-button { margin-left: 0 !important; }
-
+/* #calendar .fc-header-toolbar .fc-today-button { margin-left: 0 !important; }/* 
 
 /* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
-#calendar .fc-toolbar-chunk {display: flex;align-items: center;gap: 0.8rem; font-size: 18px;}
+#calendar .fc-toolbar-chunk {display:var(--border-radius-small);gap: 0.8rem; font-size: 18px;}
 
 /* 工具列標題樣式 - 顯示當前日期的標題文字 */
 #calendar .fc-toolbar-title {
-  align-items: center;
   color: var(--calendar-header-text);
-  font-weight: 700;
   font-size: 28px;
   letter-spacing: 1px;
-    white-space: nowrap;        /* 防止換行 */
-  overflow: hidden;           /* 超出隱藏 */
-  text-overflow: ellipsis;    /* 省略號 */
 }
 
 /* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
@@ -150,11 +134,11 @@ html, body {
 
 /* 日曆按鈕樣式 - 導航按鈕的基本樣式與效果 */
 .fc-button {
-  background-color: rgba(243, 239, 239, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: var(--text-light) !important;
-  height: 36px;
-  width: 36px;
+  background-color: rgba(243, 239, 239, 0.2) !important;  /*按鈕顏色 */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;  /*按鈕外框顏色*/
+  color: var(--text-light) !important;   /* 按鈕文字顏色 */
+  height: 38px;
+  width: 38px;
   border-radius: var(--border-radius-small) !important;
   padding: 0px !important; /* 例如：上下 6px，左右 10px */
   font-weight: 400;
@@ -273,7 +257,7 @@ html, body {
   /* 設計師顏色 */
   --stylist-1-bg: #005CAF;
   --stylist-1-text: #f8f1f1;
-  --stylist-1-bg-light: #51A8DD;
+  --stylist-1-bg-light: #5995e1;
   --stylist-2-bg: #E03C8A;
   --stylist-2-text: #f8f1f1;
   --stylist-2-bg-light: #f082a1;
@@ -302,22 +286,18 @@ html, body {
     letter-spacing: 0px;
 }
 
-
 /* 桌面版：讓事件卡片左右留白，不占滿格子 */
 @media (min-width: 1025px) {
-  #calendar .fc-timegrid-event {
-    margin: 0 8px;           /* 左右各 6px 外距，可按需調整 */
-    height: auto;     /* 交由 top/bottom 自動計算 */
-    top: 0px;         /* 上方留白，調整高度的主要開關 */
-    bottom: 2px;      /* 下方留白，與 top 搭配決定視覺高度 */
-  }
-}
+      #calendar .fc-timegrid-event:not(.fc-bg-event) {right: -3px; /* 右側多出 3px 空間 */
+       }}
+
+#calendar .fc-resourceTimeGridWeek-view .fc-timegrid-event { 
+  right: -3 px;
+    border-radius: 0 !important;
+  }      
 
 /* 讓事件卡片右邊多一些距離 inset 值 */
 #calendar .fc-timegrid-event-harness { right: 5% !important; } 
-
-
-
 /* 針對【一般預約】卡片的文字大小 */
 #calendar .fc-timegrid-event .fc-event-title {
   font-size: 20px; /* 一般預約的文字大小 */
@@ -402,10 +382,8 @@ font-weight: 500;letter-spacing: 1px;
 
     /* 工具列調整 */
      #calendar .fc-header-toolbar {
-    flex-wrap: nowrap;
-    justify-content: space-between;
     padding: 8px 16px;
-    gap: clamp(0.5rem, 2.5vw, 1.5rem);
+    height:42px;
   }
      #calendar .fc-toolbar-title {
     white-space: nowrap;
@@ -565,17 +543,17 @@ font-weight: 500;letter-spacing: 1px;
   background-color: rgba(89, 44, 99, .35) !important;
 }
 
-/* ⭐新增：排休設定圖示按鈕的樣式 */
-.leave-icon-button {
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  letter-spacing:0;
+/* 排休按鈕圖示 */
+.leave-icon-button{
+  display:inline-block;
+  width:32px; height:32px;
+  vertical-align:middle;
+  background: url("hlld.png") no-repeat center/contain; /* 與 index.html 同資料夾 */
+  border-radius:4px;
+  cursor:pointer;
+  padding:0;               /* 清掉原先內距 */
 }
-.leave-icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
+.leave-icon-button:hover {background-color: rgba(255, 255, 255, 0.2);}
 /* 約滿按鈕樣式 */
 .fully-booked-button{
   display:inline-block;
@@ -606,26 +584,13 @@ font-weight: 500;letter-spacing: 1px;
 }
 
 
-/* ==================== ✨ 新增：凍結頂部工具列與表頭 ==================== */
-/* ⭐新增：凍結(固定)頂部工具列 */
-#calendar .fc-header-toolbar {
-  position: -webkit-sticky; /* 支援 Safari 等舊版瀏覽器 */
-  position: sticky;
-  top: 0; /* 固定在畫面的最頂端 */
-  z-index: 100; /* 確保工具列在最上層，不會被其他內容蓋住 */
-}
-
-/* ⭐新增：凍結(固定)日期/資源表頭 */
-#calendar .fc-scrollgrid-section-header {
-  position: -webkit-sticky; /* 支援 Safari 等舊版瀏覽器 */
-  position: sticky;
-  top: 48px; /* 工具列的高度為 48px，讓表頭剛好固定在它下面 */
-  z-index: 99; /* 確保表頭也在上層，但比工具列低一層 */
-}
-
 /* === 月視圖：固定休假底色與標籤文字 === */
 #calendar { touch-action: manipulation; } /* 僅優化點擊，與月視圖無衝突 */
 
+/* 多月視圖：每個「月份」之間留白（僅作用於 multiMonth 月視圖） */
+.fc-multiMonthMonth-view .fc-multimonth-month { 
+  padding: 8px;
+}
 /* 週一公休：底色 + 右下角「公休」 */
 .fc-dayGridMonth-view .closed-day-bg { 
   background-color: #e0e0e0 !important; 
@@ -679,6 +644,18 @@ font-weight: 500;letter-spacing: 1px;
 #calendar .fc-toolbar-title.is-month-title .title-month-text{
   color: #FFD166;              /* 月份文字顏色 */
 }
+
+/* 只調整週視圖日期字樣大小與字距 */
+#calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
+      font-size: 16px;
+    letter-spacing: 1px;
+    font-family: 'fcicons';
+}
+
+/* 僅在週視圖 (resourceTimeGridWeek) 中，隱藏所有的事件卡片元素 */
+.fc-resourceTimeGridWeek-view .fc-event-title  {
+  display: none !important;
+} 
 
 
 </style>
@@ -790,7 +767,7 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoORmK
 (function(){
   // ==================== 全域變數 ====================
   let employeeLeaveData = []; // 用來存放從後端取回的排休資料
-  const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; 
 let currentYmd = null;
   let calendar; // 將 calendar 宣告在外面，方便各函式使用
 
@@ -847,24 +824,48 @@ let currentYmd = null;
     }
 
     function initializeCalendar() {
-      calendar = new FullCalendar.Calendar(calendarEl, {
+  // 👇 v6 的插件是掛載在 FullCalendar.globalPlugins 上的
+  const { resourceTimeGridPlugin, dayGridPlugin, interactionPlugin } = FullCalendar.globalPlugins;
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
         schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
         locale: 'zh-tw',
         timeZone: 'Asia/Taipei',
-        initialView: 'resourceTimeGridDay',
-        headerToolbar: {
+initialView: 'resourceTimeGridDay',
+
+// 這是全域的工具列設定，對所有視圖都有效
+headerToolbar: {
   left: 'prev,next today',
   center: 'title',
   right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth' // 加入月視圖
 },
 
-        buttonText: { today: '今' },
+firstDay: 2,       // 全域設定，從週二開始
+hiddenDays: [1],   // 全域設定，隱藏週一
+
+        buttonText: { 
+  today: '今',
+  dayGridMonth: '月',
+  resourceTimeGridDay: '日',
+  resourceTimeGridWeek: '週'
+},
+
         allDaySlot: false,
         slotMinTime: '12:00:00',
         slotMaxTime: '21:00:00',
         slotDuration: '00:15:00',
         slotLabelInterval: '00:15:00',
         slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+         dayHeaderContent: function(arg) {
+          const date = arg.date;
+          const month = date.getMonth() + 1;
+          const day = date.getDate();
+          const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
+          const weekday = weekdayMap[date.getDay()];
+
+           return weekday;
+
+        },
         displayEventTime: false,
         height: 'auto',
         expandRows: false,
@@ -876,11 +877,21 @@ let currentYmd = null;
 
 // 月視圖不顯示事件卡片
 views: {
+  // 週視圖的設定保持不變
+  resourceTimeGridWeek: {
+    hiddenDays: [1]
+    // 注意：我們把 headerToolbar 的設定移到外面，這裡保持乾淨
+  },
+
   dayGridMonth: {
+    type: 'multiMonthMonth',   // 正確的多月份月視圖型別
+    duration: { months: 4 },   // 實際顯示 3 個月份
+    multiMonthMaxColumns: 2,   // 每列最多 3 欄（不決定顯示幾個月）
     eventDisplay: 'none',
     displayEventTime: false
   }
-},
+}, // <--- views 區塊到此結束
+
 
 selectable: true,
 
@@ -888,9 +899,9 @@ selectable: true,
 // 月視圖：點日期 → 跳到該天的日視圖；日/週視圖：輕點立即開新增視窗
 dateClick: function(info){
   if (info.view.type === 'dayGridMonth') {
-    calendar.changeView('resourceTimeGridDay', info.date);
-    return; // 【新增】保留月視圖行為，避免往下執行
-  }
+  calendar.changeView('resourceTimeGridDay', info.date);
+  return;
+}
   if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
   if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
   openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
@@ -908,7 +919,7 @@ dayCellDidMount: function(arg){
 },
 
 selectable: true,
-selectLongPressDelay: 450, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
+selectLongPressDelay: 0, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
 
 datesSet: function(info) {
   updateToolbarTitle(info);
@@ -926,7 +937,7 @@ datesSet: function(info) {
   // 📅 排休
   const leaveIconButton = document.createElement('span');
   leaveIconButton.className = 'leave-icon-button';
-  leaveIconButton.innerHTML = ' 📅';
+  leaveIconButton.textContent = '';
   cushionEl.appendChild(leaveIconButton);
   leaveIconButton.addEventListener('mousedown', function(event) {
     event.stopPropagation();
@@ -940,7 +951,7 @@ datesSet: function(info) {
 
   const fbBtn = document.createElement('span');
   fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
-  fbBtn.textContent = isFB ? '已約滿' : '約滿';
+  fbBtn.textContent = '';
   cushionEl.appendChild(fbBtn);
 
   fbBtn.addEventListener('click', async (e) => {
@@ -960,7 +971,7 @@ datesSet: function(info) {
           const i = employeeLeaveData.findIndex(l => l.date===date && l.resourceId===resourceId && l.reason==='已約滿');
           if (i !== -1) employeeLeaveData.splice(i,1);
         }
-        fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
+        fbBtn.classList.remove('fb-active'); fbBtn.textContent = '';
       } else {
         // 設為約滿
         const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
@@ -971,7 +982,7 @@ datesSet: function(info) {
         if (Array.isArray(employeeLeaveData)) {
           employeeLeaveData.push({ date, resourceId, reason:'已約滿' });
         }
-        fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
+        fbBtn.classList.add('fb-active'); fbBtn.textContent = '';
       }
       // 立即重繪欄位樣式
       paintEmployeeLeave();
@@ -1313,6 +1324,8 @@ document.getElementById('save-notes-btn').addEventListener('click', async functi
   el.classList.remove('is-month-title');
   if (type === 'resourceTimeGridDay') {
     el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
+  } else {
+    el.textContent = info.view.title;
   }
 }
 
