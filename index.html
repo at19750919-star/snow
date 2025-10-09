@@ -78,11 +78,10 @@ html, body {
   margin: 0;
   height: auto !important;
   background: var(--bg-card);
-  /* 讓日曆貼齊頁面邊緣：移除圓角與陰影 */
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
   overflow: visible; /* ⭐將 hidden 改為 visible，解除對 sticky 的限制 */
-  border: 0;
+  border: 2px solid var(--calendar-border);
 }
 
 /* 日曆捲動設定 - 還原由 FullCalendar 自行管理高度與捲動 */
@@ -166,7 +165,7 @@ html, body {
 #calendar .fc-col-header {
   height: 50px;
   background: #592C63;
-    border-bottom: 0;
+    border-bottom: 1px solid var(--calendar-border);
     background: linear-gradient(135deg, #66327C 6px, #592C63 6px 12px),
             repeating-linear-gradient(135deg,  #70649A 6px, #b474a2 6px 12px);
   
@@ -209,10 +208,6 @@ html, body {
 /* 表頭捲動與邊框設定 */
 #calendar .fc-scrollgrid-section-header .fc-scroller { overflow-y: hidden !important; }
 #calendar .fc-scrollgrid { border-top: 1px solid var(--calendar-border); }
-/* 讓整體更貼齊：減少外圍邊框線條 */
-#calendar .fc-scrollgrid, #calendar .fc-theme-standard td, #calendar .fc-theme-standard th{
-  border-color: var(--calendar-line-color);
-}
 
 /* ==================== ⏰ 時間欄 (Time Column) ==================== */
 :root {
@@ -346,8 +341,6 @@ html, body {
 .evt-svc{ font-size:24px; font-weight:700; gap:10px; }
 .evt-time{ min-width:48px; text-align:right; }
 .evt-phone{ letter-spacing:1px; }
-/* 事件卡片中的備註，統一與一般字級一致 */
-.evt-notes{ font-size: inherit; font-weight: 400; }
 
 
 
@@ -398,12 +391,14 @@ font-weight: 500;letter-spacing: 1px;
 /* ==================== 📱 手機版響應式設計 (Mobile) ==================== */
 @media (max-width: 1024px) {
     /* 全局調整 */
-    #calendar-container { padding: 0 !important; margin: 0 !important; }
-    /* 讓日曆完全貼齊畫面，不留白邊 */
-    #calendar { width: 100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; border: 0 !important; }
+    #calendar-container { padding: 3px; }
+    #calendar { width: 100vw !important; margin: 0 -10px; border-radius: 0; }
 
     /* 工具列調整 */
-     #calendar .fc-header-toolbar { padding: 0 4px !important; height:42px; gap: 4px; }
+     #calendar .fc-header-toolbar {
+    padding: 8px 16px;
+    height:42px;
+  }
   #calendar .fc-toolbar-title {
     white-space: nowrap;
     font-size: clamp(16px, 6vw, 24px);     /* 依螢幕自動縮放 */
@@ -422,7 +417,7 @@ font-weight: 500;letter-spacing: 1px;
   }
   /* 手機：週視圖的排休覆蓋文字縮小，避免遮擋 */
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
-    font-size: clamp(12px, 4.5vw, 20px);
+    font-size: clamp(18px, 6vw, 28px);
     letter-spacing: .1em;
     padding-bottom: 350px; /* 依手機視口略減，避免壓到更多格 */
   }
@@ -783,8 +778,8 @@ font-weight: 500;letter-spacing: 1px;
 
 /* 只調整週視圖日期字樣大小與字距 */
 #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
-      font-size: 20px;
-    letter-spacing: 1.5px;
+      font-size: 16px;
+    letter-spacing: 1px;
     font-family: 'fcicons';
 }
 
@@ -792,19 +787,6 @@ font-weight: 500;letter-spacing: 1px;
 .fc-resourceTimeGridWeek-view .fc-event-title  {
   display: none !important;
 } 
-
-/* 桌面：週視圖紫色排休覆蓋文字更小一階 */
-@media (min-width: 1025px){
-  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
-    font-size: 28px;
-    letter-spacing: .15em;
-  }
-  /* 週視圖表頭(設計師名稱)字級放大 */
-  #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell .fc-scrollgrid-sync-inner .fc-col-header-cell-cushion{
-    font-size: 22px;
-    letter-spacing: 2px;
-  }
-}
 
 
 </style>
@@ -1071,7 +1053,7 @@ dayCellDidMount: function(arg){
   if (d === 0) arg.el.classList.add('leave-yatting');   // ✅ 週日雅婷休
 },
 
-selectLongPressDelay: 0, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
+selectLongPressDelay: 400, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
 
 datesSet: function(info) {
   updateToolbarTitle(info);
@@ -1167,14 +1149,14 @@ datesSet: function(info) {
         eventClick: function(info) { openApptModalForEdit(info.event); },
         select: function(info) { openApptModalForCreate(info.start, info.resource); },
 
-     eventContent: function(arg) {
-       const ep = arg.event.extendedProps || {};
-       const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
-       const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
-       return {
-        html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span class="evt-notes">${ep.notes || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
-       };
-     },
+        eventContent: function(arg) {
+             const ep = arg.event.extendedProps || {};
+             const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
+             const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
+             return {
+              html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span>${ep.notes || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
+             };
+        },
         
         slotLabelDidMount: function(arg) {
             const m = arg.date.getMinutes();
