@@ -119,13 +119,22 @@ html, body {
 /* #calendar .fc-header-toolbar .fc-today-button { margin-left: 0 !important; }/* 
 
 /* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
-#calendar .fc-toolbar-chunk {display:var(--border-radius-small);gap: 1.6rem; font-size: 18px;}
+#calendar .fc-toolbar-chunk {
+  display: flex;  /* ✅ 修正原本錯誤的 display 值 */
+  gap: 8px;      /* ✅ 增加按鈕間距 */
+  font-size: 18px;
+}
 
 /* 工具列標題樣式 - 顯示當前日期的標題文字 */
 #calendar .fc-toolbar-title {
   color: var(--calendar-header-text);
   font-size: 28px;
   letter-spacing: 1px;
+}
+
+/* ✅ 月視圖標題強制為白色 */
+#calendar .fc-toolbar-title.is-month-title {
+  color: var(--text-light) !important;
 }
 
 /* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
@@ -401,45 +410,14 @@ font-weight: 500;letter-spacing: 1px;
       --col-header-size:   16px;
     }
 
-  /* 手機：設定表頭高度為 42px，並調整 cushion 內右側間距避免和按鈕重疊 */
-  :root { --col-header-height: 42px; }
-#calendar .fc-col-header { height: var(--col-header-height) !important; }
-  #calendar .fc-col-header-cell-cushion{
-    text-shadow: 0 1px 0 #fff, 0 1px 4px rgba(0,0,0,.18);
-    font-size: calc(22px * 0.85);              /* 手機縮小比例，與桌面相對應 */
-    letter-spacing: 3px;         /* 手機固定值，可再調 */
-    line-height: calc(var(--col-header-height) * 0.9); /* 手機用縮小的行高 */
-    padding-right: 60px !important; /* 給右側按鈕預留空間，避免文字與按鈕重疊 */
+   /* 直接覆寫桌面 40px，鎖定為 30px */
+#calendar .fc-col-header { height: var(--col-header-height) !important; } 
+   #calendar .fc-col-header-cell-cushion{
+  text-shadow: 0 1px 0 #fff, 0 1px 4px rgba(0,0,0,.18);
+  font-size: 22px;              /* 手機固定值，可再調 */
+  letter-spacing: 4px;         /* 手機固定值，可再調 */
+  line-height: var(--col-header-height); /* 手機用 30px 變數 */
 }
-
-    /* 在較小螢幕時也縮小 header 右側按鈕尺寸與字級 */
-    #calendar .fc-col-header-cell-cushion .header-button-group .leave-icon-button,
-    #calendar .fc-col-header-cell-cushion .header-button-group .fully-booked-button {
-      height: 28px !important;
-      min-width: 48px !important;
-      padding: 0 8px !important;
-      font-size: 12px !important;
-    }
-
-    /* 縮小排休覆蓋層（leave-overlay / closed-overlay）上的文字 */
-    #calendar .closed-overlay, #calendar .leave-overlay {
-      font-size: calc(clamp(16px, 8vw, 32px) * 0.6) !important;
-      padding-bottom: 200px;
-    }
-
-    /* 微調按鈕群位置：往右一點以和 cushion 的 padding-right 對齊 */
-    #calendar .fc-col-header-cell-cushion .header-button-group{ right: 12px; }
-
-    /* 手機 + 週視圖 (resourceTimeGridWeek) 的額外強制規則 */
-    #calendar.fc .fc-resourceTimeGridWeek-view .fc-col-header,
-    #calendar.fc .fc-resourceTimeGridWeek-view .fc-col-header .fc-col-header-cell,
-    #calendar.fc .fc-resourceTimeGridWeek-view .fc-col-header .fc-col-header-cell .fc-col-header-cell-cushion {
-      height: 42px !important;
-      line-height: 42px !important;
-    }
-
-    /* 隱藏週視圖下的 header 按鈕群以防萬一 */
-    #calendar.fc .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion .header-button-group{ display: none !important; }
 
 #calendar .evt-phone {
   display: none !important;
@@ -700,27 +678,59 @@ font-weight: 500;letter-spacing: 1px;
 
 /* 週四店長休：底色 + 右下角「店長休」 */
 .fc-dayGridMonth-view .leave-boss { 
-  background-color: #e0f0ff !important; 
+  background-color: var(--stylist-1-bg-light) !important; 
   position: relative;
 }
 .fc-dayGridMonth-view .leave-boss::after {
   content: '店長休';
   position: absolute;
   right: 6px; bottom: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
-  border-radius: 4px;
-  background: rgba(0,0,0,0.08);
+  padding: 4px 8px;  /* ✅ 統一調整內距 */
+  font-size: 14px;   /* ✅ 統一調整字體大小 */
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+  color: white;
+  font-weight: 600;  /* ✅ 統一調整字重 */
 }
 
-/* 週日雅婷休：僅底色 */
-.fc-dayGridMonth-view .leave-yatting { 
-  background-color: #ffe0e0 !important; 
-}
-
-/* 週二小白休：僅底色 */
+/* 週二小白休：底色 + 右下角「小白休」 */
 .fc-dayGridMonth-view .leave-xiaobai { 
-  background-color: #e0f8ff !important; 
+  background-color: var(--stylist-3-bg-light) !important; 
+  position: relative;
+}
+.fc-dayGridMonth-view .leave-xiaobai::after {
+  content: '小白休';
+  position: absolute;
+  right: 6px; bottom: 4px;
+  padding: 4px 8px;  /* ✅ 增加內距讓文字區塊更大 */
+  font-size: 14px;   /* ✅ 增加字體大小 */
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+  color: white;
+  font-weight: 600;  /* ✅ 增加字重 */
+}
+
+/* 週日雅婷休：底色 + 右下角「雅婷休」 */
+.fc-dayGridMonth-view .leave-yatting { 
+  background-color: var(--stylist-2-bg-light) !important; 
+  position: relative;
+}
+.fc-dayGridMonth-view .leave-yatting::after {
+  content: '雅婷休';
+  position: absolute;
+  right: 6px; bottom: 4px;
+  padding: 4px 8px;  /* ✅ 增加內距讓文字區塊更大 */
+  font-size: 14px;   /* ✅ 增加字體大小 */
+  border-radius: 6px;
+  background: rgba(0,0,0,0.2);
+  color: white;
+  font-weight: 600;  /* ✅ 增加字重 */
+}
+
+/* ✅ 非本月日期顏色調整為更接近白色 */
+.fc-dayGridMonth-view .fc-daygrid-day.fc-day-other {
+  background-color: #f8f8f8 !important;
+  color: #d0d0d0 !important;
 }
 
 /* 強制保險：月視圖隱藏所有事件元素 */
@@ -747,39 +757,6 @@ font-weight: 500;letter-spacing: 1px;
 .fc-resourceTimeGridWeek-view .fc-event-title  {
   display: none !important;
 } 
-
-/* 國定假日事件樣式 */
-.fc-holiday {
-  /* 只調整文字顏色；保留背景 */
-  background: transparent !important;
-  color: #FF6B6B !important;
-  border-color: transparent !important;
-  font-weight: 700;
-}
-
-/* 月格內的小徽章（備選，用於 dayCellDidMount 的 badge） */
-.holiday-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(255,107,107,0.12);
-  color: #FF6B6B;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* 月格內純文字假日標示（右上） */
-.holiday-text {
-  color: #FF6B6B;
-  font-weight: 700;
-  font-size: 13px;
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  pointer-events: none;
-}
 
 
 </style>
@@ -949,24 +926,8 @@ let currentYmd = null;
     }
 
     function initializeCalendar() {
-  // 👇 v6 的插件是掛載在 FullCalendar.globalPlugins 上的
-  const { resourceTimeGridPlugin, dayGridPlugin, interactionPlugin } = FullCalendar.globalPlugins;
-
-  // --- 前端靜態國定假日（示範用） ---
-  const holidayEvents = [
-    { title: '元旦', start: '2026-01-01', allDay: true, className: 'fc-holiday' },
-    { title: '農曆春節 (除夕)', start: '2026-02-07', allDay: true, className: 'fc-holiday' },
-    { title: '農曆春節 (初一)', start: '2026-02-08', allDay: true, className: 'fc-holiday' },
-    { title: '和平紀念日', start: '2026-02-28', allDay: true, className: 'fc-holiday' },
-    { title: '兒童節', start: '2026-04-04', allDay: true, className: 'fc-holiday' },
-    { title: '端午節', start: '2026-06-10', allDay: true, className: 'fc-holiday' },
-    { title: '中秋節', start: '2026-09-20', allDay: true, className: 'fc-holiday' },
-    { title: '國慶日', start: '2026-10-10', allDay: true, className: 'fc-holiday' }
-  ];
-  // 建立日期→節日名稱的快取（格式 YYYY-MM-DD）
-  const holidayMap = {};
-  holidayEvents.forEach(h => { if (h && h.start) holidayMap[h.start] = h.title; });
-
+  // ✅ v5.11.5 版本：插件已通過 CDN 自動載入，不需要手動從 globalPlugins 取得
+  
   calendar = new FullCalendar.Calendar(calendarEl, {
         schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
         locale: 'zh-tw',
@@ -1013,10 +974,7 @@ hiddenDays: [1],   // 全域設定，隱藏週一
         businessHours: [ { daysOfWeek: [0,2,3,4,5,6], startTime: '00:00', endTime: '24:00' } ],
         resources: [ { id: '1', title: '店長' }, { id: '2', title: '雅婷' }, { id: '3', title: '小白' } ],
         
-  // 主要事件來源（後端）
-  events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-  // 另外加入靜態假日事件（all-day），以便在月視圖中顯示
-  eventSources: [ holidayEvents ],
+        events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
 
 // 月視圖不顯示事件卡片
 views: {
@@ -1027,11 +985,11 @@ views: {
   },
 
   dayGridMonth: {
-    type: 'multiMonthMonth',   // 正確的多月份月視圖型別
-    duration: { months: 4 },   // 實際顯示 3 個月份
-    multiMonthMaxColumns: 2,   // 每列最多 3 欄（不決定顯示幾個月）
+    // ✅ 單月視圖設定
     eventDisplay: 'none',
-    displayEventTime: false
+    displayEventTime: false,
+    fixedWeekCount: false,  // ✅ 避免顯示額外的週數
+    showNonCurrentDates: false  // ✅ 隱藏非本月的日期
   }
 }, // <--- views 區塊到此結束
 
@@ -1052,31 +1010,21 @@ dateClick: function(info){
 // 月視圖：依星期顯示固定休假底色（含文字：週一=公休、週四=店長休）
 dayCellDidMount: function(arg){
   if (arg.view.type !== 'dayGridMonth') return;
+  
+  // ✅ 只對本月日期進行處理，排除其他月份的日期
+  const currentMonth = arg.view.currentStart.getMonth();
+  const cellMonth = arg.date.getMonth();
+  if (cellMonth !== currentMonth) return;
+  
   const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
   if (d === 1) arg.el.classList.add('closed-day-bg');   // 全店公休（顯示「公休」文字）
   if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
-  if (d === 0) arg.el.classList.add('leave-yatting');   // 雅婷休（僅底色）
-  if (d === 2) arg.el.classList.add('leave-xiaobai');   // 小白休（僅底色）
-  // 若是國定假日，插入純文字標示（不改背景）
-  try {
-    const dStr = arg.date.toISOString().slice(0,10);
-    if (holidayMap[dStr]) {
-      // 優先把假日文字放在日期數字容器（更靠近日期、較不易被遮蔽）
-      const num = arg.el.querySelector('.fc-daygrid-day-number') || arg.el.querySelector('.fc-daygrid-day-top') || arg.el;
-      const existing = num.querySelector('.holiday-text');
-      if (!existing) {
-        const t = document.createElement('div');
-        t.className = 'holiday-text';
-        t.textContent = holidayMap[dStr];
-        if (getComputedStyle(num).position === 'static') num.style.position = 'relative';
-        num.appendChild(t);
-      }
-    }
-  } catch(e) { /* ignore date formatting errors */ }
+  if (d === 2) arg.el.classList.add('leave-yatting');   // ✅ 修正：週二雅婷休
+  if (d === 0) arg.el.classList.add('leave-xiaobai');   // ✅ 修正：週日小白休
 },
 
 selectable: true,
-selectLongPressDelay: 400, // 手機：需要長按 400ms 才會觸發 select，避免誤觸
+selectLongPressDelay: 0, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
 
 datesSet: function(info) {
   updateToolbarTitle(info);
@@ -1088,13 +1036,6 @@ datesSet: function(info) {
 },
 
         resourceLabelDidMount: function(arg) {
-  // 不在週視圖顯示表頭的排休/約滿按鈕（避免干擾）
-  try {
-    const currentView = calendar && calendar.view ? calendar.view.type : null;
-    if (currentView === 'resourceTimeGridWeek') return;
-  } catch (e) {
-    // 忽略檢查錯誤，繼續建立按鈕
-  }
   const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
   if (!cushionEl) return;
 
@@ -1108,10 +1049,9 @@ datesSet: function(info) {
   leaveIconButton.setAttribute('aria-label', '排休');
   leaveIconButton.textContent = '排休';
   btnGroup.appendChild(leaveIconButton);
-  // 使用 click 事件，避免 touch/mousedown 在手機上過早觸發
-  leaveIconButton.addEventListener('click', function(event) {
+  leaveIconButton.addEventListener('mousedown', function(event) {
     event.stopPropagation();
-    openLeaveModal(calendar.view.currentStart, arg.resource);
+    setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
   });
 
   // ✅ 約滿（切換）
