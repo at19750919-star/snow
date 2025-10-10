@@ -13,6 +13,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
 <style>
+/*
+===================== CSS 目錄（不更動規則順序，僅標示區塊） =====================
+1) 變數與主題 :root
+2) 工具列 Toolbar
+3) 表頭 Column Header
+4) 時間格/格線 Timegrid
+5) 事件卡片 Event Cards
+6) 月視圖標籤 Month Labels
+7) 手機 ≤1024px
+8) 桌面 ≥1025px
+9) 補充說明 Note
+==============================================================================
+*/
 /* =====CSS變數定義區塊 - 統一管理整個網站的顏色配置 =====*/
 :root {
   /* 品牌主色系（主要/較亮/較深/極淺背景） */
@@ -40,6 +53,11 @@
   --modal-overlay: rgba(93,78,117,0.6);
   --modal-bg:      var(--bg-card);
   --modal-border:  var(--calendar-border);
+  /* 危險/警示色（已約滿） */
+  --danger: #ff4d4f;
+  /* 月視圖標籤背景（半透明黑） */
+  --month-label-bg-weak:  rgba(0,0,0,0.12); /* 用於「公休」弱一點的底 */
+  --month-label-bg-strong:rgba(0,0,0,0.20); /* 用於設計師排休較明顯的底 */
 }
 
 /* ==================== 🌐 基礎樣式 ==================== */
@@ -115,8 +133,7 @@ html, body {
       
 }
 
-/* 只移除「今天」按鈕的預設 13.5px 左邊距 */
-/* #calendar .fc-header-toolbar .fc-today-button { margin-left: 0 !important; } */
+/* 清理：移除無用的 today 按鈕 margin 註解（已不採用） */
 
 /* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
 #calendar .fc-toolbar-chunk {
@@ -208,6 +225,98 @@ html, body {
 /* 表頭捲動與邊框設定 */
 #calendar .fc-scrollgrid-section-header .fc-scroller { overflow-y: hidden !important; }
 #calendar .fc-scrollgrid { border-top: 1px solid var(--calendar-border); }
+
+/* --- 表頭：排休/已約滿按鈕群（移至 Header 區塊） --- */
+/* 排休按鈕圖示 */
+.leave-icon-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:56px;
+  height:32px;
+  background: transparent;
+  border-radius:4px;
+  padding:4px 10px;
+  cursor:pointer;
+  font-weight:500;
+  gap:6px;
+  border:1px solid rgba(0,0,0,0.06);
+  color: #fff !important;
+}
+.leave-icon-button:hover { background-color: rgba(0,0,0,0.04); transform: translateY(-1px); }
+
+/* 通用 header 按鈕群（靠右） */
+.header-button-group{
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+
+/* 統一按鈕樣式（兩個按鈕共用） */
+.header-button-group .leave-icon-button,
+.header-button-group .fully-booked-button{
+  /* 與工具列按鈕 .fc-button 視覺對齊 */
+  background-color: rgba(243, 239, 239, 0.2) !important;  /* 按鈕顏色 */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;  /* 按鈕外框顏色 */
+  color: var(--text-light) !important;   /* 按鈕文字顏色 */
+  height: 38px; /* 保持原本按鈕高度（不隨表頭/工具列高度改變） */
+  padding: 0 12px !important; /* 與工具列按鈕 padding 風格一致 */
+  font-size: 20px; /* 放大字級（排休/約滿） */
+  font-weight: 400; /* 與 .fc-button 一致 */
+  border-radius: var(--border-radius-small) !important; /* 同工具列圓角 */
+  line-height: 1;
+  transition: all 0.3s ease; /* 與工具列相同的過渡 */
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-width: 72px; /* 保留可點擊最小寬度 */
+}
+
+.header-button-group .leave-icon-button:hover,
+.header-button-group .fully-booked-button:hover,
+.header-button-group .leave-icon-button:focus,
+.header-button-group .fully-booked-button:focus{
+  /* 與工具列按鈕一致的 hover 效果 */
+  background-color: rgba(223, 200, 200, 0.3) !important;
+  transform: translateY(-1px);
+  box-shadow: none;
+  outline: none;
+}
+
+.header-button-group .fully-booked-button{ color: #fff; }
+.fully-booked-button.fb-active{
+  /* 已約滿狀態：保持強烈紅色，覆蓋工具列樣式 */
+  background: var(--danger) !important;
+  color: #fff !important;
+  border-color: var(--danger) !important;
+  box-shadow: 0 8px 24px rgba(255,77,79,0.28);
+}
+
+/* 強化優先度：在 header 群組中的已約滿按鈕一定顯示紅底白字 */
+/*（精簡）header 群組與一般 fb-active 同色，無需重覆宣告 */
+
+/* 約滿按鈕樣式 */
+.fully-booked-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:72px;
+  height:36px;
+  padding:0 12px;
+  vertical-align:middle;
+  background: transparent;
+  color: inherit;
+  font-weight:600;
+  gap:8px;
+  border:1px solid rgba(0,0,0,0.06);
+}
+.fully-booked-button.fb-active{
+  background: rgba(255,77,79,0.08);
+  border-color: rgba(255,77,79,0.25);
+}
 
 /* ==================== ⏰ 時間欄 (Time Column) ==================== */
 :root {
@@ -302,14 +411,9 @@ html, body {
 
 /* 桌面版：讓事件卡片左右留白，不占滿格子 */
 @media (min-width: 1025px) {
-      #calendar .fc-timegrid-event:not(.fc-bg-event) {right: -3px; /* 右側多出 3px 空間 */
+      #calendar .fc-timegrid-event:not(.fc-bg-event) {right: 3px; /* 右側多出 3px 空間 */
        }}
-
-#calendar .fc-resourceTimeGridWeek-view .fc-timegrid-event { 
-  right: -3px;
-    border-radius: 0 !important;
-  }      
-
+   
 /* 讓事件卡片右邊多一些距離 inset 值 */
 #calendar .fc-timegrid-event-harness { right: 5% !important; } 
 /* 針對【一般預約】卡片的文字大小 */
@@ -342,8 +446,6 @@ html, body {
 .evt-time{ min-width:48px; text-align:right; }
 .evt-phone{ letter-spacing:1px; }
 
-
-
 /* --- C. 設計師顏色套用規則 --- */
 #calendar .fc-event.sty-1{ background: var(--stylist-1-bg) !important; border-color: var(--stylist-1-bg) !important; color: var(--stylist-1-text) !important; }
 #calendar .fc-event.sty-2{ background: var(--stylist-2-bg) !important; border-color: var(--stylist-2-bg) !important; color: var(--stylist-2-text) !important; }
@@ -352,8 +454,6 @@ html, body {
 #calendar .fc-event.sty-1.blocked-time{ background: var(--stylist-1-bg-light) !important; border-color: var(--stylist-1-bg-light) !important; color: var(--stylist-1-text) !important; }
 #calendar .fc-event.sty-2.blocked-time{ background: var(--stylist-2-bg-light) !important; border-color: var(--stylist-2-bg-light) !important; color: var(--stylist-2-text) !important; }
 #calendar .fc-event.sty-3.blocked-time{ background: var(--stylist-3-bg-light) !important; border-color: var(--stylist-3-bg-light) !important; color: var(--stylist-3-text) !important; }
-
-
 
 /* ==================== 💬 留言區 (Notes) ==================== */
 :root {
@@ -390,13 +490,13 @@ html, body {
     color: #110677;
 font-weight: 500;letter-spacing: 1px;
 } 
-/* ==================== 📱 手機版響應式設計 (Mobile) ==================== */
+/* ==================== 7) 手機 (≤1024px) ==================== */
 @media (max-width: 1024px) {
-    /* 全局調整 */
+    /* Mobile > Global（整體容器） */
     #calendar-container { padding: 3px; }
     #calendar { width: 100vw !important; margin: 0 -10px; border-radius: 0; }
 
-    /* 工具列調整 */
+    /* Mobile > Toolbar（工具列） */
      #calendar .fc-header-toolbar {
     padding: 8px 16px;
     height:42px;
@@ -412,25 +512,26 @@ font-weight: 500;letter-spacing: 1px;
     width: clamp(28px, 8vw, 34px) !important;
     height: clamp(28px, 8vw, 34px) !important;
   }
-  /* 手機：資源（設計師）表頭靠左，避免與右側按鈕群擠在一起 */
+  /* Mobile > Header（資源列） */
+  /* 資源（設計師）表頭靠左，避免與右側按鈕群擠在一起 */
   #calendar .resource-cushion{
     justify-content: flex-start;
     padding-right: 8px !important; /* 保留與右側一點距離（原本就有左右 8px padding） */
   }
-  /* 手機：週視圖的排休覆蓋文字縮小，避免遮擋 */
+  /* 7) 手機 > Week 視圖：覆蓋層字級縮小與位置微調 */
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
     font-size: clamp(18px, 6vw, 28px);
     letter-spacing: .1em;
     padding-bottom: 350px; /* 依手機視口略減，避免壓到更多格 */
   }
-    /* 表頭調整（手機） */
+  /* 7) 手機 > Header：表頭字級/高度 */
     :root{
       /* 手機下的星期列高度與字級 */
       --col-header-height: 34px;
       --col-header-size:   16px;
     }
 
-    /* 週/月視圖：星期幾那一列高度 34px */
+  /* 7) 手機 > Header：週/月視圖共用星期列高度 */
     #calendar .fc-col-header { height: var(--col-header-height) !important; }
     #calendar .fc-col-header-cell-cushion{
       text-shadow: 0 1px 0 #fff, 0 1px 4px rgba(0,0,0,.18);
@@ -439,22 +540,43 @@ font-weight: 500;letter-spacing: 1px;
       line-height: var(--col-header-height);
     }
 
+  /* 7) 手機 > Week 視圖：表頭置中 */
+    #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
+      justify-content: center !important;
+      text-align: center;
+    }
+
 #calendar .evt-phone {
   display: none !important;
 }
 
-    /* 事件卡片調整 */
+  /* 7) 手機 > Timegrid：事件卡片與互動（空白可點、卡片可點） */
     #calendar .fc-timegrid-event { height: 100% !important; }
     #calendar .fc-timegrid-event .fc-event-title { font-size: 16px; line-height: 1.2; padding: 0 6px; }
     .svc-badge{ font-size: 12px; }
     .fc-timegrid-event .fc-event-title.evt-line{ gap:3px; }
     .evt-svc{ font-size:18px; }
     
+/* 7) 手機 > Timegrid：event-harness 擺位還原（交由全域 right:5% 控制） */
 #calendar .fc-timegrid-event-harness {
-  width: calc(100% - 10px) !important; /* 總寬度減少10px */
-  left: 5px !important;                /* 從左邊推移5px來置中 */
+  width: auto !important;             /* 還原為自動，交由全域 right:5% 控制右側留白 */
+  left: 0 !important;                 /* 靠左貼齊 */
 }
 
+  /* 7) 手機 > Timegrid：事件卡片（空白可點與右側留白） */
+    /* 指向全域：沿用 4) Timegrid 的 pointer-events 設定（空白可點、卡片可點） */
+
+  /* 7) 手機 > Month 視圖：右下角標籤 nowrap/clamp/auto 寬 */
+  .fc-dayGridMonth-view .leave-boss::after,
+  .fc-dayGridMonth-view .leave-xiaobai::after,
+  .fc-dayGridMonth-view .leave-yatting::after{
+    white-space: nowrap !important;      /* 強制不換行（含 CJK） */
+    word-break: keep-all;                /* CJK 保持整字，不任意斷行 */
+    font-size: clamp(10px, 2.8vw, 13px);/* 依視窗寬度縮放，防止超出 */
+    padding: 2px 4px;                    /* 手機內距略縮小避免擠爆 */
+    width: auto;                         /* 取消 1/3 寬的繼承，改為內容自適應 */
+    display: inline-block;               /* 依內容寬度收縮 */
+  }
 
 }
     
@@ -504,7 +626,6 @@ font-weight: 500;letter-spacing: 1px;
 #submit-btn:active, #deleteBtn:active { transform: translateY(0); }
 
 /* ==================== 🔗 日曆格線與分隔線 (最終整合版) ==================== */
-
 :root {
   /* --- 在這裡統一管理所有線條的顏色與粗細 --- */
   --calendar-line-color: #e0bbf3; /* 統一線條顏色 */
@@ -547,6 +668,14 @@ font-weight: 500;letter-spacing: 1px;
   border-bottom: none !important;
 }
 
+/* ---- 4) 時間格/格線 Timegrid > 互動與事件擺位（全域） ---- */
+/* 讓事件卡片右邊保留 5% 留白，避免貼齊邊緣；維持可讀性 */
+#calendar .fc-timegrid-event-harness { right: 5% !important; }
+/* 讓欄位的空白處可點（建立事件），但事件卡片仍可點擊編輯 */
+#calendar .fc-timegrid-col-events{ pointer-events: none; }
+#calendar .fc-timegrid-col-events .fc-timegrid-event,
+#calendar .fc-timegrid-col-events .fc-timegrid-event *{ pointer-events: auto; }
+
 /* 週一公休覆蓋層 */
 #calendar .closed-overlay{
   position:absolute;           /* 絕對定位，鎖在父層欄位內 */
@@ -576,208 +705,74 @@ font-weight: 500;letter-spacing: 1px;
   background-color: rgba(89, 44, 99, .35) !important;
 }
 
-/* 排休按鈕圖示 */
-.leave-icon-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:56px;
-  height:32px;
-  background: transparent;
-  border-radius:4px;
-  padding:4px 10px;
-  cursor:pointer;
-  font-weight:500;
-  gap:6px;
-  border:1px solid rgba(0,0,0,0.06);
-  color: #fff !important;
-}
-.leave-icon-button:hover { background-color: rgba(0,0,0,0.04); transform: translateY(-1px); }
-
-/* 通用 header 按鈕群（靠右） */
-.header-button-group{
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  gap: 6px;
-  z-index: 10;
-}
-
-/* 週視圖不顯示「排休 / 約滿」按鈕群，只在日視圖顯示 */
-#calendar .fc-resourceTimeGridWeek-view .header-button-group{
-  display: none !important;
-}
-
-/* 統一按鈕樣式（兩個按鈕共用） */
-.header-button-group .leave-icon-button,
-.header-button-group .fully-booked-button{
-  /* 與工具列按鈕 .fc-button 視覺對齊 */
-  background-color: rgba(243, 239, 239, 0.2) !important;  /* 按鈕顏色 */
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;  /* 按鈕外框顏色 */
-  color: var(--text-light) !important;   /* 按鈕文字顏色 */
-  height: 38px; /* 保持原本按鈕高度（不隨表頭/工具列高度改變） */
-  padding: 0 12px !important; /* 與工具列按鈕 padding 風格一致 */
-  font-size: 20px; /* 放大字級（排休/約滿） */
-  font-weight: 400; /* 與 .fc-button 一致 */
-  border-radius: var(--border-radius-small) !important; /* 同工具列圓角 */
-  line-height: 1;
-  transition: all 0.3s ease; /* 與工具列相同的過渡 */
-  display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  min-width: 72px; /* 保留可點擊最小寬度 */
-}
-
-.header-button-group .leave-icon-button:hover,
-.header-button-group .fully-booked-button:hover,
-.header-button-group .leave-icon-button:focus,
-.header-button-group .fully-booked-button:focus{
-  /* 與工具列按鈕一致的 hover 效果 */
-  background-color: rgba(223, 200, 200, 0.3) !important;
-  transform: translateY(-1px);
-  box-shadow: none;
-  outline: none;
-}
-
-.header-button-group .fully-booked-button{ color: #fff; }
-.fully-booked-button.fb-active{
-  /* 已約滿狀態：保持強烈紅色，覆蓋工具列樣式 */
-  background: #ff4d4f !important;
-  color: #fff !important;
-  border-color: #ff4d4f !important;
-  box-shadow: 0 8px 24px rgba(255,77,79,0.28);
-}
-
-/* 強化優先度：在 header 群組中的已約滿按鈕一定顯示紅底白字 */
-.header-button-group .fully-booked-button.fb-active{
-  background-color: #ff4d4f !important;
-  color: #fff !important;
-  border-color: #ff4d4f !important;
-}
-
-/* 約滿按鈕樣式 */
-.fully-booked-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:72px;
-  height:36px;
-  padding:0 12px;
-  vertical-align:middle;
-  background: transparent;
-  color: inherit;
-  font-weight:600;
-  gap:8px;
-  border:1px solid rgba(0,0,0,0.06);
-}
-.fully-booked-button.fb-active{
-  background: rgba(255,77,79,0.08);
-  border-color: rgba(255,77,79,0.25);
-}
 
 /* 約滿外框（不擋點擊） */
 #calendar .fully-booked-outline{
   position:absolute; inset:0;
-  border:4px solid #ff4d4f;
+  border:4px solid var(--danger);
   box-shadow: inset 0 0 0 2px rgba(255,77,79,.4);
   pointer-events:none;
   z-index:50;           /* 蓋過格線與事件 */
   border-radius:2px;
 }
 
-/* === 月視圖：固定休假底色與標籤文字 === */
+/* ==================== 
+ ==================== */
+/* ---- Month 視圖 ---- */
+/* 月視圖：固定休假底色與標籤文字 */
+/* 提示：右下角標籤底色由 :root 的 --month-label-bg-weak / --month-label-bg-strong 控制 */
 #calendar { touch-action: manipulation; } /* 僅優化點擊，與月視圖無衝突 */
 
 /* 多月視圖：每個「月份」之間留白（僅作用於 multiMonth 月視圖） */
 .fc-multiMonthMonth-view .fc-multimonth-month { 
   padding: 8px;
 }
-/* 週一公休：底色 + 右下角「公休」 */
-.fc-dayGridMonth-view .closed-day-bg { 
-  background-color: #e0e0e0 !important; 
-  color: #333; 
-  position: relative;
-}
-.fc-dayGridMonth-view .closed-day-bg::after {
-  content: '公休';
-  position: absolute;
-  right: 6px; bottom: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
-  border-radius: 4px;
-  background: rgba(0,0,0,0.12);
-  /* 三分之一寬 */
-  width: 33.333%;
-  display: block;
-  text-align: center;
-  box-sizing: border-box;
-}
 
 /* 週四店長休：底色 + 右下角「店長休」 */
 .fc-dayGridMonth-view .leave-boss { 
   background-color: var(--stylist-1-bg-light) !important; 
-  position: relative;
 }
-.fc-dayGridMonth-view .leave-boss::after {
-  content: '店長休';
-  position: absolute;
-  right: 6px; bottom: 4px;
-  padding: 4px 8px;  /* ✅ 統一調整內距 */
-  font-size: 14px;   /* ✅ 統一調整字體大小 */
-  border-radius: 6px;
-  background: rgba(0,0,0,0.2);
-  color: white;
-  font-weight: 600;  /* ✅ 統一調整字重 */
-  /* 三分之一寬 */
-  width: 33.333%;
-  display: block;
-  text-align: center;
-  box-sizing: border-box;
-}
+.fc-dayGridMonth-view .leave-boss::after { content: '店長休'; }
 
 /* 週二小白休：底色 + 右下角「小白休」 */
 .fc-dayGridMonth-view .leave-xiaobai { 
   background-color: var(--stylist-3-bg-light) !important; 
-  position: relative;
 }
-.fc-dayGridMonth-view .leave-xiaobai::after {
-  content: '小白休';
-  position: absolute;
-  right: 6px; bottom: 4px;
-  padding: 4px 8px;  /* ✅ 增加內距讓文字區塊更大 */
-  font-size: 14px;   /* ✅ 增加字體大小 */
-  border-radius: 6px;
-  background: rgba(0,0,0,0.2);
-  color: white;
-  font-weight: 600;  /* ✅ 增加字重 */
-  /* 三分之一寬 */
-  width: 33.333%;
-  display: block;
-  text-align: center;
-  box-sizing: border-box;
-}
+.fc-dayGridMonth-view .leave-xiaobai::after { content: '小白休'; }
 
 /* 週日雅婷休：底色 + 右下角「雅婷休」 */
 .fc-dayGridMonth-view .leave-yatting { 
   background-color: var(--stylist-2-bg-light) !important; 
+}
+.fc-dayGridMonth-view .leave-yatting::after { content: '雅婷休'; }
+
+.fc-dayGridMonth-view .leave-boss,
+.fc-dayGridMonth-view .leave-xiaobai,
+.fc-dayGridMonth-view .leave-yatting {
   position: relative;
 }
-.fc-dayGridMonth-view .leave-yatting::after {
-  content: '雅婷休';
+
+/* 月視圖右下角標籤：共用定位與尺寸屬性 */
+.fc-dayGridMonth-view .leave-boss::after,
+.fc-dayGridMonth-view .leave-xiaobai::after,
+.fc-dayGridMonth-view .leave-yatting::after{
   position: absolute;
   right: 6px; bottom: 4px;
-  padding: 4px 8px;  /* ✅ 增加內距讓文字區塊更大 */
-  font-size: 14px;   /* ✅ 增加字體大小 */
-  border-radius: 6px;
-  background: rgba(0,0,0,0.2);
-  color: white;
-  font-weight: 600;  /* ✅ 增加字重 */
   /* 三分之一寬 */
   width: 33.333%;
   display: block;
   text-align: center;
   box-sizing: border-box;
+  /* 共用外觀（除文字內容外一致） */
+  padding: 4px 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  background: var(--month-label-bg-strong);
+  color: white;
+  font-weight: 600;
 }
+
+/* （已整合至「7) 手機 > Timegrid / Month 視圖」；移除重複手機區塊） */
 
 /* ✅ 非本月日期顏色調整為更接近白色 */
 .fc-dayGridMonth-view .fc-daygrid-day.fc-day-other {
@@ -798,6 +793,7 @@ font-weight: 500;letter-spacing: 1px;
   color: #ffffff;              /* 月份文字顏色 */
 }
 
+/* ---- Week 視圖 ---- */
 /* 只調整週視圖日期字樣大小與字距 */
 #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
       font-size: 16px;
@@ -805,12 +801,17 @@ font-weight: 500;letter-spacing: 1px;
     font-family: 'fcicons';
 }
 
+/* 週視圖：隱藏表頭「排休 / 約滿」按鈕群（僅日視圖顯示） */
+#calendar .fc-resourceTimeGridWeek-view .header-button-group{
+  display: none !important;
+}
+
 /* 僅在週視圖 (resourceTimeGridWeek) 中，隱藏所有的事件卡片元素 */
 .fc-resourceTimeGridWeek-view .fc-event-title  {
   display: none !important;
 } 
 
-/* ========= 桌面版（>=1025px）專屬：週視圖字級與排休顯示 ========= */
+/* ==================== 8) 桌面（≥1025px） > Week 視圖 ==================== */
 @media (min-width: 1025px){
   /* 週視圖（桌面）：設計師表頭的字放大 */
   #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
@@ -839,6 +840,33 @@ font-weight: 500;letter-spacing: 1px;
     text-orientation: upright !important;  /* 中文直立易讀 */
   }
 }
+
+/*
+============================================
+📚 CSS 簡要說明：clamp / overlay / 表頭按鈕去重
+--------------------------------------------
+1) clamp() 自適應字級
+   - 語法：clamp(最小值, 理想值, 最大值)
+   - 例如：font-size: clamp(14px, 4.5vw, 18px)
+     手機螢幕變窄時會縮到不低於 14px；一般情況依視窗寬度 vw 等比縮放；
+     放大時最多到 18px。這樣能避免過小難讀或過大擠版面。
+
+2) 排休覆蓋層 overlay（closed-overlay / leave-overlay）
+   - 週視圖（桌面）：overlay 以 position:absolute + inset:0 覆蓋整個欄位；
+     將可點擊行為關閉（pointer-events: none），避免誤觸。
+   - 文字採直書：writing-mode: vertical-rl；中文更易讀再加 text-orientation: upright。
+   - 置中到欄位高度 1/3：.overlay-label 使用 position:absolute + top:33% + transform 中心位移，
+     精準落在欄位上緣 1/3 的視覺位置，符合你指定的「三分之一」效果。
+   - 手機視圖：字級使用 clamp 縮小，避免遮擋；定位與可點擊策略維持一致。
+
+3) 表頭按鈕樣式去重（排休/已約滿）
+   - 兩顆表頭按鈕共用一組外觀（背景、邊框、尺寸、hover），只在必要處做差異覆寫，
+     例如 .fully-booked-button.fb-active 使用 --danger 變數統一紅色系。
+   - 已移除重複的 header 專屬 fb-active 色彩宣告，減少同義規則。
+   - 週視圖不顯示表頭按鈕群；日視圖由 resourceLabelDidMount 動態插入，
+     並以 header-button-group 統一定位到右側，避免推擠標題。
+============================================
+*/
 
 </style>
 
@@ -1088,7 +1116,7 @@ dateClick: function(info){
 }
 },
 
-// 月視圖：依星期顯示固定休假底色（含文字：週一=公休、週四=店長休）
+// 月視圖：依星期顯示固定休假底色（週四=店長休；週一已全域隱藏不再標示）
 dayCellDidMount: function(arg){
   if (arg.view.type !== 'dayGridMonth') return;
   
@@ -1098,13 +1126,12 @@ dayCellDidMount: function(arg){
   if (cellMonth !== currentMonth) return;
   
   const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
-  if (d === 1) arg.el.classList.add('closed-day-bg');   // 全店公休（顯示「公休」文字）
   if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
   if (d === 2) arg.el.classList.add('leave-xiaobai');   // ✅ 週二小白休
   if (d === 0) arg.el.classList.add('leave-yatting');   // ✅ 週日雅婷休
 },
 
-selectLongPressDelay: 400, // 【新增】手機輕點直接觸發 select，不需長按，減少彈窗延遲
+selectLongPressDelay: 250, // 手機長按 0.25s 觸發 select，降低等待但避免誤觸滑動
 
 datesSet: function(info) {
   updateToolbarTitle(info);
