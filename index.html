@@ -364,23 +364,25 @@ html, body {
 }
 
 /* 留言區外容器 */
-#notes-section {width: 100%; max-width: none; margin: 10px 0; padding: 0 15px; animation: fadeInUp 0.8s ease-out;}
+#notes-section {width: 100%; max-width: none; margin: 10px 0; padding: 0; animation: fadeInUp 0.8s ease-out;}
 
 /* 留言卡片容器 */
 .notes-container {background: var(--notes-bg); border: 2px solid var(--notes-border); border-radius: var(--border-radius); padding: 25px; box-shadow: var(--notes-shadow); transition: all 0.3s ease;}
 .notes-container:hover {box-shadow: var(--shadow-medium); transform: translateY(-2px);}
 
 /* 留言板標題列 */
-.notes-header {display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--calendar-border);}
+.notes-header {display: flex; align-items: center; margin-bottom: 0; padding-bottom: 15px; border-bottom: 2px solid var(--calendar-border);} 
 .notes-header h4 {margin: 0; color: var(--kikyo-primary); font-size: 20px; font-weight: 500; display: flex; align-items: center; gap: 10px;}
 .notes-header h4::before {content: "💭"; font-size: 24px;}
 
 /* 自動儲存提示 */
 .notes-meta {margin-left: auto; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; gap: 5px;}
 .notes-meta::before {content: "💾"; font-size: 14px;}
+/* 拉開『已載入』與右側儲存按鈕的距離 */
+#save-notes-btn { margin-left: 16px; }
 
 /* 筆記輸入框 */
-#notes-content {width: 100%; min-height: 200px; padding: 20px; box-sizing: border-box; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); font-size: 14px; line-height: 1.6; font-family: inherit; background: var(--bg-card); color: var(--text-primary); resize: vertical; transition: all 0.3s ease;}
+#notes-content {width: 100%; min-height: 200px; padding: 0 !important; box-sizing: border-box; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); font-size: 14px; line-height: 1.6; font-family: inherit; background: var(--bg-card); color: var(--text-primary); resize: vertical; transition: all 0.3s ease;}
 #notes-content:focus {outline: none; border-color: var(--kikyo-primary); box-shadow: 0 0 0 3px rgba(93, 78, 117, 0.1);}
 
 #notes-content {
@@ -704,6 +706,11 @@ font-weight: 500;letter-spacing: 1px;
   font-size: 12px;
   border-radius: 4px;
   background: rgba(0,0,0,0.12);
+  /* 三分之一寬 */
+  width: 33.333%;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* 週四店長休：底色 + 右下角「店長休」 */
@@ -721,6 +728,11 @@ font-weight: 500;letter-spacing: 1px;
   background: rgba(0,0,0,0.2);
   color: white;
   font-weight: 600;  /* ✅ 統一調整字重 */
+  /* 三分之一寬 */
+  width: 33.333%;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* 週二小白休：底色 + 右下角「小白休」 */
@@ -738,6 +750,11 @@ font-weight: 500;letter-spacing: 1px;
   background: rgba(0,0,0,0.2);
   color: white;
   font-weight: 600;  /* ✅ 增加字重 */
+  /* 三分之一寬 */
+  width: 33.333%;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* 週日雅婷休：底色 + 右下角「雅婷休」 */
@@ -755,6 +772,11 @@ font-weight: 500;letter-spacing: 1px;
   background: rgba(0,0,0,0.2);
   color: white;
   font-weight: 600;  /* ✅ 增加字重 */
+  /* 三分之一寬 */
+  width: 33.333%;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 /* ✅ 非本月日期顏色調整為更接近白色 */
@@ -788,6 +810,35 @@ font-weight: 500;letter-spacing: 1px;
   display: none !important;
 } 
 
+/* ========= 桌面版（>=1025px）專屬：週視圖字級與排休顯示 ========= */
+@media (min-width: 1025px){
+  /* 週視圖（桌面）：設計師表頭的字放大 */
+  #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
+    font-size: 22px !important;
+    letter-spacing: 2px;
+  }
+
+  /* 週視圖（桌面）：紫色排休覆蓋層文字縮小並保持直書顯示 */
+  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
+    font-size: 34px;            /* 加大一些：週視圖的直書字級 */
+    line-height: 1.1;
+    padding: 0 !important;      /* 移除任何 padding 影響位置 */
+    position: absolute;         /* 覆蓋整欄位 */
+    inset: 0;                   /* 充滿父層欄位 */
+    display: flex;              /* 仍使用 flex 以便其他情境對齊 */
+    pointer-events: none !important; /* 禁用點擊，避免誤觸 */
+  }
+
+  /* 將排休文字固定在欄位高度的三分之一處，並強制直書 */
+  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay .overlay-label{
+    position: absolute;
+    top: 33%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    writing-mode: vertical-rl !important;  /* 強制直書 */
+    text-orientation: upright !important;  /* 中文直立易讀 */
+  }
+}
 
 </style>
 
@@ -1289,13 +1340,7 @@ document.getElementById('save-notes-btn').addEventListener('click', async functi
             }
         });
         
-        calendarEl.addEventListener('click', function(e) {
-            if (e.target.matches('.leave-overlay')) {
-                const { resourceId, date } = e.target.dataset;
-                const resource = calendar.getResourceById(resourceId);
-                if(resource) { openLeaveModal(new Date(date + 'T00:00:00'), resource); }
-            }
-        });
+    /* 取消覆蓋層點擊開窗的事件委派（僅保留表頭「排休」按鈕可用） */
 
         form.addEventListener('submit', async function (e) {
           e.preventDefault();
@@ -1387,7 +1432,10 @@ document.getElementById('save-notes-btn').addEventListener('click', async functi
 
     const ov = document.createElement('div');
     ov.className = 'closed-overlay leave-overlay';
-    ov.textContent = leave.reason;
+    const label = document.createElement('span');
+    label.className = 'overlay-label';
+    label.textContent = leave.reason;
+    ov.appendChild(label);
     ov.dataset.resourceId = leave.resourceId;
     ov.dataset.date = leave.date;
     targetColumn.appendChild(ov);
