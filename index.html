@@ -1,1606 +1,2201 @@
 <!DOCTYPE html>
+<!--
+  ─────────────────────────────────────────────────────────────────────────────
+  這份 `index.html` 是「世紀髮廊 景美店」的預約排程頁面（前端）。
+
+  你可以把它想成三個主要部分：
+  1) HTML：畫面骨架（日曆容器、預約彈窗、排休彈窗、報表彈窗、留言板）
+  2) CSS：外觀（此頁引用 `styles.css`；也引用 FullCalendar 的 CSS）
+  3) JavaScript：互動與資料（建立 FullCalendar、開關彈窗、呼叫後端 API）
+
+  後端資料來源：
+  - 透過 Google Apps Script Web App（APPS_SCRIPT_WEB_APP_URL）提供 JSON API
+  - 前端用 `fetch()` 以 GET/POST 呼叫不同 action，例如：
+    - `?action=getEvents` 取得預約事件
+    - `?action=getLeave` 取得排休/約滿
+    - `?action=saveLeave` / `deleteLeave` 儲存/刪除排休
+    - `?action=getNotes` / `saveNotes` 讀寫每日留言
+    - `?action=getReport` 取得區間統計
+
+  小提醒（學習重點）：
+  - `id`：用來讓 JS 精準抓到元素（getElementById）
+  - `class`：用來套 CSS、也可供 JS 選取/加上狀態（classList）
+  - 「彈窗 modal」：通常由遮罩 + 內容框組成，透過切換 `display` 顯示/隱藏
+  - IIFE：本檔用 (function(){ ... })(); 把變數包在作用域中，避免污染全域
+  ─────────────────────────────────────────────────────────────────────────────
+-->
 <html lang="zh-Hant">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世紀髮廊 景美店</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.css">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-<style>
-/*
-===================== CSS 目錄（不更動規則順序，僅標示區塊） =====================
-1) 變數與主題 :root
-2) 工具列 Toolbar
-3) 表頭 Column Header
-4) 時間格/格線 Timegrid
-5) 事件卡片 Event Cards
-6) 月視圖標籤 Month Labels
-7) 手機 ≤1024px
-8) 桌面 ≥1025px
-9) 補充說明 Note
-==============================================================================
-*/
-/* =====CSS變數定義區塊 - 統一管理整個網站的顏色配置 =====*/
-:root {
-  /* 品牌主色系（主要/較亮/較深/極淺背景） */
-  --kikyo-primary: #5D4E75;      /* 主要色，用在標題列、重點按鈕 */
-  --kikyo-light:   #8B7CA3;      /* 較亮點綴 */
-  --kikyo-dark:    #4A3D5C;      /* 較深對比 */
-  --kikyo-ultra-light: #F5F3F8;  /* 超淺底色（區塊背景） */
-  /* 輔助色（卡片底/間隔用，可自行替換） */
-  --accent-cream:    #f8f4fc;    /* 時段偶數列背景 */
-  --accent-lavender: #E6E0F0;
-  /* 文字色系 */
-  --text-light:     #ffffff;     /* 深底上的白字 */--text-muted:     #c9b8b8;     /* 註解/灰字 */
-  /* 全站背景與卡片 */
-  --bg-main:  linear-gradient(135deg, #F8F6FB 0%, #EDE7F6 100%);
-  --bg-card:  #FfffFF;
-  --bg-active: var(--kikyo-ultra-light);
-  /* 框線/陰影/圓角 */
-  --calendar-border:       #E0D4E8;
-  --border-radius:       5px;  /* 卡片圓角 */
-  --border-radius-small: 5px;   /* 小型元件圓角 */
-  --shadow-soft:   0 4px 8px  rgba(93,78,117,0.1);
-  --shadow-medium: 0 8px 16px rgba(93,78,117,0.15);
-
-  /* 彈窗 */
-  --modal-overlay: rgba(93,78,117,0.6);
-  --modal-bg:      var(--bg-card);
-  --modal-border:  var(--calendar-border);
-  /* 危險/警示色（已約滿） */
-  --danger: #ff4d4f;
-  /* 月視圖標籤背景（半透明黑） */
-  --month-label-bg-weak:  rgba(0,0,0,0.12); /* 用於「公休」弱一點的底 */
-  --month-label-bg-strong:rgba(0,0,0,0.20); /* 用於設計師排休較明顯的底 */
-}
-
-/* ==================== 🌐 基礎樣式 ==================== */
-/* 全域基礎設定 - 重置瀏覽器預設樣式並設定基本字體與背景 */
-html, body {
-  margin: 0;
-  padding: 0;
-  
-  font-size: 14px;
-  font-weight: 400;
-  height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-  color: var(--text-primary);
-  background: var(--bg-main);
-  line-height: 2;
-  scroll-behavior: smooth;
-  /* 去除不必要的 inset，避免右側/上方多餘空白 */
-}
-
-/* 日曆主容器 - 設定日曆的外層容器樣式與動畫效果 */
-#calendar-container {
-  position: relative;
-  width: 100%;
-  padding: 0;
-  padding-bottom: 0;
-  max-width: none;
-  margin: 0;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* 日曆本體 - 設定日曆的主要樣式、背景與陰影 */
-#calendar {
-  width: 100% !important;
-  max-width: none;
-  margin: 0;
-  height: auto !important;
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-medium);
-  overflow: visible; /* ⭐將 hidden 改為 visible，解除對 sticky 的限制 */
-  border: 2px solid var(--calendar-border);
-}
-
-/* 日曆捲動設定 - 還原由 FullCalendar 自行管理高度與捲動 */
-.fc .fc-scroller { overflow-y: visible !important; height: auto !important; }
-.fc-view-harness { height: auto !important; }
-#calendar .fc-timegrid-slots table { height: auto !important; }
-
-/* 頁面淡入動畫 */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ==================== 📅 工具列 (Toolbar) ==================== */
-:root {
-  /* 工具列顏色 */
-  --calendar-header-bg: linear-gradient(90deg, #4A225D 50%, #6F3381 100%);
-  --calendar-header-text: var(--text-light);
-}
-
-/* 日曆頂部工具列 - 包含導航按鈕和標題的區域 */
-#calendar .fc-header-toolbar {
-    display: flex;
-    align-items: center;
-    gap: .5rem; /* 避免因過大間距造成水平溢位 */
-    background: var(--calendar-header-bg);
-    padding: 0 8px; /* 縮小左右內距，貼齊頁面 */
-    margin-bottom: 0 !important;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-  height: 50px;
-      
-}
-
-/* 清理：移除無用的 today 按鈕 margin 註解（已不採用） */
-
-/* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
-#calendar .fc-toolbar-chunk {
-  display: flex;  /* ✅ 修正原本錯誤的 display 值 */
-  gap: 8px;      /* ✅ 增加按鈕間距 */
-  font-size: 18px;
-}
-
-/* 工具列標題樣式 - 顯示當前日期的標題文字 */
-#calendar .fc-toolbar-title {
-  color: var(--calendar-header-text);
-  font-size: 28px;
-  letter-spacing: 1px;
-}
-
-/* ✅ 月視圖標題強制為白色 */
-#calendar .fc-toolbar-title.is-month-title {
-  color: var(--text-light) !important;
-}
-
-/* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
-#calendar .fc-toolbar-title .ym-gap{display:inline-block;width:2em;}
-#calendar .fc-toolbar-title .md-gap{display:inline-block;width:2em;}
-
-/* 日曆按鈕樣式 - 導航按鈕的基本樣式與效果 */
-.fc-button {
-  background-color: rgba(243, 239, 239, 0.2) !important;  /*按鈕顏色 */
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;  /*按鈕外框顏色*/
-  color: var(--text-light) !important;   /* 按鈕文字顏色 */
-  height: 34px; /* 工具列按鈕高度（桌面） */
-  width: 34px;  /* 工具列按鈕寬度（桌面） */
-  border-radius: var(--border-radius-small) !important;
-  padding: 0px !important; /* 例如：上下 6px，左右 10px */
-  font-weight: 400;
-  transition: all 0.3s ease;
-}
-/* 群組內相鄰按鈕間距（prev/next、日/週/月） */
-.fc .fc-button-group .fc-button + .fc-button { margin-left: 6px !important; }
-
-/* 按鈕懸停/焦點效果 */
-.fc-button:hover {background-color: rgba(223, 200, 200, 0.3) !important;transform: translateY(-1px);}
-.fc-button:focus { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important; }
-
-/* ==================== 📋 表頭 (Header) ==================== */
-/* 調整表頭高度為 50px（與工具列同步） */
-#calendar .fc-col-header {
-  height: 50px;
-  background: #592C63;
-    border-bottom: 1px solid var(--calendar-border);
-    background: linear-gradient(135deg, #66327C 6px, #592C63 6px 12px),
-            repeating-linear-gradient(135deg,  #70649A 6px, #b474a2 6px 12px);
-  
-}
-/*text-shadow: 0.71px 0.71px 0 rgba(222, 201, 232, 0.42), 1.41px 1.41px 0 rgba(198, 180, 206, 0.42), 2.12px 2.12px 0 rgba(173, 158, 180, 0.42), 2.83px 2.83px 0 rgba(149, 137, 154, 0.42), 3.54px 3.54px 0 rgba(124, 115, 129, 0.42), 4.24px 4.24px 0 rgba(100, 94, 103, 0.42), 4.95px 4.95px 0 rgba(75, 72, 77, 0.42), 5.66px 5.66px 0 rgba(51, 51, 51, 0.42);*/
-
-
-/* 表頭單元格 */
-#calendar .fc-col-header-cell {
-  height: 100%;
-  padding: 0 !important;
-}
-
-/* 表頭內容同步區 */
-#calendar .fc-col-header-cell .fc-scrollgrid-sync-inner {
-  height: 100%;
-}
-
-/* 表頭文字樣式 - 星期幾文字的樣式設定 */
-#calendar .fc-col-header-cell-cushion {
-  /* 使用 flex 排列，讓內文置中；同時設定為 relative，讓按鈕群可絕對定位到右側而不推動標題 */
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 0 8px !important;
-  line-height: var(--col-header-height, 50px) !important; /* 與表頭同步（改為 50px） */
-  font-family: "Arial Black", Gadget, sans-serif;
-  color: #f3f1f2;
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: normal;
-  white-space: nowrap;
-  overflow: visible; /* 允許按鈕不被截斷 */
-}
-
-
-/* 表頭捲動與邊框設定 */
-#calendar .fc-scrollgrid-section-header .fc-scroller { overflow-y: hidden !important; }
-#calendar .fc-scrollgrid { border-top: 1px solid var(--calendar-border); }
-
-/* --- 表頭：排休/已約滿按鈕群（移至 Header 區塊） --- */
-/* 排休按鈕圖示 */
-.leave-icon-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:56px;
-  height:32px;
-  background: transparent;
-  border-radius:4px;
-  padding:4px 10px;
-  cursor:pointer;
-  font-weight:500;
-  gap:6px;
-  border:1px solid rgba(0,0,0,0.06);
-  color: #fff !important;
-}
-.leave-icon-button:hover { background-color: rgba(0,0,0,0.04); transform: translateY(-1px); }
-
-/* 通用 header 按鈕群（靠右） */
-.header-button-group{
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  gap: 6px;
-  z-index: 10;
-}
-
-
-/* 統一按鈕樣式（兩個按鈕共用） */
-.header-button-group .leave-icon-button,
-.header-button-group .fully-booked-button{
-  /* 與工具列按鈕 .fc-button 視覺對齊 */
-  background-color: rgba(243, 239, 239, 0.2) !important;  /* 按鈕顏色 */
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;  /* 按鈕外框顏色 */
-  color: var(--text-light) !important;   /* 按鈕文字顏色 */
-  height: 38px; /* 保持原本按鈕高度（不隨表頭/工具列高度改變） */
-  padding: 0 12px !important; /* 與工具列按鈕 padding 風格一致 */
-  font-size: 20px; /* 放大字級（排休/約滿） */
-  font-weight: 400; /* 與 .fc-button 一致 */
-  border-radius: var(--border-radius-small) !important; /* 同工具列圓角 */
-  line-height: 1;
-  transition: all 0.3s ease; /* 與工具列相同的過渡 */
-  display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  min-width: 72px; /* 保留可點擊最小寬度 */
-}
-
-.header-button-group .leave-icon-button:hover,
-.header-button-group .fully-booked-button:hover,
-.header-button-group .leave-icon-button:focus,
-.header-button-group .fully-booked-button:focus{
-  /* 與工具列按鈕一致的 hover 效果 */
-  background-color: rgba(223, 200, 200, 0.3) !important;
-  transform: translateY(-1px);
-  box-shadow: none;
-  outline: none;
-}
-
-.header-button-group .fully-booked-button{ color: #fff; }
-.fully-booked-button.fb-active{
-  /* 已約滿狀態：保持強烈紅色，覆蓋工具列樣式 */
-  background: var(--danger) !important;
-  color: #fff !important;
-  border-color: var(--danger) !important;
-  box-shadow: 0 8px 24px rgba(255,77,79,0.28);
-}
-
-/* 強化優先度：在 header 群組中的已約滿按鈕一定顯示紅底白字 */
-/*（精簡）header 群組與一般 fb-active 同色，無需重覆宣告 */
-
-/* 約滿按鈕樣式 */
-.fully-booked-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:72px;
-  height:36px;
-  padding:0 12px;
-  vertical-align:middle;
-  background: transparent;
-  color: inherit;
-  font-weight:600;
-  gap:8px;
-  border:1px solid rgba(0,0,0,0.06);
-}
-.fully-booked-button.fb-active{
-  background: rgba(255,77,79,0.08);
-  border-color: rgba(255,77,79,0.25);
-}
-
-/* ==================== ⏰ 時間欄 (Time Column) ==================== */
-:root {
-  /* 時間欄顏色 */
-  --calendar-content-odd:  #f8f4fc;
-  --calendar-content-even: #ffffff;
-  --time-major: var(--text-primary); /* 00/30 分 */
-  --time-minor: #f8f4fc;   /* 15/45 分 */
-}
-
-/* 時間槽高度與背景設定 */
-#calendar .fc-timegrid-slot,
-#calendar .fc-timegrid-slot.fc-timegrid-slot-label { height: 2.7em !important; }  /* 【調整】時間格高度 */
-#calendar .fc-timegrid-slot-lane { background-color: transparent !important; }
-#calendar .fc-timegrid-slots tbody tr:nth-child(odd) td.fc-timegrid-slot-lane { background: var(--calendar-content-odd) !important; }   /* 基數 */
-#calendar .fc-timegrid-slots tbody tr:nth-child(even) td.fc-timegrid-slot-lane { background: var(--calendar-content-even) !important; }  /* 偶數 */
-
-/* 非營業區塊背景（覆蓋整個欄位/全天） */
-#calendar .fc-non-business { background: transparent !important; }
-
-/* -- 設定時間欄的背景顏色 -- */
-#calendar .fc-timegrid-slot-label {
-  background-color: #f8f4fc !important; /* <-- 在這裡設定您想要的背景色 */
-  border-color: #c79be0 !important;    /* <-- 也可以順便統一邊框顏色 */
-}
-
-
-/* 用餐時段：17:30、17:45、18:00 變色（含左側時間標籤與右側欄位） */
-:root { --meal-slot-bg: rgba(230, 231, 178, 0.35); } /* ⭐改成紫色半透明 */
-
-/* 用餐時段（命中 td；提高特異性；放在奇偶列規則之後） */
-/* 右側內容欄 */
-#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"],
-#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:45:00"],
-#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="18:00:00"] {
-  background: var(--meal-slot-bg) !important;
-}
-
-/* ==================== ⏰ 時間標籤樣式 (重組版) ==================== */
-
-#calendar .fc-timegrid-slot-label .fc-timegrid-slot-label-cushion {
-    font-size: 16px !important;     /* <-- 在這裡修改您想要的大小 */
-    font-weight: 400 !important;   /* <-- 在這裡修改您想要的字重 */
-    color: #A08DAA !important;      /* <-- 在這裡修改您想要的顏色 */
-}
-
-/* --- 2. 設定【主要時間標籤】(00/30 分) 的樣式 --- */
-/*    這個選擇器更具體，所以會覆蓋通用規則 */
-#calendar .fc-timegrid-slot-label.slot-major-0030 .fc-timegrid-slot-label-cushion {
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    color: #783f83bd !important;
-}
-
-/* ==================== 🎫 事件卡片 (Event Card) ==================== */
-:root {
-  /* 事件預設色 */
-  --event-default-bg: var(--kikyo-primary);
-  --event-default-text: var(--text-light);
-
-  /* 設計師顏色 */
-  --stylist-1-bg: #005CAF;
-  --stylist-1-text: #f8f1f1;
-  --stylist-1-bg-light: #5995e1;
-  --stylist-2-bg: #E03C8A;
-  --stylist-2-text: #f8f1f1;
-  --stylist-2-bg-light: #f082a1;
-  --stylist-3-bg: #42602D;
-  --stylist-3-text: #f8f1f1;
-  --stylist-3-bg-light: #7BA23F;
-}
-
-/* --- B. 事件卡片的文字與內容排版 (合併版) --- */
-
-/* 將兩個選擇器用逗號隔開，共用相同的樣式 */
-#calendar .fc-timegrid-event .fc-event-title,
-#calendar .fc-event.blocked-time .fc-event-title {
-  /* --- 以下是它們共用的樣式 --- */
-  display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding: 0 0px;
-    font-weight: 400;
-    line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: 0px;
-}
-
-/* 桌面版：讓事件卡片左右留白，不占滿格子 */
-@media (min-width: 1025px) {
-      #calendar .fc-timegrid-event:not(.fc-bg-event) {right: 3px; /* 右側多出 3px 空間 */
-       }}
-   
-/* 讓事件卡片右邊多一些距離 inset 值 */
-#calendar .fc-timegrid-event-harness { right: 5% !important; } 
-/* 針對【一般預約】卡片的文字大小 */
-#calendar .fc-timegrid-event .fc-event-title {
-  font-size: 20px; /* 一般預約的文字大小 */
-}
-
-/* 針對【不約時段】卡片的圖示大小 */
-#calendar .fc-event.blocked-time .fc-event-title {
-  font-size: 24px; /* 不約時段的圖示大小，可以設大一點 */
-}
-
-/* 事件卡片懸停效果 */
-#calendar .fc-timegrid-event:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-medium);
-}
-
-/* 服務徽章樣式 */
-.svc-badge{
-  font-size: 22px; font-weight: 700; margin-right: 6px; line-height: 1;
-}
-
-/* 事件多段文字佈局 */
-.fc-timegrid-event .fc-event-title.evt-line{
-  display:flex; justify-content:center; align-items:center;
-  gap:20px;    /* 【調整】每段字（服務、時間、姓名等）的間距 */
-}
-.evt-svc{ font-size:24px; font-weight:700; gap:10px; }
-.evt-time{ min-width:48px; text-align:right; }
-.evt-phone{ letter-spacing:1px; }
-
-/* --- C. 設計師顏色套用規則 --- */
-#calendar .fc-event.sty-1{ background: var(--stylist-1-bg) !important; border-color: var(--stylist-1-bg) !important; color: var(--stylist-1-text) !important; }
-#calendar .fc-event.sty-2{ background: var(--stylist-2-bg) !important; border-color: var(--stylist-2-bg) !important; color: var(--stylist-2-text) !important; }
-#calendar .fc-event.sty-3{ background: var(--stylist-3-bg) !important; border-color: var(--stylist-3-bg) !important; color: var(--stylist-3-text) !important; }
-
-#calendar .fc-event.sty-1.blocked-time{ background: var(--stylist-1-bg-light) !important; border-color: var(--stylist-1-bg-light) !important; color: var(--stylist-1-text) !important; }
-#calendar .fc-event.sty-2.blocked-time{ background: var(--stylist-2-bg-light) !important; border-color: var(--stylist-2-bg-light) !important; color: var(--stylist-2-text) !important; }
-#calendar .fc-event.sty-3.blocked-time{ background: var(--stylist-3-bg-light) !important; border-color: var(--stylist-3-bg-light) !important; color: var(--stylist-3-text) !important; }
-
-/* ==================== 💬 留言區 (Notes) ==================== */
-:root {
-  /* 留言區顏色 */
-  --notes-bg:     var(--bg-card);
-  --notes-border: var(--calendar-border);
-  --notes-shadow: 0 4px 12px rgba(93,78,117,0.1);
-}
-
-/* 留言區外容器 */
-#notes-section {width: 100%; max-width: none; margin: 10px 0; padding: 0; animation: fadeInUp 0.8s ease-out;}
-
-/* 留言卡片容器 */
-.notes-container {background: var(--notes-bg); border: 2px solid var(--notes-border); border-radius: var(--border-radius); padding: 25px; box-shadow: var(--notes-shadow); transition: all 0.3s ease;}
-.notes-container:hover {box-shadow: var(--shadow-medium); transform: translateY(-2px);}
-
-/* 留言板標題列 */
-.notes-header {display: flex; align-items: center; margin-bottom: 0; padding-bottom: 15px; border-bottom: 2px solid var(--calendar-border);} 
-.notes-header h4 {margin: 0; color: var(--kikyo-primary); font-size: 20px; font-weight: 500; display: flex; align-items: center; gap: 10px;}
-.notes-header h4::before {content: "💭"; font-size: 24px;}
-
-/* 自動儲存提示 */
-.notes-meta {margin-left: auto; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; gap: 5px;}
-.notes-meta::before {content: "💾"; font-size: 14px;}
-/* 拉開『已載入』與右側儲存按鈕的距離 */
-#save-notes-btn { margin-left: 16px; }
-
-/* 筆記輸入框 */
-#notes-content {width: 100%; min-height: 200px; padding: 0 !important; box-sizing: border-box; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); font-size: 14px; line-height: 1.6; font-family: inherit; background: var(--bg-card); color: var(--text-primary); resize: vertical; transition: all 0.3s ease;}
-#notes-content:focus {outline: none; border-color: var(--kikyo-primary); box-shadow: 0 0 0 3px rgba(93, 78, 117, 0.1);}
-
-#notes-content {
-    font-size: 22px;
-    color: #110677;
-font-weight: 500;letter-spacing: 1px;
-} 
-/* ==================== 7) 手機 (≤1024px) ==================== */
-@media (max-width: 1024px) {
-    /* Mobile > Global（整體容器） */
-    #calendar-container { padding: 3px; }
-    #calendar { width: 100vw !important; margin: 0 -10px; border-radius: 0; }
-
-    /* Mobile > Toolbar（工具列） */
-     #calendar .fc-header-toolbar {
-    padding: 8px 16px;
-    height:42px;
-  }
-  #calendar .fc-toolbar-title {
-    white-space: nowrap;
-    font-size: clamp(16px, 6vw, 24px);     /* 依螢幕自動縮放 */
-    letter-spacing: clamp(0px, 0.3vw, 1px); /* 防止字距過寬 */
-    min-width: 0;                           /* 允許縮小以避免被擠出 */
-  }
-  /* 手機：工具列按鈕隨畫面縮放（但保留易點擊下限） */
-  #calendar .fc-button {
-    width: clamp(28px, 8vw, 34px) !important;
-    height: clamp(28px, 8vw, 34px) !important;
-  }
-  /* Mobile > Header（資源列） */
-  /* 資源（設計師）表頭靠左，避免與右側按鈕群擠在一起 */
-  #calendar .resource-cushion{
-    justify-content: flex-start;
-    padding-right: 8px !important; /* 保留與右側一點距離（原本就有左右 8px padding） */
-  }
-  /* 7) 手機 > Week 視圖：覆蓋層字級縮小與位置微調 */
-  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
-    font-size: clamp(18px, 6vw, 28px);
-    letter-spacing: .1em;
-    padding-bottom: 350px; /* 依手機視口略減，避免壓到更多格 */
-  }
-  /* 7) 手機 > Header：表頭字級/高度 */
-    :root{
-      /* 手機下的星期列高度與字級 */
-      --col-header-height: 34px;
-      --col-header-size:   16px;
-    }
-
-  /* 7) 手機 > Header：週/月視圖共用星期列高度 */
-    #calendar .fc-col-header { height: var(--col-header-height) !important; }
-    #calendar .fc-col-header-cell-cushion{
-      text-shadow: 0 1px 0 #fff, 0 1px 4px rgba(0,0,0,.18);
-      font-size: clamp(14px, 4.5vw, 18px); /* 手機自適應縮小 */
-      letter-spacing: 2px;                 /* 收斂字距避免擠在一起 */
-      line-height: var(--col-header-height);
-    }
-
-  /* 7) 手機 > Week 視圖：表頭置中 */
-    #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
-      justify-content: center !important;
-      text-align: center;
-    }
-
-#calendar .evt-phone {
-  display: none !important;
-}
-
-  /* 7) 手機 > Timegrid：事件卡片與互動（空白可點、卡片可點） */
-    #calendar .fc-timegrid-event { height: 100% !important; }
-    #calendar .fc-timegrid-event .fc-event-title { font-size: 16px; line-height: 1.2; padding: 0 6px; }
-    .svc-badge{ font-size: 12px; }
-    .fc-timegrid-event .fc-event-title.evt-line{ gap:3px; }
-    .evt-svc{ font-size:18px; }
-    
-/* 7) 手機 > Timegrid：event-harness 擺位還原（交由全域 right:5% 控制） */
-#calendar .fc-timegrid-event-harness {
-  width: auto !important;             /* 還原為自動，交由全域 right:5% 控制右側留白 */
-  left: 0 !important;                 /* 靠左貼齊 */
-}
-
-  /* 7) 手機 > Timegrid：事件卡片（空白可點與右側留白） */
-    /* 指向全域：沿用 4) Timegrid 的 pointer-events 設定（空白可點、卡片可點） */
-
-  /* 7) 手機 > Month 視圖：右下角標籤 nowrap/clamp/auto 寬 */
-  .fc-dayGridMonth-view .leave-boss::after,
-  .fc-dayGridMonth-view .leave-xiaobai::after,
-  .fc-dayGridMonth-view .leave-yatting::after{
-    white-space: nowrap !important;      /* 強制不換行（含 CJK） */
-    word-break: keep-all;                /* CJK 保持整字，不任意斷行 */
-    font-size: clamp(10px, 2.8vw, 13px);/* 依視窗寬度縮放，防止超出 */
-    padding: 2px 4px;                    /* 手機內距略縮小避免擠爆 */
-    width: auto;                         /* 取消 1/3 寬的繼承，改為內容自適應 */
-    display: inline-block;               /* 依內容寬度收縮 */
-  }
-
-}
-    
-    /* 彈窗調整 */
-    .modal-content { width: 95%; margin: 2% auto; padding: 20px; }
-/* ==================== 🪟 彈窗樣式 (Modal) - 未包含在排序內，置於此處 ==================== */
-:root {
-  /* 按鈕顏色 */
-  --button-primary-bg:   var(--kikyo-primary);
-  --button-primary-text: var(--text-light);
-  --button-secondary-bg: var(--bg-card);
-  --button-secondary-text: var(--text-primary);
-  --button-border: var(--calendar-border);
-}
-
-/* 彈窗背景遮罩 */
-.modal { display: none; position: fixed; z-index: 1000; inset: 0; overflow: auto; background: var(--modal-overlay); backdrop-filter: blur(4px); }
-
-/* 彈窗內容容器 */
-.modal-content { background: var(--modal-bg); margin: 5% auto; padding: 30px; border: 1px solid var(--modal-border); width: 90%; max-width: 500px; border-radius: var(--border-radius); max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-medium); transform: translateY(-20px); animation: modalSlideIn 0.3s ease-out forwards; }
-@keyframes modalSlideIn { to { transform: translateY(0); } }
-
-/* 彈窗關閉按鈕 */
-.close-button { color: var(--text-muted); float: right; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s ease; line-height: 1; }
-.close-button:hover, .close-button:focus { color: var(--kikyo-primary); transform: scale(1.1); }
-
-/* 彈窗表單樣式 */
-#appointmentForm h3 { color: var(--kikyo-primary); font-weight: 500; margin-bottom: 20px; font-size: 20px; }
-#appointmentForm label { margin-top: 15px; display: block; font-weight: 500; color: var(--text-primary); margin-bottom: 5px; }
-#appointmentForm input, #appointmentForm select, #appointmentForm textarea { width: 100%; padding: 12px; margin-top: 4px; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); box-sizing: border-box; font-family: inherit; font-size: 14px; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
-#appointmentForm input:focus, #appointmentForm select:focus, #appointmentForm textarea:focus { outline: none; border-color: var(--kikyo-primary); box-shadow: 0 0 0 3px rgba(93, 78, 117, 0.1); }
-
-/* 預約類型選擇區塊 */
-.appointment-type-section { margin: 20px 0; padding: 15px; border: 2px solid var(--calendar-border); border-radius: var(--border-radius-small); background: var(--bg-active); }
-.appointment-type-section label { margin-top: 0 !important; margin-bottom: 10px; font-weight: 500; color: var(--kikyo-primary); }
-.radio-group { display: flex; gap: 20px; margin-top: 8px; }
-.radio-group input[type="radio"] { width: auto !important; margin-right: 8px; accent-color: var(--kikyo-primary); }
-.radio-group label { margin-top: 0 !important; font-weight: normal !important; display: flex; align-items: center; color: var(--text-primary); cursor: pointer; transition: color 0.3s ease; }
-.radio-group label:hover { color: var(--kikyo-primary); }
-
-/* 表單按鈕 */
-#submit-btn, #deleteBtn { color: var(--button-primary-text); border: none; padding: 12px 24px; border-radius: var(--border-radius-small); cursor: pointer; font-weight: 500; font-size: 16px; transition: all 0.3s ease; box-shadow: var(--shadow-soft); }
-#submit-btn { background: linear-gradient(135deg, var(--kikyo-primary) 0%, var(--kikyo-light) 100%); }
-#deleteBtn { background: #C0392B; }
-#submit-btn:hover, #deleteBtn:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
-#deleteBtn:hover { background: #E74C3C; }
-#submit-btn:active, #deleteBtn:active { transform: translateY(0); }
-
-/* ==================== 🔗 日曆格線與分隔線 (最終整合版) ==================== */
-:root {
-  /* --- 在這裡統一管理所有線條的顏色與粗細 --- */
-  --calendar-line-color: #e0bbf3; /* 統一線條顏色 */
-  --calendar-line-width: 1px;      /* 統一線條粗細 */
-}
-/* --- 新增這段來移除事件容器的左右外邊距 --- */
-#calendar .fc-timegrid-col-events {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-/* a) 為【左側時間欄】的右邊，畫一條垂直線 */
-#calendar .fc-timegrid-slot-label {
-  border-right: var(--calendar-line-width) solid var(--calendar-line-color) !important;
-}
-
-/* b) 為【內容區的每一欄】的右邊，畫一條垂直線 (使用偽元素，佈局最安全) */
-#calendar .fc-timegrid-body .fc-timegrid-col { 
-  position: relative; 
-}
-#calendar .fc-timegrid-body .fc-timegrid-col:not(:last-child)::after {
-  content: ""; /* 確保偽元素能被生成 */
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: var(--calendar-line-width);   /* 使用變數控制粗細 */
-  background: var(--calendar-line-color); /* 使用變數控制顏色 */
-  z-index: 4; /* 確保線條顯示在背景之上 */
-  pointer-events: none;
-}
-
-/* a) 為【所有時間格】(包括左側時間欄和右側內容區) 的底部，畫一條水平線 */
-#calendar .fc-timegrid-slot {
-  border-bottom: var(--calendar-line-width) solid var(--calendar-line-color) !important;
-}
-
-/* b) 【可選優化】移除表格最底部的重複線條，讓外觀更乾淨 */
-#calendar .fc-timegrid-slots table {
-  border-bottom: none !important;
-}
-
-/* ---- 4) 時間格/格線 Timegrid > 互動與事件擺位（全域） ---- */
-/* 讓事件卡片右邊保留 5% 留白，避免貼齊邊緣；維持可讀性 */
-#calendar .fc-timegrid-event-harness { right: 5% !important; }
-/* 讓欄位的空白處可點（建立事件），但事件卡片仍可點擊編輯 */
-#calendar .fc-timegrid-col-events{ pointer-events: none; }
-#calendar .fc-timegrid-col-events .fc-timegrid-event,
-#calendar .fc-timegrid-col-events .fc-timegrid-event *{ pointer-events: auto; }
-
-/* 週一公休覆蓋層 */
-#calendar .closed-overlay{
-  position:absolute;           /* 絕對定位，鎖在父層欄位內 */
-  inset:0;                     /* 上右下左皆為 0，整欄全覆蓋；想只蓋上半：inset:0 0 50% 0 */
-  background:rgba(89,44,99,.35);/* 背景色與透明度；最後的 .45 越小越透明 */
-  display:flex;                /* 用 flex 讓文字置中 */
-  align-items:center;          /* 垂直置中 */
-  padding-bottom: 500px;       /* ⭐新增：增加底部內距將文字上推。數值越大，文字越靠上 */
-  justify-content:center;      /* 水平置中 */
-  color:#fff;                  /* 文字顏色 */
-  font-weight:700;             /* 粗體 */
-  font-size:clamp(36px,12vw,96px);/* 自適應字級；要固定大小可改成 64px 等固定值 */
-  letter-spacing:.2em;         /* 字距；數值越大越疏 */
-  text-shadow:0 2px 6px rgba(0,0,0,.3);/* 文字陰影，提升對比 */
-  z-index:20;                   /* 疊層順序；若被其他元素蓋掉就調大，如 20 或 100 */
-  pointer-events:none;         /* 不擋滑鼠操作；若要鎖住底下操作改成 auto */
-  text-align:center; /* ⭐新增：文字水平置中 */
-}
-/* 讓時間欄能放絕對定位覆蓋層 */
-#calendar .fc-timegrid-axis{ position:relative; }
-
-/* 時間欄的覆蓋層不需要文字 */
-#calendar .closed-overlay.axis-overlay{ font-size:0; }
-
-/* 【⭐新增規則】當日曆為公休日(is-closed-day)時，改變時間欄的背景色 */
-#calendar.is-closed-day .fc-timegrid-slot-label {
-  background-color: rgba(89, 44, 99, .35) !important;
-}
-
-
-/* 約滿外框（不擋點擊） */
-#calendar .fully-booked-outline{
-  position:absolute; inset:0;
-  border:4px solid var(--danger);
-  box-shadow: inset 0 0 0 2px rgba(255,77,79,.4);
-  pointer-events:none;
-  z-index:50;           /* 蓋過格線與事件 */
-  border-radius:2px;
-}
-
-/* ==================== 
- ==================== */
-/* ---- Month 視圖 ---- */
-/* 月視圖：固定休假底色與標籤文字 */
-/* 提示：右下角標籤底色由 :root 的 --month-label-bg-weak / --month-label-bg-strong 控制 */
-#calendar { touch-action: manipulation; } /* 僅優化點擊，與月視圖無衝突 */
-
-/* 多月視圖：每個「月份」之間留白（僅作用於 multiMonth 月視圖） */
-.fc-multiMonthMonth-view .fc-multimonth-month { 
-  padding: 8px;
-}
-
-/* 週四店長休：底色 + 右下角「店長休」 */
-.fc-dayGridMonth-view .leave-boss { 
-  background-color: var(--stylist-1-bg-light) !important; 
-}
-.fc-dayGridMonth-view .leave-boss::after { content: '店長休'; }
-
-/* 週二小白休：底色 + 右下角「小白休」 */
-.fc-dayGridMonth-view .leave-xiaobai { 
-  background-color: var(--stylist-3-bg-light) !important; 
-}
-.fc-dayGridMonth-view .leave-xiaobai::after { content: '小白休'; }
-
-/* 週日雅婷休：底色 + 右下角「雅婷休」 */
-.fc-dayGridMonth-view .leave-yatting { 
-  background-color: var(--stylist-2-bg-light) !important; 
-}
-.fc-dayGridMonth-view .leave-yatting::after { content: '雅婷休'; }
-
-.fc-dayGridMonth-view .leave-boss,
-.fc-dayGridMonth-view .leave-xiaobai,
-.fc-dayGridMonth-view .leave-yatting {
-  position: relative;
-}
-
-/* 月視圖右下角標籤：共用定位與尺寸屬性 */
-.fc-dayGridMonth-view .leave-boss::after,
-.fc-dayGridMonth-view .leave-xiaobai::after,
-.fc-dayGridMonth-view .leave-yatting::after{
-  position: absolute;
-  right: 6px; bottom: 4px;
-  /* 三分之一寬 */
-  width: 33.333%;
-  display: block;
-  text-align: center;
-  box-sizing: border-box;
-  /* 共用外觀（除文字內容外一致） */
-  padding: 4px 8px;
-  font-size: 14px;
-  border-radius: 6px;
-  background: var(--month-label-bg-strong);
-  color: white;
-  font-weight: 600;
-}
-
-/* （已整合至「7) 手機 > Timegrid / Month 視圖」；移除重複手機區塊） */
-
-/* ✅ 非本月日期顏色調整為更接近白色 */
-.fc-dayGridMonth-view .fc-daygrid-day.fc-day-other {
-  background-color: #f8f8f8 !important;
-  color: #d0d0d0 !important;
-}
-
-/* 強制保險：月視圖隱藏所有事件元素 */
-.fc-dayGridMonth-view .fc-event,
-.fc-dayGridMonth-view .fc-daygrid-event,
-.fc-dayGridMonth-view .fc-daygrid-dot-event,
-.fc-dayGridMonth-view .fc-daygrid-block-event {
-  display: none !important;
-}
-
-/* 月視圖標題配色（改為白色） */
-#calendar .fc-toolbar-title.is-month-title .title-month-text{
-  color: #ffffff;              /* 月份文字顏色 */
-}
-
-/* ---- Week 視圖 ---- */
-/* 只調整週視圖日期字樣大小與字距 */
-#calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
-      font-size: 16px;
-    letter-spacing: 1px;
-    font-family: 'fcicons';
-}
-
-/* 週視圖：隱藏表頭「排休 / 約滿」按鈕群（僅日視圖顯示） */
-#calendar .fc-resourceTimeGridWeek-view .header-button-group{
-  display: none !important;
-}
-
-/* 僅在週視圖 (resourceTimeGridWeek) 中，隱藏所有的事件卡片元素 */
-.fc-resourceTimeGridWeek-view .fc-event-title  {
-  display: none !important;
-} 
-
-/* ==================== 8) 桌面（≥1025px） > Week 視圖 ==================== */
-@media (min-width: 1025px){
-  /* 週視圖（桌面）：設計師表頭的字放大 */
-  #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion{
-    font-size: 22px !important;
-    letter-spacing: 2px;
-  }
-
-  /* 週視圖（桌面）：紫色排休覆蓋層文字縮小並保持直書顯示 */
-  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay{
-    font-size: 34px;            /* 加大一些：週視圖的直書字級 */
-    line-height: 1.1;
-    padding: 0 !important;      /* 移除任何 padding 影響位置 */
-    position: absolute;         /* 覆蓋整欄位 */
-    inset: 0;                   /* 充滿父層欄位 */
-    display: flex;              /* 仍使用 flex 以便其他情境對齊 */
-    pointer-events: none !important; /* 禁用點擊，避免誤觸 */
-  }
-
-  /* 將排休文字固定在欄位高度的三分之一處，並強制直書 */
-  #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay .overlay-label{
-    position: absolute;
-    top: 33%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    writing-mode: vertical-rl !important;  /* 強制直書 */
-    text-orientation: upright !important;  /* 中文直立易讀 */
-  }
-}
-
-/*
-============================================
-📚 CSS 簡要說明：clamp / overlay / 表頭按鈕去重
---------------------------------------------
-1) clamp() 自適應字級
-   - 語法：clamp(最小值, 理想值, 最大值)
-   - 例如：font-size: clamp(14px, 4.5vw, 18px)
-     手機螢幕變窄時會縮到不低於 14px；一般情況依視窗寬度 vw 等比縮放；
-     放大時最多到 18px。這樣能避免過小難讀或過大擠版面。
-
-2) 排休覆蓋層 overlay（closed-overlay / leave-overlay）
-   - 週視圖（桌面）：overlay 以 position:absolute + inset:0 覆蓋整個欄位；
-     將可點擊行為關閉（pointer-events: none），避免誤觸。
-   - 文字採直書：writing-mode: vertical-rl；中文更易讀再加 text-orientation: upright。
-   - 置中到欄位高度 1/3：.overlay-label 使用 position:absolute + top:33% + transform 中心位移，
-     精準落在欄位上緣 1/3 的視覺位置，符合你指定的「三分之一」效果。
-   - 手機視圖：字級使用 clamp 縮小，避免遮擋；定位與可點擊策略維持一致。
-
-3) 表頭按鈕樣式去重（排休/已約滿）
-   - 兩顆表頭按鈕共用一組外觀（背景、邊框、尺寸、hover），只在必要處做差異覆寫，
-     例如 .fully-booked-button.fb-active 使用 --danger 變數統一紅色系。
-   - 已移除重複的 header 專屬 fb-active 色彩宣告，減少同義規則。
-   - 週視圖不顯示表頭按鈕群；日視圖由 resourceLabelDidMount 動態插入，
-     並以 header-button-group 統一定位到右側，避免推擠標題。
-============================================
-*/
-
-</style>
+  <!--
+      <meta charset="UTF-8">
+      - 設定文件字元編碼為 UTF-8（可正確顯示繁中、符號等）
+    -->
+  <meta charset="UTF-8">
+  <!--
+      <meta name="viewport" ...>
+      - 讓手機/平板以正確比例顯示（響應式網站的基礎設定）
+    -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 網頁分頁標題（瀏覽器 tab 上看到的文字） -->
+  <title>世紀髮廊 景美店</title>
+
+  <!-- FullCalendar（行事曆套件）與 Scheduler（資源欄位：設計師）所需的樣式 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.css">
+
+  <!-- Google Fonts：先 preconnect 可加速連線，減少字型載入時間 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!--
+	      字型統一：Noto Sans JP（你指定的字型）
+	      - 只載入這一套字型，避免不同區塊混用不同 font-family
+	      - wght：300/400/500/700 足夠涵蓋本頁的字重需求
+	    -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- 專案自己的樣式（大多數版面/顏色/按鈕/彈窗都在這裡定義） -->
+  <link rel="stylesheet" href="styles.css">
 
 </head>
+
 <body>
-    <!-- 日曆主容器 -->
-    <div id="calendar-container">
-        <div id="calendar"></div>
+  <!--
+      日曆主容器
+      - `#calendar` 會被 FullCalendar 把整個日曆 UI render 進來
+      - 其他彈窗(modal)放在同一頁中，透過 JS 控制顯示/隱藏
+    -->
+  <div id="calendar-container">
+    <!-- FullCalendar 的掛載點（JS 會 new FullCalendar.Calendar(calendarEl, {...})） -->
+    <div id="calendar"></div>
 
-        <!-- 預約彈窗 -->
-        <div id="appointmentModal" class="modal">
-          <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3>✨ 新增/編輯預約</h3>
-            <form id="appointmentForm">
-              <input type="hidden" id="event_id" name="event_id">
-              <input type="hidden" id="start_time" name="start_time">
-              
-              <input type="hidden" id="employee_id" name="employee_id">
+    <!--
+          預約彈窗（新增/編輯預約都用同一個表單）
+          - `#appointmentModal`：整個遮罩層
+          - `.modal-content`：彈窗內容區（表單、按鈕）
+          - `.close-button`：右上角關閉按鈕（×）
+        -->
+    <div id="appointmentModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <form id="appointmentForm">
+          <input type="hidden" id="event_id" name="event_id">
+          <input type="hidden" id="start_time" name="start_time">
+          <input type="hidden" id="employee_id" name="employee_id">
+          <!-- Hidden amount filled by JS calculation before submit -->
+          <input type="hidden" id="amount_input" name="amount_input">
 
-              <label for="minute_select">🕐 開始分鐘</label>
-              <select id="minute_select" name="minute_select"></select>
-
-              <div class="appointment-type-section">
-                <label>📋 預約類型</label>
-                <div class="radio-group">
-                  <label>
-                    <input type="radio" name="appointment_type" value="normal" checked>
-                    ✅ 一般預約
-                  </label>
-                  <label>
-                    <input type="radio" name="appointment_type" value="blocked">
-                    🚫 不約時段
-                  </label>
+          <div class="modal-layout-grid">
+            <!-- Left Column: Basic Appointment Info -->
+            <div class="modal-col">
+              <!-- Single consolidated card for all appointment info -->
+              <div class="modal-section blue-card-section" id="appointment-info-card">
+                <label>預約類型</label>
+                <div class="type-toggle-container">
+                  <input type="radio" id="appointment-normal" name="appointment_type" value="normal" checked>
+                  <input type="radio" id="appointment-blocked" name="appointment_type" value="blocked">
+                  <label for="appointment-normal" class="toggle-label left">一般預約</label>
+                  <label for="appointment-blocked" class="toggle-label right">不約時段</label>
+                  <span class="sliding-glider"></span>
                 </div>
+                
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                
+                <div class="form-row">
+                  <label for="minute_select">時間 (分)</label>
+                  <select id="minute_select" name="minute_select"></select>
+                </div>
+
+                <!-- Customer Fields wrapper for hiding when 'Blocked' -->
+                <div id="customer-fields-left">
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  
+                  <div class="form-row">
+                    <label for="customer_name">顧客姓名</label>
+                    <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
+                  </div>
+                  
+                  <div class="form-row">
+                    <label for="customer_phone">電話</label>
+                    <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+                  </div>
+                  
+                  <div class="form-row">
+                    <label for="service_id">項目 (選填)</label>
+                    <select id="service_id" name="service_id">
+                      <option value="">-- 不選 --</option>
+                      <option value="剪髮">剪髮</option>
+                      <option value="剪+染">剪+染</option>
+                      <option value="剪+燙">剪+燙</option>
+                      <option value="剪+染+燙">剪+染+燙</option>
+                      <option value="剪+頭皮護理">剪+頭皮護理</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                
+                <label for="notes">備註</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
               </div>
-      
+            </div>
 
-              <div id="customer-fields">
-                <label for="customer_phone">📞 顧客電話</label>
-                <input type="tel" id="customer_phone" name="customer_phone"
-                      inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+            <!-- Right Column: Settlement / Billing Info -->
+            <div class="modal-col settlement-col" id="settlement-col">
+              <!-- Single consolidated card for all settlement items -->
+              <div class="modal-section settlement-section">
+                  <label>剪髮項目</label>
+                  <div class="price-group">
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350" data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400" data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450" data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪+護髮</span> <span class="price-val">$1100</span></label>
+                      <!-- Only show for Xiaobai -->
+                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0"> 指定剪髮</span> <span class="price-val">$600</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="0" data-cost="0" checked> 無</span> <span class="price-val">-</span></label>
+                  </div>
+                  
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  
+                  <label>其他項目</label>
+                  <div class="price-group">
+                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
+                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
+                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
+                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
+                  </div>
+                  <div id="bleach4000-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
+                    <label for="bleach4000_cost">漂4000 材料費（自填）</label>
+                    <input type="number" id="bleach4000_cost" name="bleach4000_cost" min="0" inputmode="numeric" placeholder="例如：270">
+                  </div>
 
+                  <div class="settlement-row settlement-row--title" style="margin-top:10px;">
+                    <label for="perm_select">燙髮</label>
+                    <select id="perm_select" name="perm_select">
+                      <option value="" data-cost="0">無</option>
+                      <option value="1200" data-cost="260">1200（材料260）</option>
+                      <option value="1500" data-cost="260">1500（材料260）</option>
+                      <option value="1800" data-cost="280">1800（材料280）</option>
+                      <option value="2000" data-cost="280">2000（材料280）</option>
+                      <option value="2400" data-cost="280">2400（材料280）</option>
+                      <option value="3600" data-cost="300">3600（材料300）</option>
+                    </select>
+                  </div>
+                  
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  
+                  <div class="settlement-row settlement-row--title shop-sales-row">
+                    <label for="retail_item">店販</label>
+                    <div class="shop-sales-inputs">
+                      <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
+                      <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
+                    </div>
+                  </div>
+                  
+                  <div class="assistant-total-row">
+                    <div class="assistant-field">
+                      <label for="assistant_select">操作助理</label>
+                      <select id="assistant_select" name="assistant_select">
+                        <option value="">-- 無助理 --</option>
+                        <option value="陳翎">陳翎</option>
+                        <option value="洪苡芳">洪苡芳</option>
+                        <option value="曹家溱">曹家溱</option>
+                      </select>
+                    </div>
 
-                <label for="customer_name">👤 顧客姓名</label>
-                <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
-
-                <label for="service_id">💇 服務項目 (可選)</label>
-                <select id="service_id" name="service_id">
-                  <option value="">-- 請選擇服務 (可不選) --</option>
-                  <option value="剪髮">✂️ 剪髮</option>
-                  <option value="剪+染">✂️🎨 剪+染</option>
-                  <option value="剪+燙">✂️🌀 剪+燙</option>
-                  <option value="剪+染+燙">✂️🎨🌀 剪+染+燙</option>
-                  <option value="剪+頭皮護理">✂️💆 剪+頭皮護理</option>
-                </select>
+                    <div class="total-display">
+                      <span style="font-size:0.5em; color:#aaa; font-weight:normal;">總金額: </span>
+                      <span id="display-total">$0</span>
+                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
+                      <div style="font-size:12px; color:#aaa; font-weight:normal; margin-top:4px;">(入帳金額: <span id="display-net">$0</span>)</div>
+                    </div>
+                  </div>
               </div>
-
-              <label for="notes">📝 備註</label>
-              <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
-
-              <div style="margin-top: 20px; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" id="deleteBtn" style="display:none;">🗑️ 刪除預約</button>
-                <button type="submit" id="submit-btn">💾 儲存預約</button>
-              </div>
-            
-            </form>
+            </div>
           </div>
-        </div>
-          <div id="leaveModal" class="modal">
-  <div class="modal-content">
-    <span class="close-button leave-close-button">&times;</span>
-    <h3 id="leaveModalTitle">📅 設定排休</h3>
-    <p>您正在為 <b id="leaveModalResourceName"></b> 設定 <b id="leaveModalDate"></b> 的排休狀態。</p>
-    <form id="leaveForm">
-      <input type="hidden" id="leaveResourceId">
-      <input type="hidden" id="leaveDate">
-      <label for="leaveReason">排休原因 (會顯示在格子上)</label>
-      <input type="text" id="leaveReason" name="leaveReason" placeholder="例如：店休、特休、進修">
-      <div style="margin-top: 20px; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" id="deleteLeaveBtn" style="background: #C0392B;">🗑️ 取消排休</button>
-        <button type="submit" id="submitLeaveBtn">💾 儲存設定</button>
+          
+          <!-- Form Actions - Bottom of entire form, spanning both columns -->
+          <div id="appointment-actions-anchor"></div>
+          <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 16px;">
+            <button type="button" id="deleteBtn" style="display:none; background-color:#d32f2f; color:white;">刪除預約</button>
+            <button type="submit" id="submit-btn" style="flex:1;">儲存</button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>  
-
-    <!-- 留言區 -->
-    <div id="notes-section">
-        <div class="notes-container">
-            <div class="notes-header">
-  <h4>留言板</h4>
-  <div class="notes-meta"><span>未儲存</span></div>
-  <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
-</div>
-<textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
-        </div>
     </div>
 
+    <!--
+          排休彈窗
+          - 用來在「日視圖」替某位設計師設定某一天的排休原因
+          - 特殊原因「已約滿」不是從這個表單輸入，而是由表頭的「約滿」切換按鈕處理
+        -->
+    <div id="leaveModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button leave-close-button">&times;</span>
+        <h3 id="leaveModalTitle">設定排休</h3>
+        <p>您正在為 <b id="leaveModalResourceName"></b> 設定 <b id="leaveModalDate"></b> 的排休狀態。</p>
+        <form id="leaveForm" class="modal-form">
+          <input type="hidden" id="leaveResourceId">
+          <input type="hidden" id="leaveDate">
+          <div class="modal-section form-span-2">
+            <label for="leaveReason">排休原因 (會顯示在格子上)</label>
+            <input type="text" id="leaveReason" name="leaveReason" placeholder="例如：店休、特休、進修">
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="deleteLeaveBtn">取消排休</button>
+            <button type="submit" id="submitLeaveBtn">儲存設定</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!--
+      月結報表按鈕
+      - 這個按鈕原本先放在 placeholder 裡（hidden）
+      - JS 會把它移到日期切換列（date scroller）旁邊顯示
+    -->
+    <div id="report-trigger-placeholder" hidden>
+      <button id="open-report-btn" type="button" class="report-trigger-btn">
+        查看月結報表
+      </button>
+    </div>
+
+    <!-- 報表彈窗（查詢某段日期的客數/服務分佈） -->
+    <div id="reportModal" class="modal">
+      <div class="modal-content" style="max-width: 700px;">
+        <span class="close-button report-close-button">&times;</span>
+
+        <h3 style="margin-top:0;">區間統計 (客數)</h3>
+
+        <div class="report-controls">
+          <label for="report-start" class="report-label">起日</label>
+          <input type="date" id="report-start">
+          <label for="report-end" class="report-label">迄日</label>
+          <input type="date" id="report-end">
+          <button id="fetch-report-btn" type="button">查詢</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+
+        <div id="report-result">
+          <div style="text-align:center; color:#888; padding: 20px;">
+            請選擇起訖日期，點擊「查詢」。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--
+          留言區（每日備忘/交接用）
+          - `#notes-content`：輸入文字的 textarea
+          - `#save-notes-btn`：手動儲存（透過 action=saveNotes）
+          - `.notes-meta`：顯示「未儲存 / 儲存中 / 已儲存 / 失敗」狀態
+        -->
+    <div id="notes-section">
+      <div class="notes-container">
+        <div class="notes-header">
+          <h4>留言板</h4>
+          <div class="notes-meta"><span>未儲存</span></div>
+          <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
+        </div>
+        <textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
+      </div>
+    </div>
+
+    <!--
+          外部 JS 套件載入順序：
+          1) FullCalendar 核心
+          2) Scheduler（資源欄位：設計師/店長）
+          3) 中文語系檔（zh-tw）
+        -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
 
-<script>
+    <script>
 
-// 後端 Google Apps Script 網址
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoORmKDxoasxiK9qcjaofSnt34qL9OxED4Qd-hRLAGzH4assOXmyF_Ab_tBz13-v3NdA/exec';
+      // 後端 Google Apps Script 網址（Web App /exec）
+      // - 這是一個「公開可呼叫」的 HTTP 端點（取決於你的 Apps Script 部署權限）
+      // - 前端用 `fetch()` 串接，後端用 action 參數區分不同 API
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxYe2AD8En-WNuv-Aqw9Mbf1OqY1bturPxlIJGdJzYiCU5GXkqS2cjI_tewTT8ZUiQJiA/exec';
+      const RESOURCE_LIST = [
+        { id: '1', title: '店長' },
+        { id: '2', title: '雅婷' },
+        { id: '3', title: '小白' }
+      ];
+      const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
+      const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 1024px)';
 
-(function(){
-  // ==================== 全域變數 ====================
-  let employeeLeaveData = []; // 用來存放從後端取回的排休資料
-  const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; 
-let currentYmd = null;
-  let calendar; // 將 calendar 宣告在外面，方便各函式使用
+      (function () {
+        /*
+          IIFE（Immediately Invoked Function Expression）：
+          - 立刻執行的一個函式
+          - 好處：把變數/函式包在區域作用域內，避免跟其他 script 的全域變數撞名
+        */
 
-  // ==================== DOMContentLoaded Event Listener ====================
-  document.addEventListener('DOMContentLoaded', function(){
-    // --- 元素選擇 (完整版) ---
-    const calendarEl = document.getElementById('calendar');
-    const appointmentModal = document.getElementById('appointmentModal');
-    const leaveModal = document.getElementById('leaveModal');
-    const form = document.getElementById('appointmentForm');
-    const leaveForm = document.getElementById('leaveForm');
-    const notesTextarea = document.getElementById('notes-content');
-    const phoneEl = document.getElementById('customer_phone');
-    const customerFields = document.getElementById('customer-fields');
-    const submitBtn = document.getElementById('submit-btn');
-    const deleteBtn = document.getElementById('deleteBtn');
-    const eventIdInput = document.getElementById('event_id');
-    const appointmentCloseButton = appointmentModal.querySelector('.close-button');
-    const leaveCloseButton = leaveModal.querySelector('.leave-close-button');
-    const deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
-
-    // --- 程式一開始執行的三個主要動作 ---
-    initializeCalendar();
-    fetchAllCloudData();
-    bindEventListeners();
-    
-    // ========================================================
-    // 以下全部是函式的詳細定義
-    // ========================================================
-    async function fetchDailyNote(dStr){
-      const meta = document.querySelector('.notes-meta span');
-      const notesTextarea = document.getElementById('notes-content'); // 確保抓到最新的元素
-
-      // 1. 立即清空留言區並顯示載入中，避免舊資料殘留
-      notesTextarea.value = '';
-      notesTextarea.placeholder = '留言載入中...';
-      meta.textContent = '載入中...';
-
-      try{
-        const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
-        const j = await r.json();
-
-        // 2. 載入成功後，填入新資料
-        notesTextarea.value = j.content || '';
-        meta.textContent = '已載入';
-      } catch(e) {
-        // 3. 載入失敗的處理
-        meta.textContent = '載入失敗';
-        console.error("讀取留言失敗:", e); // 在主控台顯示詳細錯誤，方便除錯
-      } finally {
-        // 4. 無論成功或失敗，都恢復預設提示文字
-        notesTextarea.placeholder = '請輸入備註資訊...';
-      }
-    }
-
-    function initializeCalendar() {
-  // ✅ v5.11.5 版本：插件已通過 CDN 自動載入，不需要手動從 globalPlugins 取得
-  
-  calendar = new FullCalendar.Calendar(calendarEl, {
-        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-        locale: 'zh-tw',
-        timeZone: 'Asia/Taipei',
-initialView: 'resourceTimeGridDay',
-
-// 這是全域的工具列設定，對所有視圖都有效
-headerToolbar: {
-  left: 'prev,next today',
-  center: 'title',
-  right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth' // 加入月視圖
-},
-
-firstDay: 2,       // 全域設定，從週二開始
-hiddenDays: [1],   // 全域設定，隱藏週一
-
-        buttonText: { 
-  today: '今',
-  dayGridMonth: '月',
-  resourceTimeGridDay: '日',
-  resourceTimeGridWeek: '週'
-},
-
-        allDaySlot: false,
-        slotMinTime: '12:00:00',
-        slotMaxTime: '21:00:00',
-        slotDuration: '00:15:00',
-        slotLabelInterval: '00:15:00',
-        slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-         dayHeaderContent: function(arg) {
-          const date = arg.date;
-          const month = date.getMonth() + 1;
-          const day = date.getDate();
-          const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
-          const weekday = weekdayMap[date.getDay()];
-
-           return weekday;
-
-        },
-        displayEventTime: false,
-        height: 'auto',
-        expandRows: false,
-        handleWindowResize: true,
-        businessHours: [ { daysOfWeek: [0,2,3,4,5,6], startTime: '00:00', endTime: '24:00' } ],
-        resources: [ { id: '1', title: '店長' }, { id: '2', title: '雅婷' }, { id: '3', title: '小白' } ],
-        
-        events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-
-// 月視圖不顯示事件卡片
-views: {
-  // 週視圖的設定保持不變
-  resourceTimeGridWeek: {
-    hiddenDays: [1]
-    // 注意：我們把 headerToolbar 的設定移到外面，這裡保持乾淨
-  },
-
-  dayGridMonth: {
-    // ✅ 單月視圖設定
-    eventDisplay: 'none',
-    displayEventTime: false,
-    fixedWeekCount: false,  // ✅ 避免顯示額外的週數
-    showNonCurrentDates: false  // ✅ 隱藏非本月的日期
-  }
-}, // <--- views 區塊到此結束
-
-selectable: true,
-
-// 月視圖：點日期 → 跳到該天的日視圖；日/週視圖：輕點立即開新增視窗
-dateClick: function(info){
-  if (info.view.type === 'dayGridMonth') {
-  calendar.changeView('resourceTimeGridDay', info.date);
-  return;
-}
-  if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
-  openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
-}
-},
-
-// 月視圖：依星期顯示固定休假底色（週四=店長休；週一已全域隱藏不再標示）
-dayCellDidMount: function(arg){
-  if (arg.view.type !== 'dayGridMonth') return;
-  
-  // ✅ 只對本月日期進行處理，排除其他月份的日期
-  const currentMonth = arg.view.currentStart.getMonth();
-  const cellMonth = arg.date.getMonth();
-  if (cellMonth !== currentMonth) return;
-  
-  const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
-  if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
-  if (d === 2) arg.el.classList.add('leave-xiaobai');   // ✅ 週二小白休
-  if (d === 0) arg.el.classList.add('leave-yatting');   // ✅ 週日雅婷休
-},
-
-selectLongPressDelay: 250, // 手機長按 0.25s 觸發 select，降低等待但避免誤觸滑動
-
-datesSet: function(info) {
-  updateToolbarTitle(info);
-  syncTimeLabelClosedBg(info);
-  paintMondayClosed(info);
-  paintEmployeeLeave();
-  // 載入新日期後，同步日視圖「約滿」按鈕的紅色狀態
-  syncFullyBookedButtons();
-  currentYmd = ymd(info.start);
-  fetchDailyNote(currentYmd);
-},
-
-    resourceLabelDidMount: function(arg) {
-  const cushionEl = arg.el.querySelector('.fc-col-header-cell-cushion');
-  if (!cushionEl) return;
-  // 手機版會用到：讓設計師名稱靠右，避免與右側按鈕重疊
-  cushionEl.classList.add('resource-cushion');
-
-  // 僅在「日視圖」顯示排休/約滿按鈕；週視圖與其他視圖不建立按鈕
-  const isDayView = calendar.view && calendar.view.type === 'resourceTimeGridDay';
-  if (!isDayView) return;
-
-  // 📅 排休
-  const btnGroup = document.createElement('div');
-  btnGroup.className = 'header-button-group';
-
-  const leaveIconButton = document.createElement('button');
-  leaveIconButton.type = 'button';
-  leaveIconButton.className = 'leave-icon-button';
-  leaveIconButton.setAttribute('aria-label', '排休');
-  leaveIconButton.textContent = '排休';
-  btnGroup.appendChild(leaveIconButton);
-  leaveIconButton.addEventListener('mousedown', function(event) {
-    event.stopPropagation();
-    setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
-  });
-
-  // ✅ 約滿（切換）
-  const dStr = ymd(calendar.view.currentStart);
-  const isFB = Array.isArray(employeeLeaveData) &&
-    employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
-
-  const fbBtn = document.createElement('button');
-  fbBtn.type = 'button';
-  fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
-  fbBtn.dataset.resourceId = String(arg.resource.id);
-  fbBtn.setAttribute('aria-label', '約滿');
-  fbBtn.textContent = isFB ? '已約滿' : '約滿';
-  btnGroup.appendChild(fbBtn);
-  cushionEl.appendChild(btnGroup);
-
-  fbBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const date = ymd(calendar.view.currentStart);
-    const resourceId = arg.resource.id;
-    try {
-      if (fbBtn.classList.contains('fb-active')) {
-        // 取消約滿
-        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-          method:'POST', mode:'cors',
-          body: JSON.stringify({ action:'deleteLeave', resourceId, date })
-        });
-        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
-        // 更新快取
-        if (Array.isArray(employeeLeaveData)) {
-          const i = employeeLeaveData.findIndex(l => l.date===date && l.resourceId===resourceId && l.reason==='已約滿');
-          if (i !== -1) employeeLeaveData.splice(i,1);
-        }
-  fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
-      } else {
-        // 設為約滿
-        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-          method:'POST', mode:'cors',
-          body: JSON.stringify({ action:'saveLeave', resourceId, date, reason:'已約滿' })
-        });
-        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
-        if (Array.isArray(employeeLeaveData)) {
-          employeeLeaveData.push({ date, resourceId, reason:'已約滿' });
-        }
-  fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
-      }
-      // 立即重繪欄位樣式
-      paintEmployeeLeave();
-      // 並同步更新日視圖按鈕紅色狀態
-      syncFullyBookedButtons();
-    } catch(err) {
-      alert('切換約滿失敗：' + err.message);
-    }
-  });
-},
+        // ==================== 全域狀態（只在這個 IIFE 內有效） ====================
+        let employeeLeaveData = []; // 排休/約滿資料快取（從後端 action=getLeave 讀回來）
 
 
-        eventClick: function(info) { openApptModalForEdit(info.event); },
-        select: function(info) { openApptModalForCreate(info.start, info.resource); },
 
-        eventContent: function(arg) {
-             const ep = arg.event.extendedProps || {};
-             const svcMap = { '剪髮': '剪', '剪+染': '剪 染', '剪+燙': '剪 燙', '剪+染+燙': '剪 染 燙', '剪+頭皮護理': '剪 護' };
-             const svc = ep.appointment_type === 'blocked' ? '🚫' : (svcMap[ep.service_id] || '預');
-             return {
-              html: `<div class="fc-event-title evt-line"><span class="evt-svc">${svc}</span><span>${ep.customer_name || ''}</span><span>${ep.notes || ''}</span><span class="evt-phone">${ep.customer_phone || ''}</span></div>`
-             };
-        },
-        
-        slotLabelDidMount: function(arg) {
-            const m = arg.date.getMinutes();
-            arg.el.classList.toggle('slot-major-0030', m === 0 || m === 30);
-            arg.el.classList.toggle('slot-minor-1545', m === 15 || m === 45);
-        },
+        // 把 Date 轉成 yyyy-mm-dd（用來對齊 DOM 的 data-date、也用來呼叫後端 API）
+        const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-        eventClassNames: function(arg) {
-            const r = arg.event.getResources();
-            const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
-            if (arg.event.extendedProps && arg.event.extendedProps.appointment_type === 'blocked') { 
-              cls.push('blocked-time');
+        let currentYmd = null;      // 目前選到的日期字串（用來存取每日留言）
+        let selectedDate = null;    // 日期滑動列（date scroller）目前選取的日期
+        let calendar;               // FullCalendar 實例（宣告在外面：各函式都能用）
+        let perResourceAxisTimer = null; // 排程：每位設計師欄位的時間軸重繪（避免短時間重複算）
+        let mobileSelectedResourceId = null; // 手機日視圖：目前選取的設計師卡片
+
+	        // Global DOM Elements (declared here so all functions can access them)
+	        let appointmentModal, leaveModal, reportModal;
+	        let appointmentCloseButton, leaveCloseButton, reportCloseButton;
+	        let form, leaveForm, notesTextarea, phoneEl, customerFields;
+		        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+	        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
+
+        // ==================== DOMContentLoaded Event Listener ====================
+        document.addEventListener('DOMContentLoaded', function () {
+          // --- 元素選擇：把常用 DOM 先抓起來（避免每次都 query） ---
+          // --- 元素選擇：把常用 DOM 先抓起來（避免每次都 query） ---
+          const calendarEl = document.getElementById('calendar');
+          if (calendarEl && isMobileLayout()) {
+            mobileSelectedResourceId = ensureMobileResourceId();
+            calendarEl.setAttribute('data-mobile-resource', mobileSelectedResourceId);
+          }
+          appointmentModal = document.getElementById('appointmentModal');
+          leaveModal = document.getElementById('leaveModal');
+          reportModal = document.getElementById('reportModal'); // Added reportModal
+
+          form = document.getElementById('appointmentForm');
+          leaveForm = document.getElementById('leaveForm');
+          notesTextarea = document.getElementById('notes-content');
+          phoneEl = document.getElementById('customer_phone');
+          customerFields = document.getElementById('customer-fields-left') || document.getElementById('customer-fields'); // Ensure we get the correct one
+          submitBtn = document.getElementById('submit-btn');
+          deleteBtn = document.getElementById('deleteBtn');
+          eventIdInput = document.getElementById('event_id');
+	          assistantSelect = document.getElementById('assistant_select');
+		          amountInput = document.getElementById('amount_input');
+		          unsetPaidBtn = document.getElementById('unsetPaidBtn');
+	          appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
+	          appointmentActions = document.querySelector('#appointmentForm .modal-actions');
+	          appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
+	          appointmentInfoCard = document.getElementById('appointment-info-card');
+	          
+	          appointmentCloseButton = appointmentModal ? appointmentModal.querySelector('.close-button') : null;
+	          leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
+	          reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
+
+	          deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
+	
+	          function placeAppointmentActions(mode) {
+	            if (!appointmentActions || !appointmentActionsAnchor) return;
+	            if (mode === 'create' && appointmentInfoCard && appointmentModal) {
+	              appointmentModal.classList.add('is-create');
+	              appointmentInfoCard.appendChild(appointmentActions);
+	              return;
+	            }
+	            if (appointmentModal) appointmentModal.classList.remove('is-create');
+	            appointmentActionsAnchor.after(appointmentActions);
+	          }
+
+	          // --- 程式一開始執行的三個主要動作（建 UI → 抓資料 → 綁事件） ---
+	          // console.log('Init started');
+          // 1) 初始化日曆（只建 UI/設定，不含排休資料）
+          initializeCalendar();
+          // alert('Calendar Init Done'); 
+
+          // 2) 把雲端資料（排休/約滿）抓回來並畫到日曆上
+          fetchAllCloudData();
+          // 3) 綁定各種按鈕/表單/輸入事件
+          bindEventListeners();
+
+          // ========================================================
+          // 以下全部是函式的詳細定義
+          // ========================================================
+          /**
+             * 讀取「某一天」的留言內容，並填入留言板 textarea
+             *
+             * @param {string} dStr - 日期字串（yyyy-mm-dd），例如 "2026-01-17"
+             *
+             * 流程：
+             * 1) 先把 UI 清空/顯示載入中（避免上一天的內容殘留）
+             * 2) fetch 後端 action=getNotes
+             * 3) 成功就填入內容；失敗就顯示狀態並 console.error
+             */
+          async function fetchDailyNote(dStr) {
+            const meta = document.querySelector('.notes-meta span');
+            const notesTextarea = document.getElementById('notes-content'); // 確保抓到最新的元素
+
+            // 1. 立即清空留言區並顯示載入中，避免舊資料殘留
+            notesTextarea.value = '';
+            notesTextarea.placeholder = '留言載入中...';
+            meta.textContent = '載入中...';
+
+            try {
+              const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
+              const j = await r.json();
+
+              // 2. 載入成功後，填入新資料
+              notesTextarea.value = j.content || '';
+              meta.textContent = '已載入';
+            } catch (e) {
+              // 3. 載入失敗的處理
+              meta.textContent = '載入失敗';
+              console.error("讀取留言失敗:", e); // 在主控台顯示詳細錯誤，方便除錯
+            } finally {
+              // 4. 無論成功或失敗，都恢復預設提示文字
+              notesTextarea.placeholder = '請輸入備註資訊...';
             }
-            return cls;
-        },
-      });
-      calendar.render();
-    }
+          }
 
-  async function fetchAllCloudData() {
-    try {
-      const leaveRes = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getLeave');
-      if (!leaveRes.ok) throw new Error('無法從後端獲取排休資料');
-      employeeLeaveData = await leaveRes.json();
-      paintEmployeeLeave();
-      // 首次資料載入後，同步按鈕狀態（避免初次渲染時按鈕還沒變紅）
-      syncFullyBookedButtons();
-    } catch (error) {
-      console.error('讀取雲端資料失敗:', error);
-      alert('讀取雲端資料失敗，請檢查網路連線或後端設定。');
-    }
-  }
+          /**
+             * 初始化 FullCalendar（建立日曆 UI + 設定所有 callback）
+             *
+             * 這裡做的事情主要是「定義規則」：
+             * - 目前視圖（initialView）
+             * - 需要顯示的資源（resources：店長/雅婷/小白）
+             * - slot 的時間範圍、間距
+             * - 點擊/長按時要做什麼（dateClick / select / eventClick）
+             * - 如何渲染事件（eventContent / eventClassNames）
+             *
+             * 實際事件資料（events）會由 FullCalendar 自己去呼叫：
+             *   APPS_SCRIPT_WEB_APP_URL + '?action=getEvents'
+             */
+          function initializeCalendar() {
+            // ✅ v5.11.5：插件已通過 CDN 自動載入，不需要手動從 globalPlugins 取得
 
-  // 同步日視圖「約滿」按鈕紅色狀態
-  function syncFullyBookedButtons(){
-    try{
-      if (!calendar || !employeeLeaveData || !Array.isArray(employeeLeaveData)) return;
-      if (calendar.view?.type !== 'resourceTimeGridDay') return; // 只在日視圖需要按鈕
-      const dStr = ymd(calendar.view.currentStart);
-      document.querySelectorAll('#calendar .fully-booked-button[data-resource-id]').forEach(btn => {
-        const rid = btn.dataset.resourceId;
-        const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
-        if (isFB){
-          btn.classList.add('fb-active');
-          btn.textContent = '已約滿';
-        } else {
-          btn.classList.remove('fb-active');
-          btn.textContent = '約滿';
-        }
-      });
-    }catch(e){
-      console.warn('syncFullyBookedButtons failed:', e);
-    }
-  }
-    
-    function bindEventListeners() {
-        phoneEl.addEventListener('input', (e) => {
-          let d = e.target.value.replace(/\D/g,'').slice(0,10);
-          if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, function(_,a,b,c){ return c ? `${a}-${b}-${c}` : `${a}-${b}` });
-          else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
-          else e.target.value = d;
-        });
+            calendar = new FullCalendar.Calendar(calendarEl, {
+              schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+              locale: 'zh-tw',
+              timeZone: 'Asia/Taipei',
+              initialView: 'resourceTimeGridDay',
 
-        let notesSaveTimeout;
-        notesTextarea.addEventListener('input', function () {
-  document.querySelector('.notes-meta span').textContent = '未儲存';
-});
-     
-document.getElementById('save-notes-btn').addEventListener('click', async function(){
-  const meta = document.querySelector('.notes-meta span');
-  meta.textContent = '儲存中...';
-  try{
-    const payload = { 
-      action:'saveNotes', 
-      date: currentYmd || ymd(new Date()),
-      content: notesTextarea.value 
-    };
-    const r = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-      method:'POST', 
-      mode:'cors', 
-      body: JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if (j.status !== 'success') {
-      throw new Error(j.message || '寫入失敗');
-    }
-    meta.textContent = '已儲存 ✓';
-  } catch (e) { 
-    meta.textContent = '儲存失敗 ❌'; 
-  }
-});
+              // 這是全域的工具列設定，對所有視圖都有效
+              headerToolbar: false,
 
-        
-        leaveForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const payload = {
+              firstDay: 2,       // 全域設定，從週二開始
+              hiddenDays: [1],   // 全域設定，隱藏週一
+
+          
+              buttonText: {
+                today: '今',
+                dayGridMonth: '月',
+                resourceTimeGridDay: '日',
+                resourceTimeGridWeek: '週'
+              },
+
+              allDaySlot: false,
+              slotMinTime: '12:00:00',
+              slotMaxTime: '21:00:00',
+              slotDuration: '00:15:00',
+              slotLabelInterval: '00:15:00',
+              slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+              dayHeaderContent: function (arg) {
+                const date = arg.date;
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
+                const weekday = weekdayMap[date.getDay()];
+
+                return weekday;
+
+              },
+              displayEventTime: false,
+              height: 'auto',
+              expandRows: false,
+              handleWindowResize: true,
+              businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
+              resources: RESOURCE_LIST,
+
+              events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
+
+              // 月視圖不顯示事件卡片（只看哪天，不看單筆預約）
+              views: {
+                // 週視圖的設定保持不變
+                resourceTimeGridWeek: {
+                  hiddenDays: [1]
+                  // 注意：我們把 headerToolbar 的設定移到外面，這裡保持乾淨
+                },
+
+                dayGridMonth: {
+                  // ✅ 單月視圖設定
+                  eventDisplay: 'none',
+                  displayEventTime: false,
+                  fixedWeekCount: false,  // ✅ 避免顯示額外的週數
+                  showNonCurrentDates: false  // ✅ 隱藏非本月的日期
+                }
+              }, // <--- views 區塊到此結束
+
+              selectable: true,
+
+              // 月視圖：點日期 → 跳到該天的日視圖
+              // 日/週視圖：桌機「點一下」可直接開新增；手機改用「長按」（避免滑動時誤觸）
+              dateClick: function (info) {
+                if (info.view.type === 'dayGridMonth') {
+                  calendar.changeView('resourceTimeGridDay', info.date);
+                  return;
+                }
+                if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
+                  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
+                  openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
+                }
+              },
+
+              // 點擊事件卡片：開啟編輯模式
+              eventClick: function(info) {
+                info.jsEvent.preventDefault(); // 防止瀏覽器跳轉
+                info.jsEvent.stopPropagation(); // 防止觸發 dateClick
+                
+                const event = info.event;
+                const extendedProps = event.extendedProps || {};
+                
+                // 開啟彈窗並填入資料
+                openApptModalForEdit(event);
+              },
+
+              // 月視圖：依星期顯示固定休假底色（這是「預設規則」的視覺提示，不是從後端來的排休資料）
+              dayCellDidMount: function (arg) {
+                if (arg.view.type !== 'dayGridMonth') return;
+
+                // ✅ 只對本月日期進行處理，排除其他月份的日期
+                const currentMonth = arg.view.currentStart.getMonth();
+                const cellMonth = arg.date.getMonth();
+                if (cellMonth !== currentMonth) return;
+
+                const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
+                if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
+                if (d === 2) arg.el.classList.add('leave-xiaobai');   // ✅ 週二小白休
+                if (d === 0) arg.el.classList.add('leave-yatting');   // ✅ 週日雅婷休
+              },
+
+              selectLongPressDelay: 250, // 手機長按 0.25s 觸發 select：降低等待但避免誤觸滑動
+
+              datesSet: function (info) {
+                // 每次「切換日期/切換視圖」都會觸發 datesSet
+                // 常見用途：更新自訂工具列、更新顯示狀態、重新上色
+                updateToolbarTitle(info);
+                updateDateScroller(info);
+                applyMobileResourceVisibility(info);
+                paintMondayClosed(info);
+                paintEmployeeLeave();
+                // 載入新日期後，同步日視圖「約滿」按鈕的紅色狀態
+                syncFullyBookedButtons();
+                // ✅ 日視圖：讓每位設計師欄位都有自己的時間軸（視覺輔助）
+                schedulePerResourceTimeAxis(80);
+                currentYmd = ymd(info.start);
+                fetchDailyNote(currentYmd);
+              },
+
+              // 每個資源欄（設計師欄位標題）渲染完成時
+              // - 在日視圖，會在設計師名稱旁加上「排休」與「約滿」按鈕
+              resourceLabelDidMount: function (arg) {
+                // FullCalendar 版本/視圖不同時，arg.el 可能是「cell」也可能已經是「cushion」本身
+                // 這裡做成更穩健的取得方式，避免抓不到而導致按鈕整組不見。
+                const viewType = arg.view?.type || calendar?.view?.type;
+                const cushionEl =
+                  (arg.el && arg.el.classList && arg.el.classList.contains('fc-col-header-cell-cushion'))
+                    ? arg.el
+                    : (arg.el?.querySelector ? arg.el.querySelector('.fc-col-header-cell-cushion') : null);
+                const hostEl = cushionEl || arg.el;
+                if (!hostEl) return;
+                // 確保絕對定位的按鈕群（.header-button-group）有定位參考，不會跑到奇怪的位置
+                hostEl.style.position = 'relative';
+                hostEl.style.overflow = 'visible';
+
+                // 手機版會用到：讓設計師名稱靠右，避免與右側按鈕重疊
+                hostEl.classList.add('resource-cushion');
+
+                // 同一格可能會被重繪（重新 mount），先清掉舊的避免疊加
+                hostEl.querySelectorAll?.('.header-button-group').forEach(n => n.remove());
+
+                // 僅在「日視圖」顯示排休/約滿按鈕；週視圖與其他視圖不建立按鈕
+                const isDayView = viewType === 'resourceTimeGridDay';
+                if (!isDayView) return;
+
+                // 表頭背景：跟各自的「設計師欄位卡片」底色一致（對應 styles.css 的 --resource-col-*-bg）
+                const rid = String(arg?.resource?.id ?? '');
+                const headerBgByRid = {
+                  '1': 'var(--resource-col-1-bg)',
+                  '2': 'var(--resource-col-2-bg)',
+                  '3': 'var(--resource-col-3-bg)'
+                };
+                const headerBg = headerBgByRid[rid];
+                if (headerBg) {
+                  hostEl.dataset.resourceId = rid;
+                  if (arg.el && arg.el !== hostEl) arg.el.dataset.resourceId = rid;
+                }
+
+                // 📅 排休：開啟排休彈窗（儲存時 action=saveLeave）
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'header-button-group';
+
+                const leaveIconButton = document.createElement('button');
+                leaveIconButton.type = 'button';
+                leaveIconButton.className = 'leave-icon-button';
+                leaveIconButton.setAttribute('aria-label', '排休');
+                leaveIconButton.textContent = '排休';
+                btnGroup.appendChild(leaveIconButton);
+                // 用 click（比 mousedown 更通用，手機/平板也穩）
+                leaveIconButton.addEventListener('click', function (event) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
+                });
+
+                // ✅ 約滿（切換）：其實也是存到 leave 資料，只是 reason 固定用「已約滿」
+                // - 目的：顯示「這位設計師這天不再接新客」的狀態
+                const dStr = ymd(calendar.view.currentStart);
+                const isFB = Array.isArray(employeeLeaveData) &&
+                  employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
+
+                const fbBtn = document.createElement('button');
+                fbBtn.type = 'button';
+                fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
+                fbBtn.dataset.resourceId = String(arg.resource.id);
+                fbBtn.setAttribute('aria-label', '約滿');
+                fbBtn.textContent = isFB ? '已約滿' : '約滿';
+                btnGroup.appendChild(fbBtn);
+                hostEl.appendChild(btnGroup);
+
+                fbBtn.addEventListener('click', async (e) => {
+                  e.stopPropagation();
+                  const date = ymd(calendar.view.currentStart);
+                  const resourceId = arg.resource.id;
+                  try {
+                    if (fbBtn.classList.contains('fb-active')) {
+                      // 取消約滿
+                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                        method: 'POST', mode: 'cors',
+                        body: JSON.stringify({ action: 'deleteLeave', resourceId, date })
+                      });
+                      const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+                      // 更新快取
+                      if (Array.isArray(employeeLeaveData)) {
+                        const i = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId && l.reason === '已約滿');
+                        if (i !== -1) employeeLeaveData.splice(i, 1);
+                      }
+                      fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
+                    } else {
+                      // 設為約滿
+                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                        method: 'POST', mode: 'cors',
+                        body: JSON.stringify({ action: 'saveLeave', resourceId, date, reason: '已約滿' })
+                      });
+                      const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+                      if (Array.isArray(employeeLeaveData)) {
+                        employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
+                      }
+                      fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
+                    }
+                    // 立即重繪欄位樣式（畫外框/覆蓋層）
+                    paintEmployeeLeave();
+                    // 並同步更新日視圖按鈕紅色狀態
+                    syncFullyBookedButtons();
+                  } catch (err) {
+                    alert('切換約滿失敗：' + err.message);
+                  }
+                });
+              },
+
+
+              // 點擊「事件本身」→ 編輯
+              eventClick: function (info) { openApptModalForEdit(info.event); },
+              // 長按/拖曳選取一段時間（selectable: true）→ 新增
+              select: function (info) { openApptModalForCreate(info.start, info.resource); },
+
+              eventContent: function (arg) {
+                // 自訂事件顯示內容（把服務、姓名、電話排成一行）
+                // - `arg.event.extendedProps` 是後端回來的自訂欄位（不是 FullCalendar 內建欄位）
+                const ep = arg.event.extendedProps || {};
+                const svcMap = {
+                  '剪髮': ['剪'],
+                  '剪+染': ['剪', '染'],
+                  '剪+燙': ['剪', '燙'],
+                  '剪+染+燙': ['剪', '染', '燙'],
+                  '剪+頭皮護理': ['剪', '護']
+                };
+                // 不約時段：顯示成單純的封鎖樣式（不顯示姓名電話）
+                if (ep.appointment_type === 'blocked') {
+                  return { html: `<div class="fc-event-title evt-line evt-blocked"></div>` };
+                }
+                const svcList = svcMap[ep.service_id] || ['預'];
+                const svcClassMap = {
+                  '剪': 'svc-cut',
+                  '染': 'svc-dye',
+                  '燙': 'svc-perm',
+                  '護': 'svc-treat',
+                  '預': 'svc-default'
+                };
+                const safeTrim = (v) => {
+                  if (v == null) return '';
+                  if (typeof v === 'string') return v.trim();
+                  if (typeof v === 'number') return String(v).trim();
+                  return '';
+                };
+                const name = safeTrim(ep.customer_name) || safeTrim(ep.notes);
+                const phone = safeTrim(ep.customer_phone);
+
+                // ✅ 服務勳章：不管幾個項目都只顯示「一個」勳章
+                // - 文字：把項目縮寫串起來（例如：剪染、剪染燙、剪護）
+                // - 樣式 class：用第一個項目決定（例如：剪染 → 走 svc-cut 的邊框色）
+                const badgeText = svcList.join('');
+                const badgeKey = (svcList && svcList[0]) ? svcList[0] : '預';
+                const badgeCls = svcClassMap[badgeKey] || 'svc-default';
+                const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
+                return {
+                  html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${phone}</span></div>`
+                };
+              },
+
+              eventClassNames: function (arg) {
+                // 依照「是哪位設計師 / 是否不約 / 是否已收款」決定事件 CSS class
+                const r = arg.event.getResources();
+                const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
+                const ep = arg.event.extendedProps || {};
+                if (ep.appointment_type === 'blocked') {
+                  cls.push('blocked-time');
+                }
+                const paidAmount = Number(ep.amount);
+                if (ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0) {
+                  cls.push('is-paid');
+                }
+                return cls;
+              },
+            });
+            calendar.render();
+          }
+
+          /**
+             * 把「排休/約滿」資料整包抓回來，並畫到日曆上
+             * - action=getLeave
+             * - 成功後會呼叫 paintEmployeeLeave()（把 overlay 畫到格子上）
+             */
+          async function fetchAllCloudData() {
+            try {
+              const leaveRes = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getLeave');
+              if (!leaveRes.ok) throw new Error('無法從後端獲取排休資料');
+              employeeLeaveData = await leaveRes.json();
+              paintEmployeeLeave();
+              // 首次資料載入後，同步按鈕狀態（避免初次渲染時按鈕還沒變紅）
+              syncFullyBookedButtons();
+            } catch (error) {
+              console.error('讀取雲端資料失敗:', error);
+              alert('讀取雲端資料失敗，請檢查網路連線或後端設定。');
+            }
+          }
+
+          /**
+             * 同步日視圖「約滿」按鈕紅色狀態
+             * - 因為按鈕是在 resourceLabelDidMount 動態建立的
+             * - 當資料（employeeLeaveData）更新時，需要把按鈕 UI 跟資料對齊
+             */
+          function syncFullyBookedButtons() {
+            try {
+              if (!calendar || !employeeLeaveData || !Array.isArray(employeeLeaveData)) return;
+              if (calendar.view?.type !== 'resourceTimeGridDay') return; // 只在日視圖需要按鈕
+              const dStr = ymd(calendar.view.currentStart);
+              document.querySelectorAll('#calendar .fully-booked-button[data-resource-id]').forEach(btn => {
+                const rid = btn.dataset.resourceId;
+                const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
+                if (isFB) {
+                  btn.classList.add('fb-active');
+                  btn.textContent = '已約滿';
+                } else {
+                  btn.classList.remove('fb-active');
+                  btn.textContent = '約滿';
+                }
+              });
+            } catch (e) {
+              console.warn('syncFullyBookedButtons failed:', e);
+            }
+          }
+
+          /**
+             * 綁定頁面上所有「互動事件」
+             * - input：電話自動格式化、留言輸入狀態
+             * - click：儲存留言、關閉彈窗、刪除/儲存預約、刪除/儲存排休
+             * - change：預約類型切換（一般預約 vs 不約時段）
+             */
+          function bindEventListeners() {
+            // console.log('Binding listeners...');
+            // 電話輸入：只允許數字並加上簡單格式（09xx-xxx-xxx）
+            phoneEl.addEventListener('input', (e) => {
+              let d = e.target.value.replace(/\D/g, '').slice(0, 10);
+              if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, function (_, a, b, c) { return c ? `${a}-${b}-${c}` : `${a}-${b}` });
+              else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+              else e.target.value = d;
+            });
+
+            let notesSaveTimeout;
+            // 留言內容變動：標記成「未儲存」
+            notesTextarea.addEventListener('input', function () {
+              document.querySelector('.notes-meta span').textContent = '未儲存';
+            });
+
+            // 手動儲存留言（寫入雲端）
+            document.getElementById('save-notes-btn').addEventListener('click', async function () {
+              const meta = document.querySelector('.notes-meta span');
+              meta.textContent = '儲存中...';
+              try {
+                const payload = {
+                  action: 'saveNotes',
+                  date: currentYmd || ymd(new Date()),
+                  content: notesTextarea.value
+                };
+                const r = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                  method: 'POST',
+                  mode: 'cors',
+                  body: JSON.stringify(payload)
+                });
+                const j = await r.json();
+                if (j.status !== 'success') {
+                  throw new Error(j.message || '寫入失敗');
+                }
+                meta.textContent = '已儲存 ✓';
+              } catch (e) {
+                meta.textContent = '儲存失敗 ❌';
+              }
+            });
+
+
+            // 排休表單送出：儲存排休原因
+            leaveForm.addEventListener('submit', async function (e) {
+              e.preventDefault();
+              const payload = {
                 action: 'saveLeave',
                 resourceId: document.getElementById('leaveResourceId').value,
                 date: document.getElementById('leaveDate').value,
                 reason: document.getElementById('leaveReason').value.trim() || '排休'
-            };
-            try {
+              };
+              try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const result = await res.json();
                 if (result.status !== 'success') throw new Error(result.message);
                 calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
                 leaveModal.style.display = 'none';
 
-            } catch (error) {
+              } catch (error) {
                 alert('儲存排休失敗: ' + error.message);
-            }
-        });
+              }
+            });
 
-        deleteLeaveBtn.addEventListener('click', async function() {
-            if (!confirm('確定要取消這筆排休嗎？')) return;
-            const payload = {
+            // 取消排休：刪除該日該設計師的排休資料
+            deleteLeaveBtn.addEventListener('click', async function () {
+              if (!confirm('確定要取消這筆排休嗎？')) return;
+              const payload = {
                 action: 'deleteLeave',
                 resourceId: document.getElementById('leaveResourceId').value,
                 date: document.getElementById('leaveDate').value
-            };
-            try {
+              };
+              try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const result = await res.json();
                 if (result.status !== 'success') throw new Error(result.message);
                 calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
                 leaveModal.style.display = 'none';
 
-            } catch (error) {
+              } catch (error) {
                 alert('刪除排休失敗: ' + error.message);
+              }
+            });
+
+            /* 取消覆蓋層點擊開窗的事件委派（僅保留表頭「排休」按鈕可用） */
+
+            // 預約表單送出：新增 or 更新（由 event_id 是否存在判斷）
+            form.addEventListener('submit', async function (e) {
+              e.preventDefault();
+              const isEditing = !!eventIdInput.value;
+              const fd = new FormData(form);
+              const amountRaw = fd.get('amount_input');
+              const parsedAmount = amountRaw === null || amountRaw === '' ? NaN : parseInt(amountRaw, 10);
+              const amountValue = Number.isFinite(parsedAmount) ? String(Math.max(0, parsedAmount)) : '';
+              const payload = {
+                action: isEditing ? 'edit' : 'create',
+                id: fd.get('event_id') || undefined,
+                employee_id: fd.get('employee_id'),
+                start: fd.get('start_time'),
+                appointment_type: fd.get('appointment_type'),
+                customer_name: fd.get('customer_name') || '',
+                customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
+                service_id: fd.get('service_id') || '',
+                assistant_id: fd.get('assistant_select') || '',
+                amount: amountValue,
+                notes: fd.get('notes') || ''
+              };
+              submitBtn.disabled = true;
+              try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+              } catch (err) {
+                alert('❌ 儲存失敗：' + err.message);
+              } finally {
+                submitBtn.disabled = false;
+                appointmentModal.style.display = 'none';
+                calendar.refetchEvents();
+              }
+            });
+
+            // 刪除預約：需要 event_id 才能刪除
+            deleteBtn.onclick = async function () {
+              const eventId = eventIdInput.value.trim();
+              if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
+              try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success') throw new Error(data.message || '刪除失敗');
+              } catch (err) {
+                alert('❌ 刪除失敗：' + err.message);
+              } finally {
+                appointmentModal.style.display = 'none';
+                calendar.refetchEvents();
+              }
+            };
+
+
+
+
+            // Modal Close Events
+            if (appointmentCloseButton) appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
+            if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
+            if (reportCloseButton) reportCloseButton.onclick = () => reportModal.style.display = 'none';
+
+            window.addEventListener('click', (e) => {
+              if (e.target === appointmentModal) appointmentModal.style.display = 'none';
+              if (e.target === leaveModal) leaveModal.style.display = 'none';
+              if (e.target === reportModal) reportModal.style.display = 'none';
+            });
+
+            // 視窗尺寸變動：重新計算每位設計師欄位內的時間軸位置（避免字級/高度變動後跑位）
+            window.addEventListener('resize', () => {
+              schedulePerResourceTimeAxis(150);
+              applyMobileResourceVisibility();
+            });
+
+            // 切換「一般預約 / 不約時段」：決定是否顯示顧客資料欄位、按鈕文字
+            document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
+              radio.addEventListener('change', function () {
+                const isBlocked = this.value === 'blocked';
+                const isEditing = !!eventIdInput.value;
+                document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
+                
+                // 決定是否顯示右側卡片：僅在「編輯」模式且「非不約時段」時顯示
+                const showSettlement = isEditing && !isBlocked;
+                document.getElementById('settlement-col').style.display = showSettlement ? 'block' : 'none';
+                document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
+                
+                // 根據是否顯示右側卡片調整排版
+                const actions = document.querySelector('.modal-actions');
+                const content = document.querySelector('.modal-content');
+                if (showSettlement) {
+                  actions.style.gridColumn = '1 / -1';
+                  content.style.maxWidth = '900px';
+                } else {
+                  actions.style.gridColumn = '1 / 2';
+                  content.style.maxWidth = '450px';
+                }
+                
+                // Blocked: clear certain fields
+                if (isBlocked) {
+                  assistantSelect.value = '';
+                  amountInput.value = '';
+
+                  const permSelect = document.getElementById('perm_select');
+                  if (permSelect) permSelect.value = '';
+
+                  const retailItem = document.getElementById('retail_item');
+                  const retailPrice = document.getElementById('retail_price');
+                  if (retailItem) retailItem.value = '';
+                  if (retailPrice) retailPrice.value = '';
+
+                  const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+                  const bleach4000CostInput = document.getElementById('bleach4000_cost');
+                  if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
+                  if (bleach4000CostInput) bleach4000CostInput.value = '270';
+
+                  // uncheck prices
+		                  document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+		                  document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+		                  updateCalculatedTotal();
+                }
+                
+                if (isBlocked) {
+                  submitBtn.textContent = '設定不約時段';
+                } else {
+                  submitBtn.textContent = isEditing ? '更新預約' : '儲存預約';
+                }
+              });
+            });
+
+            // 綁定價格計算事件
+			            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], #perm_select, #retail_price, #bleach4000_cost');
+		            priceInputs.forEach(input => {
+		                input.addEventListener('change', updateCalculatedTotal);
+		                if (input.id === 'retail_price') input.addEventListener('input', updateCalculatedTotal); // Immediate update for text input
+		            });
+
+		            // 漂4000：勾選時顯示材料費輸入框（可自填成本）
+		            const bleach4000Checkbox = document.querySelector('input[name="other_item"][value="4000"]');
+			            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+			            const bleach4000CostInput = document.getElementById('bleach4000_cost');
+			            const syncBleach4000CostUI = () => {
+			              const checked = !!bleach4000Checkbox?.checked;
+			              // 用 grid 才能讓「label + input」同列並排（會覆蓋 CSS 的 display:grid）
+			              if (bleach4000CostWrap) bleach4000CostWrap.style.display = checked ? 'grid' : 'none';
+			              if (checked && bleach4000CostInput && !bleach4000CostInput.value) bleach4000CostInput.value = '270';
+			              if (!checked && bleach4000CostInput) bleach4000CostInput.value = '270';
+			            };
+		            bleach4000Checkbox?.addEventListener('change', () => {
+		              syncBleach4000CostUI();
+		              updateCalculatedTotal();
+		            });
+		            bleach4000CostInput?.addEventListener('input', updateCalculatedTotal);
+		            syncBleach4000CostUI();
+
+	            // 改回未結帳：清空金額並立即儲存
+	            if (unsetPaidBtn) {
+	              unsetPaidBtn.addEventListener('click', function () {
+	                if (!eventIdInput.value) return;
+	                const apptType = document.querySelector('input[name="appointment_type"]:checked')?.value;
+	                if (apptType === 'blocked') return;
+	                if (!confirm('要把這筆改回未結帳嗎？\\n\\n會清空入帳金額與助理，並立刻儲存。')) return;
+
+		                // Reset settlement UI
+			                document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+			                document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+			                const permSelect = document.getElementById('perm_select');
+			                if (permSelect) permSelect.value = '';
+			                const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+			                const bleach4000CostInput = document.getElementById('bleach4000_cost');
+			                if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
+			                if (bleach4000CostInput) bleach4000CostInput.value = '270';
+			                const retailItem = document.getElementById('retail_item');
+			                const retailPrice = document.getElementById('retail_price');
+			                if (retailItem) retailItem.value = '';
+			                if (retailPrice) retailPrice.value = '';
+	                if (assistantSelect) assistantSelect.value = '';
+	                if (amountInput) amountInput.value = '';
+	                updateCalculatedTotal();
+
+	                if (typeof form?.requestSubmit === 'function') form.requestSubmit(submitBtn);
+	                else submitBtn.click();
+	              });
+	            }
+	          }
+
+          /**
+           * 計算總金額與入帳金額
+           * 規則：
+           * - 總金額 (Display Total): 各項單價加總
+           * - 入帳金額 (Net Amount): (單價 - 成本) 加總 → 這是要存進 DB 的 amount
+           */
+          function updateCalculatedTotal() {
+              let cutPrice = 0;
+              let chemTotal = 0;
+              let totalCost = 0;
+
+              // 1. 剪髮 (Radio)
+              const cut = document.querySelector('input[name="cut_price"]:checked');
+              if (cut) {
+                  cutPrice = parseInt(cut.value, 10) || 0;
+                  totalCost += parseInt(cut.dataset.cost || 0, 10);
+              }
+
+		              // 2. 其他項目 (Checkbox: 洗髮, 染髮, 漂髮...)
+		              document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
+		                  const p = parseInt(item.value, 10) || 0;
+		                  let c = parseInt(item.dataset.cost || 0, 10) || 0;
+		                  // 漂4000：材料費可自填（未填則用預設 270）
+		                  if (String(item.value) === '4000') {
+		                      const bleach4000CostInput = document.getElementById('bleach4000_cost');
+		                      const customCost = bleach4000CostInput ? (parseInt(bleach4000CostInput.value, 10) || 0) : 0;
+		                      c = customCost > 0 ? customCost : c;
+		                  }
+		                  chemTotal += p;
+		                  totalCost += c;
+		              });
+
+	              // 3. 燙髮 (Select, 單選 + 材料費)
+	              const permSelect = document.getElementById('perm_select');
+	              let permPrice = 0;
+	              if (permSelect) {
+	                  permPrice = parseInt(permSelect.value, 10) || 0;
+	                  const opt = permSelect.selectedOptions && permSelect.selectedOptions[0] ? permSelect.selectedOptions[0] : null;
+	                  const permCost = opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
+	                  totalCost += permCost;
+	              }
+
+	              // 4. 店販 (Retail)
+	              const retailInput = document.getElementById('retail_price');
+	              let retailVal = 0;
+	              if (retailInput) {
+	                  retailVal = parseInt(retailInput.value, 10) || 0;
+	              }
+
+	              // 計算
+	              const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
+              // 入帳金額 = 總金額 - 成本
+              const netAmount = displayTotal - totalCost;
+
+              // 更新 UI
+              document.getElementById('display-total').textContent = '$' + displayTotal;
+              document.getElementById('display-net').textContent = '$' + netAmount;
+              
+	              // 更新 hidden input
+	              const finalAmount = netAmount > 0 ? netAmount : '';
+	              document.getElementById('amount_input').value = finalAmount;
+	              syncUnsettleButton();
+	          }
+
+	          function syncUnsettleButton() {
+	              if (!unsetPaidBtn || !amountInput || !eventIdInput) return;
+	              const isEditing = !!eventIdInput.value;
+	              const apptType = document.querySelector('input[name="appointment_type"]:checked')?.value;
+	              const isBlocked = apptType === 'blocked';
+	              const amt = Number(amountInput.value);
+	              const show = isEditing && !isBlocked && Number.isFinite(amt) && amt > 0;
+	              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+	          }
+
+          /**
+             * 把 employeeLeaveData 畫到日曆格子上（視覺覆蓋層/外框）
+             *
+             * 規則：
+             * - reason === '已約滿'：只畫外框（不遮住內容），表示「不再接受新增」
+             * - 其他 reason：畫半透明覆蓋層 + 文字（例如：特休、進修、店休）
+             *
+             * 技術做法：
+             * - FullCalendar 每個格子 column 會有 `.fc-timegrid-col`
+             * - 我們用 data-date + data-resource-id 找到特定設計師在特定日期的欄位
+             * - 然後 append 一個自訂的 div 進去
+             */
+          function paintEmployeeLeave() {
+            // 先清掉舊層（避免重複疊加）
+            document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
+            document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
+            if (!Array.isArray(employeeLeaveData)) return;
+
+            employeeLeaveData.forEach(leave => {
+              const targetColumn = document.querySelector(
+                `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
+              );
+              if (!targetColumn) return;
+
+              // 日視圖有 .fc-timegrid-col-frame (card-style)，改掛在那裡才不會超出邊距
+              const frame = targetColumn.querySelector('.fc-timegrid-col-frame');
+              const container = frame || targetColumn;
+
+              if (leave.reason === '已約滿') {
+                // 只畫外框，不覆蓋內容
+                const o = document.createElement('div');
+                o.className = 'fully-booked-outline';
+                container.appendChild(o);
+                return;
+              }
+
+              const ov = document.createElement('div');
+              ov.className = 'closed-overlay leave-overlay';
+              const label = document.createElement('span');
+              label.className = 'overlay-label';
+              label.textContent = leave.reason;
+              ov.appendChild(label);
+              ov.dataset.resourceId = leave.resourceId;
+              ov.dataset.date = leave.date;
+              container.appendChild(ov);
+            });
+          }
+
+
+
+          /**
+             * 開啟「排休彈窗」並填入預設值
+             *
+             * @param {Date} date - 目前日曆的日期（通常是 calendar.view.currentStart）
+             * @param {Object} resource - FullCalendar 的 resource（設計師）
+             */
+          function openLeaveModal(date, resource) {
+            const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const dateStr = ymd(date);
+            const existingLeave = Array.isArray(employeeLeaveData) ? employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id) : null;
+            document.getElementById('leaveResourceId').value = resource.id;
+            document.getElementById('leaveDate').value = dateStr;
+            document.getElementById('leaveModalResourceName').textContent = resource.title;
+            document.getElementById('leaveModalDate').textContent = dateStr;
+            document.getElementById('leaveReason').value = existingLeave ? existingLeave.reason : resource.title + '排休';
+            deleteLeaveBtn.style.display = existingLeave ? 'inline-block' : 'none';
+            leaveModal.style.display = 'block';
+          }
+
+          /**
+             * 開啟「新增預約」彈窗
+             *
+             * @param {Date} startDate - 使用者點到/選到的開始時間
+             * @param {Object} resource - 哪位設計師（資源欄位）
+             */
+	          function openApptModalForCreate(startDate, resource) {
+            // alert('Open Modal: ' + (resource ? resource.title : 'No resource'));
+            if (!resource) return;
+            // reset() 會把表單欄位清空成預設值
+            form.reset();
+            eventIdInput.value = '';
+            submitBtn.textContent = '儲存';
+            deleteBtn.style.display = 'none';
+            document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
+            document.getElementById('customer-fields-left').style.display = 'block';
+	            document.getElementById('settlement-col').style.display = 'none'; // ✅ 新增模式不顯示綠色卡片
+	            placeAppointmentActions('create');
+	            // 調整按鈕區域只佔左側欄位寬度
+	            document.querySelector('.modal-actions').style.gridColumn = '1 / 2';
+	            // 調整彈窗寬度為窄版（只有左側卡片）
+	            if (appointmentContent) appointmentContent.style.maxWidth = '450px';
+	            document.getElementById('notes').placeholder = '請輸入備註資訊.';
+	            document.getElementById('employee_id').value = resource.id;
+            
+            // Check resource for Xiaobai rule (ID: 3)
+            const isXiaobai = String(resource.id) === '3';
+            document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+
+            assistantSelect.value = '';
+            amountInput.value = '';
+            
+		            // Reset billing
+		            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+		            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+		            const permSelect = document.getElementById('perm_select');
+		            if (permSelect) permSelect.value = '';
+		            // Reset Retail
+		            document.getElementById('retail_item').value = '';
+		            document.getElementById('retail_price').value = '';
+		            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+		            const bleach4000CostInput = document.getElementById('bleach4000_cost');
+		            if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
+		            if (bleach4000CostInput) bleach4000CostInput.value = '270';
+		            
+	            updateCalculatedTotal();
+
+            const minuteSelect = document.getElementById('minute_select');
+            minuteSelect.innerHTML = '';
+            const baseMin = startDate.getMinutes();
+            // 只提供 3 個選項：現在分鐘、+5、+10（讓使用者微調，避免手動輸入）
+            for (let i = 0; i < 3; i++) {
+              const currentMinute = baseMin + (i * 5);
+              const opt = document.createElement('option');
+              opt.value = currentMinute;
+              opt.textContent = String(currentMinute).padStart(2, '0');
+              if (i === 0) opt.selected = true;
+              minuteSelect.appendChild(opt);
             }
-        });
-        
-    /* 取消覆蓋層點擊開窗的事件委派（僅保留表頭「排休」按鈕可用） */
-
-        form.addEventListener('submit', async function (e) {
-          e.preventDefault();
-          const isEditing = !!eventIdInput.value;
-          const fd = new FormData(form);
-          const payload = {
-            action: isEditing ? 'edit' : 'create',
-            id: fd.get('event_id') || undefined,
-            employee_id: fd.get('employee_id'),
-            start: fd.get('start_time'),
-            appointment_type: fd.get('appointment_type'),
-            customer_name: fd.get('customer_name') || '',
-            customer_phone: (fd.get('customer_phone') || '').replace(/\D/g,''),
-            service_id: fd.get('service_id') || '',
-            notes: fd.get('notes') || ''
-          };
-          submitBtn.disabled = true;
-          try {
-            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
-            const data = await res.json();
-            if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
-          } catch (err) {
-            alert('❌ 儲存失敗：' + err.message);
-          } finally {
-            submitBtn.disabled = false;
-            appointmentModal.style.display = 'none';
-            calendar.refetchEvents();
+            updateHiddenStartTime(startDate);
+            minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            appointmentModal.style.display = 'block';
           }
-        });
 
-        deleteBtn.onclick = async function () {
-          const eventId = eventIdInput.value.trim();
-          if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
-          try {
-            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
-            const data = await res.json();
-            if (!res.ok || data.status !== 'success') throw new Error(data.message || '刪除失敗');
-          } catch (err) {
-            alert('❌ 刪除失敗：' + err.message);
-          } finally {
-            appointmentModal.style.display = 'none';
-            calendar.refetchEvents();
+          /**
+             * 開啟「編輯預約」彈窗
+             * - 會把事件資料（extendedProps）回填到表單
+             *
+             * @param {FullCalendar.EventApi} event - FullCalendar 的事件物件
+             */
+		          function openApptModalForEdit(event) {
+	            form.reset();
+	            const ep = event.extendedProps || {};
+	            eventIdInput.value = event.id;
+	            deleteBtn.style.display = 'inline-block';
+	            const rs = event.getResources();
+	            document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
+	            document.getElementById('customer_phone').value = ep.customer_phone || '';
+	            document.getElementById('customer_name').value = ep.customer_name || '';
+	            const serviceSelect = document.getElementById('service_id');
+	            const serviceValue = ep.service_id || '';
+	            if (serviceSelect) {
+	              if (serviceValue && !Array.from(serviceSelect.options).some(o => o.value === serviceValue)) {
+	                const opt = document.createElement('option');
+	                opt.value = serviceValue;
+	                opt.textContent = serviceValue;
+	                serviceSelect.insertBefore(opt, serviceSelect.options[1] || null);
+	              }
+	              serviceSelect.value = serviceValue;
+	            }
+	            document.getElementById('notes').value = ep.notes || '';
+	            assistantSelect.value = ep.assistant_id || '';
+	            amountInput.value = ep.amount !== undefined && ep.amount !== null ? ep.amount : '';
+	            const isBlocked = ep.appointment_type === 'blocked';
+            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
+	            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
+	            document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
+	            placeAppointmentActions('edit');
+	            // 調整按鈕區域：不約時段只佔左側，一般預約跨越兩欄
+	            document.querySelector('.modal-actions').style.gridColumn = isBlocked ? '1 / 2' : '1 / -1';
+	            // 調整彈窗寬度：不約時段窄版，一般預約寬版
+	            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '450px' : '900px';
+            
+            // Check Xiaobai rule
+            const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
+            document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+
+            // IMPORTANT: We do not have detailed breakdown (Cut vs Dye) stored in DB individually,
+            // we only have the total 'amount' (net).
+            // So we cannot auto-populate the checkboxes perfectly from history unless we change DB schema.
+            // For now, we just reset them or leave them empty, OR imply from amount if possible?
+            // User requirement: "Create event -> later click to input amount".
+            // So usually the amount should be 0 initially.
+            // If editing a settled event, the user might want to see what was selected.
+            // But we didn't save "which items were selected" to DB, only the single amount.
+            // So: Keep it simple: Reset checkboxes to default (None) and let user re-select if they are "editing settlement".
+            // OR checks if amount > 0, maybe show "Previously Settled: $xxx"
+	            // For now, reset billing widgets to default to avoid confusion.
+	             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+	             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+	             const permSelect = document.getElementById('perm_select');
+	             if (permSelect) permSelect.value = '';
+	             const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+	             const bleach4000CostInput = document.getElementById('bleach4000_cost');
+	             if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
+	             if (bleach4000CostInput) bleach4000CostInput.value = '270';
+	             updateCalculatedTotal();
+             
+             // If there IS an amount, we fill the hidden and maybe show it?
+             // But re-selecting items will overwrite it. This is tricky without changing DB.
+             // Workaround: We will respect the fetched 'ep.amount' and put it in hidden.
+             // The UI widgets will show $0. If user touches widgets, amount updates.
+	             if (ep.amount) {
+	                 amountInput.value = ep.amount;
+	                 document.getElementById('display-net').textContent = '$' + ep.amount;
+	                 // We can't know the Display Total (Gross) without reverse engineering.
+	                 // Showing "(Database Value)" might be safer.
+	                 document.getElementById('display-total').textContent = '(已存: $' + ep.amount + ')';
+		          }
+	             syncUnsettleButton();
+
+	            submitBtn.textContent = '儲存';
+	            const startDate = event.start;
+	            const minuteSelect = document.getElementById('minute_select');
+            minuteSelect.innerHTML = '';
+            const startMinute = startDate.getMinutes();
+            for (let m = 0; m < 60; m += 5) {
+              const opt = document.createElement('option');
+              opt.value = m;
+              opt.textContent = String(m).padStart(2, '0');
+              if (m === startMinute) opt.selected = true;
+              minuteSelect.appendChild(opt);
+            }
+            updateHiddenStartTime(startDate);
+            minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            appointmentModal.style.display = 'block';
           }
-        };
 
-        appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
-        leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
-        window.addEventListener('click', (e) => {
-          if (e.target === appointmentModal || e.target === leaveModal) {
-            appointmentModal.style.display = 'none';
-            leaveModal.style.display = 'none';
+          /**
+             * 根據 minute_select 的值，更新 hidden 欄位 `#start_time`
+             * - 後端通常需要一個確定的開始時間字串
+             * - 這裡用 ISO（toISOString）可以避免前後端時區處理混亂（但仍要注意後端如何解析）
+             *
+             * @param {Date} baseDate - 以這個日期/小時為基準，只調整分鐘
+             */
+          function updateHiddenStartTime(baseDate) {
+            const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
+            const dt = new Date(baseDate.getTime());
+            dt.setMinutes(selectedMinute, 0, 0);
+            document.getElementById('start_time').value = dt.toISOString();
           }
-        });
 
-        document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
-          radio.addEventListener('change', function() {
-            const isBlocked = this.value === 'blocked';
-            customerFields.style.display = isBlocked ? 'none' : 'block';
-            document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
-            const isEditing = !!eventIdInput.value;
-            if (isBlocked) {
-                submitBtn.innerHTML = '🚫 設定不約時段';
+          /**
+           * 排程：稍後重繪「每位設計師欄位內的時間軸」
+           * - 因為 FullCalendar 切換視圖/重排版面可能是非同步的
+           * - 用 setTimeout + 清除舊 timer，避免連續觸發造成卡頓
+           */
+          function schedulePerResourceTimeAxis(delayMs = 0) {
+            if (perResourceAxisTimer) window.clearTimeout(perResourceAxisTimer);
+            perResourceAxisTimer = window.setTimeout(renderPerResourceTimeAxis, delayMs);
+          }
+
+          // 把日曆水平捲動拉回最左邊（避免版面重算後停在中間，導致店長欄被擠出畫面）
+          function resetCalendarHorizontalScroll() {
+            const scrollers = document.querySelectorAll('#calendar .fc-scroller');
+            scrollers.forEach(s => {
+              if (s && s.scrollWidth > s.clientWidth) s.scrollLeft = 0;
+            });
+          }
+
+          /**
+           * 在「日視圖」中，為每位設計師的卡片化欄位建立一條自己的時間軸（像左邊時間軸的複製版）
+           *
+           * 做法：
+           * 1) 讀取 FullCalendar 左側時間軸每一格的 DOM 位置（getBoundingClientRect）
+           * 2) 對每個設計師欄位（data-resource-id）建立 `.per-resource-time-axis`
+           * 3) 在軸內用 absolute 定位把「12:00 / 12:15 / ...」對齊到正確高度
+           */
+          function renderPerResourceTimeAxis() {
+            // 清掉舊的（避免重複插入）
+            document.querySelectorAll('#calendar .per-resource-time-axis').forEach(n => n.remove());
+
+            if (!calendar || calendar.view?.type !== 'resourceTimeGridDay') return;
+            resetCalendarHorizontalScroll();
+
+            // ⚠️ 不依賴「最左邊時間軸」的 DOM
+            // 因為你想把最左邊時間軸整個移除掉（避免多一欄）
+            // 所以這裡改用「timegrid 的每一列 slot-lane」來計算 y 座標：
+            // - `data-time="12:00:00"` 這種屬性一定存在（每一列都有）
+            // - 會出現多個（每個設計師欄位各一份），我們只取每個時間點的第一個
+            const laneCells = Array.from(
+              document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time]')
+            );
+            if (!laneCells.length) return;
+
+            const byTime = new Map();
+            laneCells.forEach(cell => {
+              const t = cell.getAttribute('data-time');
+              if (!t) return;
+              if (!byTime.has(t)) byTime.set(t, cell);
+            });
+
+            const labelInfos = Array.from(byTime.entries())
+              .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+              .map(([t, cell]) => {
+                // t: "12:15:00" → 顯示 "12:15"
+                const text = String(t).slice(0, 5);
+                const rect = cell.getBoundingClientRect();
+                const minute = parseInt(String(t).slice(3, 5), 10);
+                const kind = minute === 0 || minute === 30 ? 'major' : 'minor';
+                return { text, rect, kind };
+              });
+
+            // 每位設計師欄位（只抓有 resource-id 的欄）
+            const frames = Array.from(
+              document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id] .fc-timegrid-col-frame')
+            );
+            if (!frames.length) return;
+
+            frames.forEach(frame => {
+              const axis = document.createElement('div');
+              axis.className = 'per-resource-time-axis';
+              axis.setAttribute('aria-hidden', 'true');
+
+              const frameRect = frame.getBoundingClientRect();
+
+              labelInfos.forEach(info => {
+                const item = document.createElement('div');
+                item.className = `per-resource-time-item ${info.kind === 'major' ? 'is-major' : 'is-minor'}`;
+                item.textContent = info.text;
+                const y = info.rect.top - frameRect.top + info.rect.height / 2;
+                item.style.top = `${y}px`;
+                axis.appendChild(item);
+              });
+
+              frame.appendChild(axis);
+            });
+          }
+
+          /**
+             * 建立（或取得已存在的）「日期滑動列 / 視圖切換列」UI
+             *
+             * 這是自訂 UI（不是 FullCalendar 內建 toolbar）：
+             * - 左側：年月、日
+             * - 中間：可左右滑動的日期按鈕（前後幾天）
+             * - 右側：日/週/月 視圖切換按鈕
+             * - 也會把「月結報表」按鈕 append 到右側區域
+             */
+          function ensureDateScroller() {
+            const cal = document.getElementById('calendar');
+            if (!cal) return null;
+            let scroller = cal.querySelector('.fc-date-scroller');
+            if (scroller) return scroller;
+            const toolbar = cal.querySelector('.fc-header-toolbar');
+            const viewHarness = cal.querySelector('.fc-view-harness');
+            scroller = document.createElement('div');
+            scroller.className = 'fc-date-scroller';
+            // 使用 template literal 組一段 HTML，直接塞進 scroller
+            scroller.innerHTML = `
+        <div class="date-row">
+          <div class="date-left-col">
+            <div class="date-label" aria-live="polite">
+              <span class="date-header-month"></span>
+              <span class="date-header-day"></span>
+            </div>
+            <div class="date-toggle" role="tablist" aria-label="視圖切換">
+              <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
+              <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
+              <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
+            </div>
+            <div class="mobile-resource-toggle" role="tablist" aria-label="設計師切換"></div>
+          </div>
+          <div class="date-strip" role="listbox" aria-label="日期選擇"></div>
+        </div>
+      `;
+            if (toolbar) {
+              toolbar.insertAdjacentElement('afterend', scroller);
+            } else if (viewHarness) {
+              viewHarness.insertAdjacentElement('beforebegin', scroller);
             } else {
-                submitBtn.innerHTML = isEditing ? '✅ 更新預約' : '💾 儲存預約';
+              cal.prepend(scroller);
+            }
+            const reportBtn = document.getElementById('open-report-btn');
+            const toggleRow = scroller.querySelector('.date-toggle');
+            if (reportBtn && toggleRow) {
+              // 把「月結報表」按鈕挪到左側切換按鈕旁邊
+              toggleRow.appendChild(reportBtn);
+            }
+            ensureMobileResourceToggle(scroller);
+            return scroller;
+          }
+
+          /**
+             * 更新日期滑動列（每次切換日期/切換視圖時呼叫）
+             *
+             * @param {Object} info - FullCalendar 的 datesSet callback 參數
+             */
+          function updateDateScroller(info) {
+            const cal = document.getElementById('calendar');
+            if (!cal || !info || !info.view) return;
+            cal.classList.add('is-date-scroller');
+
+            const scroller = ensureDateScroller();
+            if (!scroller) return;
+            scroller.hidden = false;
+            ensureMobileResourceToggle(scroller);
+
+            // 在日視圖時，把使用者正在看的日期記錄下來（避免切換視圖後找不到基準日）
+            if (info.view.type === 'resourceTimeGridDay') {
+              // ⚠️ 用「本地時間中午」來存，避免時區/UTC 轉換造成「點 18 變 17」的日期偏移
+              selectedDate = new Date(info.view.currentStart);
+              selectedDate.setHours(12, 0, 0, 0);
+            }
+            if (!selectedDate) {
+              selectedDate = new Date(calendar.getDate());
+              selectedDate.setHours(12, 0, 0, 0);
+            }
+            const activeDate = selectedDate ? new Date(selectedDate) : calendar.getDate();
+            const dateLocale = 'zh-TW';
+            const monthFmt = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' });
+            const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'narrow' });
+            const monthRaw = monthFmt.format(activeDate);
+            const monthLabel = monthRaw.includes('月') ? monthRaw : `${monthRaw}月`;
+            // 左側：年月、日
+            scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthLabel}`;
+            scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
+
+            // 右側：視圖切換按鈕 active 狀態
+            syncDateToggleState(scroller, info.view.type);
+            bindDateToggleActions(scroller);
+
+            const strip = scroller.querySelector('.date-strip');
+            const todayKey = ymd(new Date());
+            const currentKey = ymd(activeDate);
+
+            // 中間：建立前後幾天的日期按鈕（固定 21 天）
+            // 需求：亮起來（is-active）的那天要在「正中間」
+            // - 所以用「前 10 天 + 後 10 天」讓 activeDate 置中（第 11 個）
+            // - 不自動擴大範圍（維持你希望的原本寬度/數量）
+            // - 另外：因為日視圖 hiddenDays: [1]（週一不顯示），日期列也同步「移除週一」
+            strip.innerHTML = '';
+
+            // 以「可見日期」為基準組 21 個（前 10 + 當天 + 後 10），並跳過週一
+            // 這樣就不會出現「日期列有週一，但日視圖其實跳不到週一」的錯覺。
+            const dates = [];
+            const activeBase = new Date(activeDate);
+            activeBase.setHours(12, 0, 0, 0);
+            if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1); // 保險：週一 → 週二
+
+            const before = [];
+            const after = [];
+
+            let cursor = new Date(activeBase);
+            while (before.length < 10) {
+              cursor.setDate(cursor.getDate() - 1);
+              if (cursor.getDay() === 1) continue; // 跳過週一
+              before.push(new Date(cursor));
+            }
+
+            cursor = new Date(activeBase);
+            while (after.length < 10) {
+              cursor.setDate(cursor.getDate() + 1);
+              if (cursor.getDay() === 1) continue; // 跳過週一
+              after.push(new Date(cursor));
+            }
+
+            dates.push(...before.reverse(), activeBase, ...after);
+
+            dates.forEach(d => {
+              const dateKey = ymd(d);
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'date-item';
+              if (dateKey === currentKey) btn.classList.add('is-active');
+              if (dateKey === todayKey) btn.classList.add('is-today');
+              btn.setAttribute('role', 'option');
+              btn.setAttribute('aria-selected', dateKey === currentKey ? 'true' : 'false');
+              btn.dataset.date = dateKey;
+              btn.innerHTML = `<span class="date-item-weekday">${weekdayFmt.format(d)}</span><span class="date-item-day">${d.getDate()}</span>`;
+              strip.appendChild(btn);
+            });
+
+            // 建立完日期按鈕後再啟用拖曳（避免未渲染完成時的手勢干擾）
+            enableDragScroll(strip);
+
+            // 做弧形/縮放的視覺效果（純 UI，不影響功能）
+            applyDateStripCurve(strip);
+            // 不要強制把「選中的日期」永遠置中（會讓使用者覺得「怎麼滾都回中間」）
+            // 只要確保它在可視範圍內即可。
+            const active = strip.querySelector('.date-item.is-active');
+            if (active) {
+              const shouldCenter = strip.dataset.centerOnNextUpdate === '1';
+              if (shouldCenter) {
+                delete strip.dataset.centerOnNextUpdate;
+                const maxScrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
+                const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
+                const nextLeft = Math.max(0, Math.min(targetLeft, maxScrollLeft));
+                if (typeof strip.scrollTo === 'function') strip.scrollTo({ left: nextLeft, behavior: 'smooth' });
+                else strip.scrollLeft = nextLeft;
+              } else {
+                active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+              }
+            }
+          }
+
+          function isMobileLayout() {
+            return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches);
+          }
+
+          function getValidResourceId(id) {
+            const normalized = String(id || '').trim();
+            if (!normalized) return null;
+            return RESOURCE_LIST.some(r => String(r.id) === normalized) ? normalized : null;
+          }
+
+          function getStoredResourceId() {
+            try {
+              return getValidResourceId(localStorage.getItem(MOBILE_RESOURCE_STORAGE_KEY));
+            } catch (err) {
+              return null;
+            }
+          }
+
+          function storeResourceId(id) {
+            try {
+              localStorage.setItem(MOBILE_RESOURCE_STORAGE_KEY, id);
+            } catch (err) {
+              // ignore storage errors (private mode / quota)
+            }
+          }
+
+          function ensureMobileResourceId() {
+            const valid = getValidResourceId(mobileSelectedResourceId) || getStoredResourceId() || String(RESOURCE_LIST[0]?.id || '1');
+            mobileSelectedResourceId = valid;
+            return valid;
+          }
+
+          function ensureMobileResourceToggle(scroller) {
+            if (!scroller) return;
+            const wrap = scroller.querySelector('.mobile-resource-toggle');
+            if (!wrap || wrap.dataset.bound === '1') return;
+            wrap.dataset.bound = '1';
+            wrap.innerHTML = RESOURCE_LIST.map(resource => {
+              const rid = String(resource.id);
+              const title = resource.title || rid;
+              return `<button type="button" class="resource-toggle-btn" data-resource-id="${rid}">${title}</button>`;
+            }).join('');
+            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const rid = getValidResourceId(btn.dataset.resourceId);
+                if (!rid) return;
+                mobileSelectedResourceId = rid;
+                storeResourceId(rid);
+                applyMobileResourceVisibility();
+                schedulePerResourceTimeAxis(80);
+              });
+            });
+          }
+
+          function syncMobileResourceToggleState(scroller) {
+            if (!scroller) return;
+            const wrap = scroller.querySelector('.mobile-resource-toggle');
+            if (!wrap) return;
+            const activeId = ensureMobileResourceId();
+            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => {
+              const isActive = String(btn.dataset.resourceId) === String(activeId);
+              btn.classList.toggle('is-active', isActive);
+              btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+          }
+
+          function applyMobileResourceVisibility(info) {
+            const cal = document.getElementById('calendar');
+            if (!cal) return;
+            const viewType = info?.view?.type || calendar?.view?.type || '';
+            const isDayView = viewType === 'resourceTimeGridDay';
+            const shouldShowSingle = isDayView && isMobileLayout();
+            const scroller = cal.querySelector('.fc-date-scroller');
+            if (scroller) {
+              ensureMobileResourceToggle(scroller);
+              scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
+              syncMobileResourceToggleState(scroller);
+            }
+            if (!shouldShowSingle) {
+              cal.removeAttribute('data-mobile-resource');
+              return;
+            }
+            cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
+          }
+
+          /**
+             * 視覺效果：讓日期按鈕呈現「中間放大、兩側縮小」的弧形排列感
+             * - 透過設定 CSS 變數（--arc-offset / --arc-scale / --arc-opacity / --arc-font-scale）
+             * 
+             * 🎨 調整指南（修改下方數值即可）：
+             * - offset：距離選中日期越遠，往下偏移越多（弧形的下沉感）
+             * - scale：距離選中日期越遠，整體縮小越多
+             * - opacity：距離選中日期越遠，透明度越低（淡出效果）
+             * - fontScale：距離選中日期越遠，字體越小
+             */
+          function applyDateStripCurve(strip) {
+            const items = Array.from(strip.querySelectorAll('.date-item'));
+            if (!items.length) return;
+            const activeIndex = items.findIndex(item => item.classList.contains('is-active'));
+            if (activeIndex === -1) return;
+            items.forEach((item, idx) => {
+              const dist = Math.abs(idx - activeIndex); // dist = 離選中日期的格數（0=選中本身）
+              
+              // 🔧 下沉偏移：每格增加 6px，最多 22px
+              const offset = Math.min(22, dist * 6);
+              
+              // 🔧 整體縮放：選中 = 1.1（放大 10%），每遠 1 格縮小 6%，最小 0.84
+              const scale = dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06);
+              
+              // 🔧 透明度：選中 = 1（不透明），每遠 1 格淡 12%，最低 0.45
+              const opacity = dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12);
+              
+              // 🔧 字體縮放：選中 = 1（原始大小），每遠 1 格縮小 8%，最小 0.7
+              const fontScale = dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08);
+              
+              item.style.setProperty('--arc-offset', `${offset}px`);
+              item.style.setProperty('--arc-scale', scale.toFixed(2));
+              item.style.setProperty('--arc-opacity', opacity.toFixed(2));
+              item.style.setProperty('--arc-font-scale', fontScale.toFixed(2));
+            });
+          }
+
+          /**
+             * 點擊日期按鈕後：切到日視圖並跳到該天
+             * @param {HTMLElement} item - `.date-item` button
+             */
+          function selectDateFromItem(item) {
+            if (!item || !item.dataset.date) return;
+            const dateStr = String(item.dataset.date);
+            const parts = dateStr.split('-').map(Number);
+            if (parts.length !== 3) return;
+
+            // 用中午避免 UTC 轉換跨日（你遇到的「點 17 跳兩天 / 點 18 跳一天」就是這種狀況）
+            const pickedNoon = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
+            selectedDate = pickedNoon;
+
+            // 用 YYYY-MM-DD 字串導航，FullCalendar 會當作「日期」處理，比 Date 物件更不容易出現跨日偏移
+            calendar.changeView('resourceTimeGridDay', dateStr);
+            calendar.gotoDate(dateStr);
+          }
+
+          /**
+             * 視圖切換按鈕狀態同步：把目前視圖的按鈕加上 active 樣式
+             * @param {HTMLElement} scroller - `.fc-date-scroller`
+             * @param {string} viewType - FullCalendar 的 view.type
+             */
+          function syncDateToggleState(scroller, viewType) {
+            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
+              const isActive = viewType === btn.dataset.view;
+              btn.classList.toggle('is-active', isActive);
+              btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+          }
+
+          /**
+             * 綁定視圖切換按鈕（避免重複綁定，使用 dataset.toggleBound 做記號）
+             */
+          function bindDateToggleActions(scroller) {
+            if (!scroller || scroller.dataset.toggleBound === '1') return;
+            scroller.dataset.toggleBound = '1';
+            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                const baseDate = selectedDate ? new Date(selectedDate) : new Date(calendar.getDate());
+                baseDate.setHours(12, 0, 0, 0);
+                const baseKey = ymd(baseDate);
+                if (calendar.view && calendar.view.type === view) return;
+                if (view === 'resourceTimeGridDay') {
+                  // 日視圖：回到目前選取的日期（不要強制跳回今天）
+                  selectedDate = baseDate;
+                  calendar.changeView(view, baseKey);
+                  calendar.gotoDate(baseKey);
+                  return;
+                }
+                calendar.changeView(view, baseKey);
+              });
+            });
+          }
+
+          /**
+             * 讓元素支援「滑鼠按住拖曳捲動」（也支援觸控 / Pointer Events）
+             * - moved=false 時代表是「點擊」，會觸發選日期
+             * - moved=true 時代表是「拖曳」，不觸發選日期（避免誤點）
+             *
+             * @param {HTMLElement} strip - 要捲動的容器 (.date-strip)
+             */
+          function enableDragScroll(strip) {
+            if (!strip || strip.dataset.dragBound === '1') return;
+            strip.dataset.dragBound = '1';
+            // 同時支援 Pointer Events + Mouse Events（部分環境 pointer 事件不穩時，滑鼠仍可拖曳）
+            let isDown = false;
+            let startX = 0;
+            let scrollLeft = 0;
+            let moved = false;
+            let downItem = null;
+            let activeMode = null; // 'pointer' | 'mouse' | null
+
+            const beginDrag = (clientX, item) => {
+              isDown = true;
+              moved = false;
+              downItem = item;
+              startX = clientX;
+              scrollLeft = strip.scrollLeft;
+              strip.classList.add('active'); // 對應 CSS：cursor grabbing / 避免誤觸
+            };
+
+            const moveDrag = (clientX) => {
+              if (!isDown) return;
+              const dx = clientX - startX;
+              if (Math.abs(dx) > 6 && !moved) {
+                moved = true;
+                strip.classList.add('is-dragging');
+              }
+              const walk = dx * 2; // 拖曳速度：數字越大滑越快
+              strip.scrollLeft = scrollLeft - walk;
+            };
+
+            const endDrag = () => {
+              if (!isDown) return;
+              isDown = false;
+              strip.classList.remove('is-dragging');
+              strip.classList.remove('active');
+              if (!moved && downItem) {
+                // 點擊日期後：下一次重繪日期列時，把該日期置中（視覺效果更直覺）
+                strip.dataset.centerOnNextUpdate = '1';
+                selectDateFromItem(downItem);
+              }
+              downItem = null;
+              activeMode = null;
+            };
+
+            // 防止瀏覽器把拖曳當成原生 drag 行為（某些瀏覽器會出現 ghost image）
+            strip.addEventListener('dragstart', (e) => e.preventDefault());
+
+            const onPointerDown = (e) => {
+              if (activeMode === 'touch') return;
+              if (e.button && e.button !== 0) return;
+              // 讓拖曳滾動更穩：避免瀏覽器把它當成文字選取/點擊
+              e.preventDefault();
+              activeMode = 'pointer';
+              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
+              beginDrag(e.clientX, item);
+              try { strip.setPointerCapture(e.pointerId); } catch { }
+            };
+
+            const onPointerMove = (e) => {
+              if (activeMode !== 'pointer') return;
+              e.preventDefault();
+              moveDrag(e.clientX);
+            };
+
+            const onPointerUp = (e) => {
+              if (activeMode !== 'pointer') return;
+              e.preventDefault();
+              try { strip.releasePointerCapture(e.pointerId); } catch { }
+              endDrag();
+            };
+
+            // Mouse fallback：有些環境 pointerdown/move 不會正常運作（或被瀏覽器手勢攔截）
+            const onMouseDown = (e) => {
+              if (activeMode === 'touch') return;
+              if (activeMode === 'pointer') return;
+              if (e.button !== 0) return;
+              e.preventDefault();
+              activeMode = 'mouse';
+              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
+              beginDrag(e.clientX, item);
+            };
+
+            const onMouseMove = (e) => {
+              if (activeMode !== 'mouse') return;
+              e.preventDefault();
+              moveDrag(e.clientX);
+            };
+
+            const onMouseUp = (e) => {
+              if (activeMode !== 'mouse') return;
+              e.preventDefault();
+              endDrag();
+            };
+
+            // Touch fallback：iOS 舊版 Safari/特定 WebView 可能沒有穩定的 Pointer Events
+            const onTouchStart = (e) => {
+              if (activeMode === 'pointer' || activeMode === 'mouse') return;
+              if (!e.touches || e.touches.length !== 1) return;
+              e.preventDefault();
+              activeMode = 'touch';
+              const t = e.touches[0];
+              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
+              beginDrag(t.clientX, item);
+            };
+
+            const onTouchMove = (e) => {
+              if (activeMode !== 'touch') return;
+              if (!e.touches || e.touches.length !== 1) return;
+              e.preventDefault();
+              const t = e.touches[0];
+              moveDrag(t.clientX);
+            };
+
+            const onTouchEnd = (e) => {
+              if (activeMode !== 'touch') return;
+              e.preventDefault();
+              endDrag();
+            };
+
+            strip.addEventListener('pointerdown', onPointerDown, { passive: false });
+            strip.addEventListener('pointermove', onPointerMove, { passive: false });
+            strip.addEventListener('pointerup', onPointerUp, { passive: false });
+            strip.addEventListener('pointercancel', onPointerUp, { passive: false });
+            strip.addEventListener('pointerleave', onPointerUp, { passive: false });
+
+            strip.addEventListener('mousedown', onMouseDown, { passive: false });
+            window.addEventListener('mousemove', onMouseMove, { passive: false });
+            window.addEventListener('mouseup', onMouseUp, { passive: false });
+
+            strip.addEventListener('touchstart', onTouchStart, { passive: false });
+            strip.addEventListener('touchmove', onTouchMove, { passive: false });
+            strip.addEventListener('touchend', onTouchEnd, { passive: false });
+            strip.addEventListener('touchcancel', onTouchEnd, { passive: false });
+          }
+
+          /**
+             * 更新 FullCalendar 原本 toolbar title 的文字
+             * - 月視圖：顯示「YYYY 年 M 月」
+             * - 日視圖：顯示「YYYY 年 M 月 D 日 < 週X >」
+             */
+          function updateToolbarTitle(info) {
+            const el = document.querySelector('#calendar .fc-toolbar-title');
+            if (!el || !info || !info.view) return;
+
+            const type = info.view.type;
+            const d = info.view.currentStart;
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            const wdMap = ['日', '一', '二', '三', '四', '五', '六'];
+
+            if (type === 'dayGridMonth') {
+              el.classList.add('is-month-title');
+              el.innerHTML = `<span class="title-month-text">${y} 年 ${m} 月</span>`;
+              return;
+            }
+
+            el.classList.remove('is-month-title');
+            if (type === 'resourceTimeGridDay') {
+              el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
+            } else {
+              el.textContent = info.view.title;
+            }
+          }
+
+
+          /**
+             * 在週一的欄位畫出「公休」覆蓋層（如果該日期區間包含週一）
+             *
+             * 備註：
+             * - 本專案全域設定 hiddenDays: [1] 會隱藏週一（視圖不會顯示）
+             * - 仍保留這段程式：用於未來可能改成顯示週一時，可以直接呈現「公休」提示
+             */
+          function paintMondayClosed(info) {
+            document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
+            const start = info.start, end = info.end;
+            const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+              if (d.getDay() !== 1) continue;
+              const dateStr = ymd(d);
+              document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                const frame = col.querySelector('.fc-timegrid-col-frame');
+                const container = frame || col;
+                const ov = document.createElement('div');
+                ov.className = 'closed-overlay';
+                ov.textContent = '公休';
+                container.appendChild(ov);
+              });
+            }
+          }
+        });
+
+        // ==========================================
+        // 報表前端邏輯
+        //
+        // 架構：
+        // - 這段程式碼寫在 DOMContentLoaded 外面，但因為 <script> 放在 body 最底部
+        //   所以 HTML 已經被瀏覽器解析完成，getElementById 仍然抓得到元素。
+        //
+        // 流程：
+        // 1) 點「查看月結報表」→ 打開彈窗 + 初始化起訖日
+        // 2) 點「查詢」→ fetch action=getReport
+        // 3) renderReport() 把資料渲染成表格
+        // ==========================================
+        // const reportModal = document.getElementById('reportModal'); // Moved to global
+
+        const openReportBtn = document.getElementById('open-report-btn');
+        const closeReportBtn = document.querySelector('.report-close-button');
+        const fetchReportBtn = document.getElementById('fetch-report-btn');
+        const reportResult = document.getElementById('report-result');
+        const repStart = document.getElementById('report-start');
+        const repEnd = document.getElementById('report-end');
+
+        /**
+         * 初始化起訖日（預設：本月 1 日 ～ 今日）
+         */
+        function initReportDateRange() {
+          const pad2 = (n) => String(n).padStart(2, '0');
+          const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+          const now = new Date();
+          const first = new Date(now.getFullYear(), now.getMonth(), 1);
+          if (!repStart.value) repStart.value = fmt(first);
+          if (!repEnd.value) repEnd.value = fmt(now);
+        }
+
+        // 2. 開關視窗
+        if (openReportBtn) {
+          openReportBtn.addEventListener('click', () => {
+            reportModal.style.display = 'block';
+            initReportDateRange();
+          });
+        }
+        if (closeReportBtn) {
+          closeReportBtn.addEventListener('click', () => {
+            reportModal.style.display = 'none';
+          });
+        }
+
+        // 3. 查詢動作
+        if (fetchReportBtn) {
+          fetchReportBtn.addEventListener('click', async () => {
+            const start = repStart.value;
+            const end = repEnd.value;
+            if (!start || !end) {
+              reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center; padding:20px;">請選擇起訖日期</div>';
+              return;
+            }
+            if (start > end) {
+              reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center; padding:20px;">起日不可晚於迄日</div>';
+              return;
+            }
+            reportResult.innerHTML = '<div style="text-align:center; padding:20px;">⏳ 資料計算中...</div>';
+            try {
+              // 呼叫後端 (getReport)
+              const url = APPS_SCRIPT_WEB_APP_URL + `?action=getReport&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
+              const res = await fetch(url);
+              const data = await res.json();
+              renderReport(data);
+            } catch (e) {
+              console.error(e);
+              reportResult.innerHTML = '<div style="color:#ff6b6b; text-align:center;">❌ 讀取失敗</div>';
             }
           });
-        });
-    }
-
-    function paintEmployeeLeave() {
-  // 先清掉舊層
-  document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
-  document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
-  if (!Array.isArray(employeeLeaveData)) return;
-
-  employeeLeaveData.forEach(leave => {
-    const targetColumn = document.querySelector(
-      `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
-    );
-    if (!targetColumn) return;
-
-    if (leave.reason === '已約滿') {
-      // 只畫外框，不覆蓋內容
-      const o = document.createElement('div');
-      o.className = 'fully-booked-outline';
-      targetColumn.appendChild(o);
-      return;
-    }
-
-    const ov = document.createElement('div');
-    ov.className = 'closed-overlay leave-overlay';
-    const label = document.createElement('span');
-    label.className = 'overlay-label';
-    label.textContent = leave.reason;
-    ov.appendChild(label);
-    ov.dataset.resourceId = leave.resourceId;
-    ov.dataset.date = leave.date;
-    targetColumn.appendChild(ov);
-  });
-}
-
-
-
-    function openLeaveModal(date, resource) {
-        const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const dateStr = ymd(date);
-        const existingLeave = Array.isArray(employeeLeaveData) ? employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id) : null;
-        document.getElementById('leaveResourceId').value = resource.id;
-        document.getElementById('leaveDate').value = dateStr;
-        document.getElementById('leaveModalResourceName').textContent = resource.title;
-        document.getElementById('leaveModalDate').textContent = dateStr;
-        document.getElementById('leaveReason').value = existingLeave ? existingLeave.reason : resource.title + '排休';
-        deleteLeaveBtn.style.display = existingLeave ? 'inline-block' : 'none';
-        leaveModal.style.display = 'block';
-    }
-
-    function openApptModalForCreate(startDate, resource) {
-      if (!resource) return;
-      form.reset();
-      eventIdInput.value = '';
-      submitBtn.innerHTML = '💾 儲存預約';
-      deleteBtn.style.display = 'none';
-      document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
-      customerFields.style.display = 'block';
-      document.getElementById('notes').placeholder = '請輸入備註資訊.';
-      document.getElementById('employee_id').value = resource.id;
-      const minuteSelect = document.getElementById('minute_select');
-      minuteSelect.innerHTML = '';
-      const baseMin = startDate.getMinutes();
-      for (let i = 0; i < 3; i++) { 
-        const currentMinute = baseMin + (i * 5); 
-        const opt = document.createElement('option');
-        opt.value = currentMinute; 
-        opt.textContent = String(currentMinute).padStart(2, '0');
-        if (i === 0) opt.selected = true;
-        minuteSelect.appendChild(opt);
-      }
-      updateHiddenStartTime(startDate);
-      minuteSelect.onchange = function() { updateHiddenStartTime(startDate) };
-      appointmentModal.style.display = 'block';
-    }
-
-    function openApptModalForEdit(event) {
-        form.reset();
-        const ep = event.extendedProps || {};
-        eventIdInput.value = event.id;
-        deleteBtn.style.display = 'inline-block';
-        const rs = event.getResources();
-        document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
-        document.getElementById('customer_phone').value = ep.customer_phone || '';
-        document.getElementById('customer_name').value  = ep.customer_name  || '';
-        document.getElementById('service_id').value    = ep.service_id    || '';
-        document.getElementById('notes').value         = ep.notes         || '';
-        const isBlocked = ep.appointment_type === 'blocked';
-        document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
-        customerFields.style.display = isBlocked ? 'none' : 'block';
-        submitBtn.innerHTML = isBlocked ? '🚫 更新不約時段' : '✅ 更新預約';
-        const startDate = event.start;
-        const minuteSelect = document.getElementById('minute_select');
-        minuteSelect.innerHTML = '';
-        const startMinute = startDate.getMinutes();
-        for (let m = 0; m < 60; m += 5) {
-          const opt = document.createElement('option');
-          opt.value = m;
-          opt.textContent = String(m).padStart(2, '0');
-          if (m === startMinute) opt.selected = true;
-          minuteSelect.appendChild(opt);
         }
-        updateHiddenStartTime(startDate);
-        minuteSelect.onchange = function() { updateHiddenStartTime(startDate) };
-        appointmentModal.style.display = 'block';
-    }
 
-    function updateHiddenStartTime(baseDate) {
-      const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
-      const dt = new Date(baseDate.getTime());
-      dt.setMinutes(selectedMinute, 0, 0);
-      document.getElementById('start_time').value = dt.toISOString();
-    }
-  
-    function updateToolbarTitle(info) {
-  const el = document.querySelector('#calendar .fc-toolbar-title');
-  if (!el || !info || !info.view) return;
+        /**
+         * 把後端回來的報表資料渲染成 HTML 表格
+         * - 顯示總客數
+         * - 逐位設計師列出：客數 + 服務項目分佈
+         *
+         * @param {Object} data - 後端 action=getReport 回傳的 JSON
+         */
+        function renderReport(data) {
+          if (!data || (!Object.keys(data.designers).length && !Object.keys(data.assistants).length)) {
+            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:#ccc;">該區間尚無預約資料</div>';
+            return;
+          }
 
-  const type = info.view.type;
-  const d = info.view.currentStart;
-  const y = d.getFullYear();
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
-  const wdMap = ['日','一','二','三','四','五','六'];
+          let html = '';
 
-  if (type === 'dayGridMonth') {
-    el.classList.add('is-month-title');
-    el.innerHTML = `<span class="title-month-text">${y} 年 ${m} 月</span>`;
-    return;
-  }
+          // 1. 設計師業績報表
+          html += `<h4 style="margin-top:0; border-left:4px solid var(--accent-color); padding-left:10px;">設計師業績 (40%)</h4>`;
+          html += `<table class="report-table" style="margin-bottom:20px;">
+                <thead>
+                  <tr>
+                    <th width="18%">設計師</th>
+                    <th width="10%">客數</th>
+                    <th width="9%">剪</th>
+                    <th width="9%">燙</th>
+                    <th width="9%">染</th>
+                    <th width="22%">總金額</th>
+                    <th width="23%">業績抽成</th>
+                  </tr>
+                </thead>
+                <tbody>`;
 
-  el.classList.remove('is-month-title');
-  if (type === 'resourceTimeGridDay') {
-    el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
-  } else {
-    el.textContent = info.view.title;
-  }
-}
+          // 遍歷設計師資料
+          const designerMap = { '1': '店長', '2': '雅婷', '3': '小白' };
+          for (const [id, info] of Object.entries(data.designers)) {
+            const name = designerMap[id] || `設計師(${id})`;
+            const totalAmt = info.totalAmount || 0;
+            const count = info.count || 0;
+            const cutCount = (typeof info.cutCount === 'number') ? info.cutCount : count;
+            const permCount = info.permCount || 0;
+            const dyeCount = info.dyeCount || 0;
+            const commission = Math.round(totalAmt * 0.4);
 
+            html += `<tr>
+                    <td style="text-align:center; font-weight:bold; color:#fff;">${name}</td>
+                    <td class="num-cell">${count}</td>
+                    <td class="num-cell">${cutCount}</td>
+                    <td class="num-cell">${permCount}</td>
+                    <td class="num-cell">${dyeCount}</td>
+                    <td class="num-cell">$${totalAmt.toLocaleString()}</td>
+                    <td class="num-cell" style="color:#ffeb3b; font-weight:bold;">$${commission.toLocaleString()}</td>
+                  </tr>`;
+          }
+          html += `</tbody></table>`;
 
-    function syncTimeLabelClosedBg(info) {
-      const cal = document.getElementById('calendar');
-      if (!cal) return;
-      cal.classList.remove('is-closed-day');
-      const isDayView = info && info.view && info.view.type === 'resourceTimeGridDay';
-      if (isDayView && info.start && info.start.getDay() === 1) {
-        cal.classList.add('is-closed-day');
-      }
-    }
+          // 2. 助理業績報表
+          html += `<h4 style="margin-top:0; border-left:4px solid #ff9800; padding-left:10px;">助理洗頭業績 (超過300顆, 每顆$20)</h4>`;
+          html += `<table class="report-table">
+                <thead>
+                  <tr>
+                    <th width="30%">助理姓名</th>
+                    <th width="30%">洗頭數</th>
+                    <th width="40%">業績獎金</th>
+                  </tr>
+                </thead>
+                <tbody>`;
 
-    function paintMondayClosed(info){
-      document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
-      const start = info.start, end = info.end;
-      const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      for (let d = new Date(start); d < end; d.setDate(d.getDate()+1)) {
-        if (d.getDay() !== 1) continue;
-        const dateStr = ymd(d);
-        document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
-          const ov = document.createElement('div');
-          ov.className = 'closed-overlay';
-          ov.textContent = '公休';
-          col.appendChild(ov);
-        });
-      }
-    }
-});
-})();
-  </script>  
-  </body>
- </html>
+          // 遍歷助理資料 (注意：assistant_id 就是姓名)
+          if (Object.keys(data.assistants).length === 0) {
+            html += `<tr><td colspan="3" style="text-align:center; color:#888;">無資料</td></tr>`;
+          } else {
+            for (const [name, info] of Object.entries(data.assistants)) {
+              if (!name || name === 'undefined') continue;
+              const count = info.washCount || 0;
+              // 規則：超過 300 顆的部分，每顆 $20
+              const excess = Math.max(0, count - 300);
+              const bonus = excess * 20;
+
+              html += `<tr>
+                      <td style="text-align:center; font-weight:bold;">${name}</td>
+                      <td class="num-cell">${count} <span style="font-size:0.8em; color:#aaa;">(超額 ${excess})</span></td>
+                      <td class="num-cell" style="color:#ff9800; font-weight:bold;">$${bonus.toLocaleString()}</td>
+                    </tr>`;
+            }
+          }
+          html += `</tbody></table>`;
+
+          reportResult.innerHTML = html;
+        }
+
+      })();
+    </script>
+</body>
+
+</html>
