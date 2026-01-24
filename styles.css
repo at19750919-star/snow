@@ -130,7 +130,7 @@
   --time-major: #2f363b;
   --time-minor: #d5cbc2;
   --meal-slot-bg: rgba(217, 120, 90, 0.18);
-  --meal-slot-bg-deep: rgba(217, 120, 90, 0.35);
+  --meal-slot-bg-deep: rgba(171, 206, 77, 0.904);
 
   /* Event cards */
   --event-default-bg: var(--kikyo-primary);
@@ -611,13 +611,14 @@ body {
   gap: 4px;
   /* snap 參考點改成 start，比較符合「可以推到旁邊」的滑動行為 */
   scroll-snap-align: start;
+  will-change: transform, opacity;
   transform: translateY(var(--arc-offset, 0)) scale(var(--arc-scale, 1));
   opacity: var(--arc-opacity, 1);
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    background 0.25s ease,
-    opacity 0.25s ease;
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
 }
 #calendar .fc-date-scroller .date-item:hover {
   transform: translateY(calc(var(--arc-offset, 0) - 2px))
@@ -1182,7 +1183,13 @@ body {
   text-align: center;
 }
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
-  grid-template-columns: 1fr;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.7fr);
+  align-items: center;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 6px;
+  gap: 0;
 }
 #calendar .fc-event.blocked-time .evt-col-name,
 #calendar .fc-event.blocked-time .evt-col-phone {
@@ -1195,6 +1202,7 @@ body {
   padding: 0 10px; /* 不約時段：左右內距略小 */
 }
 
+/* 不約卡片手圖案：置中於服務欄 */
 .blocked-icon {
   font-family:
     "Material Symbols Outlined", "Material Symbols Filled", sans-serif !important;
@@ -1203,6 +1211,24 @@ body {
     "FILL" 1,
     "wght" 500;
   font-size: 32px;
+  margin: 0 auto;
+  display: block;
+  grid-column: 1 / 2;
+  justify-self: center;
+  align-self: center;
+}
+
+/* 不約卡片備註：橫跨姓名+電話欄，置中 */
+.fc-event.blocked-time .evt-col-note {
+  grid-column: 2 / 3;
+  text-align: center;
+  width: 100%;
+  font-size: 18px;
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #calendar .fc-event.blocked-time .blocked-icon {
@@ -1714,8 +1740,7 @@ body {
   background: #3949ab;
 }
 /* ==================== iPad Pro 10.5"（1112×834, 橫向）專用調整 ==================== */
-@media (width: 1112px) and (height: 834px) and (orientation: landscape) and (min-resolution: 2dppx),
-  (width: 1112px) and (height: 834px) and (orientation: landscape) and (-webkit-min-device-pixel-ratio: 2) {
+@media (min-width: 1024px) and (max-width: 1200px) and (orientation: landscape) {
   /* 表頭：設計師名稱小一點並往左 */
   #calendar .resource-cushion {
     justify-content: flex-start;
