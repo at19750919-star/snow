@@ -232,6 +232,8 @@
 /* 全域基礎設定 - 重置瀏覽器預設樣式並設定基本字體與背景 */
 html,
 body {
+  -webkit-text-size-adjust: 100%;
+
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
@@ -550,7 +552,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   /* 交給 JS 來處理「拖曳滾動」：避免瀏覽器預設手勢干擾 */
-  touch-action: none;
+  touch-action: pan-x; /* 允許原生水平滑動（iPad/手機更順） */
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -1027,12 +1029,16 @@ body {
 
 /* 針對【一般預約】卡片的文字大小 */
 #calendar .fc-timegrid-event .fc-event-title {
-  font-size: 24px; /* 一般預約的文字大小 */
+  font-size: clamp(
+    14px,
+    2.4vw,
+    22px
+  ); /* 一般預約：跟著螢幕寬度縮放（iPad/桌機更一致） */
 }
 
 /* 針對【不約時段】卡片的圖示大小 */
 #calendar .fc-event.blocked-time .fc-event-title {
-  font-size: 20px; /* 不約時段的圖示大小 */
+  font-size: clamp(13px, 2.1vw, 20px); /* 不約時段：跟著螢幕寬度縮放 */
 }
 
 /* 事件卡片懸停效果 */
@@ -3121,5 +3127,15 @@ body {
   .modal-content {
     min-width: auto !important;
     max-width: 95vw !important;
+  }
+}
+
+/* iOS：避免長按出現選單/選取，讓滑動更順 */
+@media (pointer: coarse) {
+  #calendar .fc-date-scroller .date-strip,
+  #calendar .fc-date-scroller .date-item {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
