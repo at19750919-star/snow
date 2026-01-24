@@ -53,6 +53,8 @@
 	      - wght：300/400/500/700 足夠涵蓋本頁的字重需求
 	    -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Material Symbols（Pan Tool 手掌符號） -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap" rel="stylesheet">
 
   <!-- 專案自己的樣式（大多數版面/顏色/按鈕/彈窗都在這裡定義） -->
   <link rel="stylesheet" href="styles.css">
@@ -718,7 +720,9 @@
                 };
                 // 不約時段：顯示成單純的封鎖樣式（不顯示姓名電話）
                 if (ep.appointment_type === 'blocked') {
-                  return { html: `<div class="fc-event-title evt-line evt-blocked"></div>` };
+                  return {
+                    html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span></div>`
+                  };
                 }
                 const svcList = svcMap[ep.service_id] || ['預'];
                 const svcClassMap = {
@@ -736,6 +740,10 @@
                 };
                 const name = safeTrim(ep.customer_name) || safeTrim(ep.notes);
                 const phone = safeTrim(ep.customer_phone);
+                const paidAmount = Number(ep.amount);
+                const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
+                const currencyFormatter = new Intl.NumberFormat('zh-TW');
+                const amountLabel = isPaid ? `$${currencyFormatter.format(paidAmount)}` : '';
 
                 // ✅ 服務勳章：不管幾個項目都只顯示「一個」勳章
                 // - 文字：把項目縮寫串起來（例如：剪染、剪染燙、剪護）
@@ -745,7 +753,7 @@
                 const badgeCls = svcClassMap[badgeKey] || 'svc-default';
                 const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
                 return {
-                  html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${phone}</span></div>`
+                  html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span></div>`
                 };
               },
 
@@ -810,6 +818,120 @@
             } catch (e) {
               console.warn('syncFullyBookedButtons failed:', e);
             }
+          }
+
+          function ensureToastContainer() {
+            let el = document.getElementById('toast-container');
+            if (!el) {
+              el = document.createElement('div');
+              el.id = 'toast-container';
+              el.setAttribute('aria-live', 'polite');
+              document.body.appendChild(el);
+            }
+            return el;
+          }
+
+          function showToast(message, type = 'info', duration = 2000) {
+            const container = ensureToastContainer();
+            const toast = document.createElement('div');
+            toast.className = `toast toast--${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('is-visible'));
+            window.setTimeout(() => {
+              toast.classList.remove('is-visible');
+              toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+            }, duration);
+          }
+
+          /**
+           * 儲存成功後：在前端立即更新事件，避免每次都 refetch
+           * - 目的：結帳/儲存後「卡片變色」能更快看到
+           */
+          function applyOptimisticEventUpdate(payload) {
+            if (!calendar || !payload || !payload.id) return false;
+            const ev = calendar.getEventById(String(payload.id));
+            if (!ev) return false;
+
+            // 若時間有變動，保留原本時長
+            if (payload.start) {
+              const nextStart = new Date(payload.start);
+              if (!Number.isNaN(nextStart.getTime())) {
+                const durationMs = (ev.end && ev.start) ? (ev.end.getTime() - ev.start.getTime()) : null;
+                ev.setStart(nextStart);
+                if (durationMs != null && durationMs > 0) {
+                  ev.setEnd(new Date(nextStart.getTime() + durationMs));
+                }
+              }
+            }
+
+            // 變更資源欄位（若支援）
+            if (payload.employee_id) {
+              const nextRes = calendar.getResourceById?.(String(payload.employee_id));
+              if (nextRes && typeof ev.setResources === 'function') ev.setResources([nextRes]);
+              else if (typeof ev.setResourceId === 'function') ev.setResourceId(String(payload.employee_id));
+            }
+
+            // 更新顯示會用到的欄位
+            ev.setExtendedProp('appointment_type', payload.appointment_type);
+            ev.setExtendedProp('customer_name', payload.customer_name);
+            ev.setExtendedProp('customer_phone', payload.customer_phone);
+            ev.setExtendedProp('service_id', payload.service_id);
+            ev.setExtendedProp('assistant_id', payload.assistant_id);
+            ev.setExtendedProp('amount', payload.amount);
+            ev.setExtendedProp('notes', payload.notes);
+            return true;
+          }
+
+          function getSlotDurationMinutes() {
+            const dur = calendar?.getOption?.('slotDuration');
+            if (!dur) return 15;
+            if (typeof dur === 'string') {
+              const parts = dur.split(':').map(Number);
+              if (parts.length >= 2 && parts.every(n => !Number.isNaN(n))) {
+                return (parts[0] * 60) + parts[1] + Math.floor((parts[2] || 0) / 60);
+              }
+            }
+            if (typeof dur === 'object') {
+              const mins = Number(dur.minutes || 0) + Number(dur.hours || 0) * 60;
+              if (!Number.isNaN(mins) && mins > 0) return mins;
+            }
+            return 15;
+          }
+
+          function addEventOptimistically(payload, createdId) {
+            if (!calendar || !payload || !createdId || !payload.start) return false;
+            const startDate = new Date(payload.start);
+            if (Number.isNaN(startDate.getTime())) return false;
+            const endDate = new Date(startDate.getTime() + getSlotDurationMinutes() * 60000);
+            const titleText = payload.appointment_type === 'blocked'
+              ? (payload.notes || '不約時段')
+              : (payload.customer_name || '未命名') + (payload.service_id ? ' - ' + payload.service_id : '');
+            const ev = calendar.addEvent({
+              id: String(createdId),
+              resourceId: String(payload.employee_id || ''),
+              start: startDate,
+              end: endDate,
+              title: titleText,
+              extendedProps: {
+                customer_name: payload.customer_name,
+                customer_phone: payload.customer_phone,
+                service_id: payload.service_id,
+                notes: payload.notes,
+                appointment_type: payload.appointment_type,
+                amount: payload.amount,
+                assistant_id: payload.assistant_id
+              }
+            });
+            return !!ev;
+          }
+
+          function removeEventOptimistically(eventId) {
+            if (!calendar || !eventId) return false;
+            const ev = calendar.getEventById(String(eventId));
+            if (!ev) return false;
+            ev.remove();
+            return true;
           }
 
           /**
@@ -925,16 +1047,34 @@
                 notes: fd.get('notes') || ''
               };
               submitBtn.disabled = true;
+              appointmentModal.style.display = 'none';
+              showToast('儲存中...', 'loading', 3000);
+              let optimisticApplied = false;
+              let optimisticCreated = false;
+              let saveOk = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const data = await res.json();
                 if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+                if (isEditing) {
+                  optimisticApplied = applyOptimisticEventUpdate(payload);
+                } else if (data && data.id) {
+                  optimisticCreated = addEventOptimistically(payload, data.id);
+                }
+                saveOk = true;
               } catch (err) {
                 alert('❌ 儲存失敗：' + err.message);
               } finally {
                 submitBtn.disabled = false;
-                appointmentModal.style.display = 'none';
-                calendar.refetchEvents();
+                if (isEditing && optimisticApplied) {
+                  calendar.rerenderEvents();
+                } else if (!isEditing && optimisticCreated) {
+                  calendar.rerenderEvents();
+                } else {
+                  calendar.refetchEvents();
+                }
+                if (saveOk) showToast('已儲存', 'success', 2000);
+                else showToast('儲存失敗', 'error', 3000);
               }
             });
 
@@ -942,15 +1082,17 @@
             deleteBtn.onclick = async function () {
               const eventId = eventIdInput.value.trim();
               if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
+              let removed = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
                 const data = await res.json();
                 if (!res.ok || data.status !== 'success') throw new Error(data.message || '刪除失敗');
+                removed = removeEventOptimistically(eventId);
               } catch (err) {
                 alert('❌ 刪除失敗：' + err.message);
               } finally {
                 appointmentModal.style.display = 'none';
-                calendar.refetchEvents();
+                if (!removed) calendar.refetchEvents();
               }
             };
 
@@ -1818,15 +1960,18 @@
                 const view = btn.dataset.view;
                 const baseDate = selectedDate ? new Date(selectedDate) : new Date(calendar.getDate());
                 baseDate.setHours(12, 0, 0, 0);
-                const baseKey = ymd(baseDate);
-                if (calendar.view && calendar.view.type === view) return;
                 if (view === 'resourceTimeGridDay') {
-                  // 日視圖：回到目前選取的日期（不要強制跳回今天）
-                  selectedDate = baseDate;
-                  calendar.changeView(view, baseKey);
-                  calendar.gotoDate(baseKey);
+                  // 日視圖：一律回到今天
+                  const today = new Date();
+                  today.setHours(12, 0, 0, 0);
+                  const todayKey = ymd(today);
+                  selectedDate = today;
+                  calendar.changeView(view, todayKey);
+                  calendar.gotoDate(todayKey);
                   return;
                 }
+                const baseKey = ymd(baseDate);
+                if (calendar.view && calendar.view.type === view) return;
                 calendar.changeView(view, baseKey);
               });
             });
