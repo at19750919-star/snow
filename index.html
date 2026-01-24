@@ -540,7 +540,7 @@
                   return;
                 }
                 if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-                  if (isPhoneLayout()) return; // 手機：改由長按(select)觸發（iPad 允許直接點）
+                  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
                   openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
                 }
               },
@@ -1799,14 +1799,11 @@
             return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches);
           }
 
-          // 只把「手機」視為需要長按的裝置（iPad 也算 coarse pointer，但我們希望 iPad 可以直接點）
-          function isPhoneLayout() {
-            return !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
-          }
-
-function getValidResourceId(id) {
+          // 手機/平板「單一設計師」切換：允許 'all' 代表顯示全部設計師欄位
+          function getValidResourceId(id) {
             const normalized = String(id || '').trim();
             if (!normalized) return null;
+            if (normalized === 'all') return 'all';
             return RESOURCE_LIST.some(r => String(r.id) === normalized) ? normalized : null;
           }
 
@@ -1837,11 +1834,14 @@ function getValidResourceId(id) {
             const wrap = scroller.querySelector('.mobile-resource-toggle');
             if (!wrap || wrap.dataset.bound === '1') return;
             wrap.dataset.bound = '1';
-            wrap.innerHTML = RESOURCE_LIST.map(resource => {
+            // 多一顆「全部」按鈕：在 1024 模式可一次顯示三位設計師
+            const allBtn = `<button type="button" class="resource-toggle-btn" data-resource-id="all">全部</button>`;
+            const resourceBtns = RESOURCE_LIST.map(resource => {
               const rid = String(resource.id);
               const title = resource.title || rid;
               return `<button type="button" class="resource-toggle-btn" data-resource-id="${rid}">${title}</button>`;
             }).join('');
+            wrap.innerHTML = allBtn + resourceBtns;
             wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => {
               btn.addEventListener('click', () => {
                 const rid = getValidResourceId(btn.dataset.resourceId);
@@ -1992,10 +1992,6 @@ function getValidResourceId(id) {
           function enableDragScroll(strip) {
             if (!strip || strip.dataset.dragBound === '1') return;
             strip.dataset.dragBound = '1';
-            // 觸控裝置（iPad/手機）：讓它用原生水平滑動，避免需要長按才拖得動、也更順暢
-            if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
-              return;
-            }
             // 同時支援 Pointer Events + Mouse Events（部分環境 pointer 事件不穩時，滑鼠仍可拖曳）
             let isDown = false;
             let startX = 0;
