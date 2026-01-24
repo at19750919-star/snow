@@ -540,7 +540,11 @@
                   return;
                 }
                 if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-                  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
+                  if (
+                    window.matchMedia &&
+                    (window.matchMedia('(pointer: coarse)').matches ||
+                     window.matchMedia('(max-width: 1024px)').matches)
+                  ) return; // 手機/平板：改由長按(select)觸發
                   openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
                 }
               },
