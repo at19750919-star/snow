@@ -721,7 +721,7 @@
                 // 不約時段：顯示成單純的封鎖樣式（不顯示姓名電話）
                 if (ep.appointment_type === 'blocked') {
                   return {
-                    html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span></div>`
+                    html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>`
                   };
                 }
                 const svcList = svcMap[ep.service_id] || ['預'];
@@ -1896,31 +1896,37 @@
              * - fontScale：距離選中日期越遠，字體越小
              */
           function applyDateStripCurve(strip) {
-            const items = Array.from(strip.querySelectorAll('.date-item'));
-            if (!items.length) return;
-            const activeIndex = items.findIndex(item => item.classList.contains('is-active'));
-            if (activeIndex === -1) return;
-            items.forEach((item, idx) => {
-              const dist = Math.abs(idx - activeIndex); // dist = 離選中日期的格數（0=選中本身）
-              
-              // 🔧 下沉偏移：每格增加 6px，最多 22px
-              const offset = Math.min(22, dist * 6);
-              
-              // 🔧 整體縮放：選中 = 1.1（放大 10%），每遠 1 格縮小 6%，最小 0.84
-              const scale = dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06);
-              
-              // 🔧 透明度：選中 = 1（不透明），每遠 1 格淡 12%，最低 0.45
-              const opacity = dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12);
-              
-              // 🔧 字體縮放：選中 = 1（原始大小），每遠 1 格縮小 8%，最小 0.7
-              const fontScale = dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08);
-              
-              item.style.setProperty('--arc-offset', `${offset}px`);
-              item.style.setProperty('--arc-scale', scale.toFixed(2));
-              item.style.setProperty('--arc-opacity', opacity.toFixed(2));
-              item.style.setProperty('--arc-font-scale', fontScale.toFixed(2));
-            });
-          }
+  if (!strip || strip.dataset.curveRendering === '1') return;
+  strip.dataset.curveRendering = '1';
+  
+  requestAnimationFrame(() => {
+    const items = Array.from(strip.querySelectorAll('.date-item'));
+    if (!items.length) {
+      strip.dataset.curveRendering = '0';
+      return;
+    }
+    const activeIndex = items.findIndex(item => item.classList.contains('is-active'));
+    if (activeIndex === -1) {
+      strip.dataset.curveRendering = '0';
+      return;
+    }
+    
+    items.forEach((item, idx) => {
+      const dist = Math.abs(idx - activeIndex);
+      const offset = Math.min(22, dist * 6);
+      const scale = dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06);
+      const opacity = dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12);
+      const fontScale = dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08);
+      
+      item.style.setProperty('--arc-offset', `${offset}px`);
+      item.style.setProperty('--arc-scale', scale.toFixed(2));
+      item.style.setProperty('--arc-opacity', opacity.toFixed(2));
+      item.style.setProperty('--arc-font-scale', fontScale.toFixed(2));
+    });
+    
+    strip.dataset.curveRendering = '0';
+  });
+}
 
           /**
              * 點擊日期按鈕後：切到日視圖並跳到該天
