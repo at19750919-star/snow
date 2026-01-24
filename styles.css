@@ -130,6 +130,7 @@
   --time-major: #2f363b;
   --time-minor: #d5cbc2;
   --meal-slot-bg: rgba(217, 120, 90, 0.18);
+  --meal-slot-bg-deep: rgba(217, 120, 90, 0.35);
 
   /* Event cards */
   --event-default-bg: var(--kikyo-primary);
@@ -250,7 +251,7 @@ body {
 
 /* 日曆主容器 */
 #calendar-container {
-  padding: 8px 8px 20px;
+  padding: 2px 2px 2px;
 }
 
 /* 日曆本體 */
@@ -264,6 +265,24 @@ body {
   box-shadow: var(--shadow-medium);
   overflow: visible; /* ⭐將 hidden 改為 visible，解除對 sticky 的限制 */
   border: 1px solid var(--calendar-border);
+  position: relative;
+}
+
+#calendar::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 40px;
+  width: 104px;
+  height: 104px;
+  background-image: url("呆.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  opacity: 0.15;
+  z-index: 2;
+  filter: grayscale(1);
 }
 
 /* ==================== 3) FullCalendar Core（套件核心結構） ====================
@@ -734,7 +753,7 @@ body {
   font-family: var(--font-display);
   color: var(--kikyo-dark);
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.88em;
   white-space: nowrap;
   overflow: visible; /* 允許按鈕不被截斷 */
@@ -910,7 +929,43 @@ body {
 #calendar
   .fc-timegrid-body
   td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="18:00:00"] {
-  background: var(--meal-slot-bg) !important;
+  position: relative;
+  background: transparent !important;
+}
+
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"]::after,
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:45:00"]::after,
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="18:00:00"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--meal-slot-bg-deep);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 0;
+}
+
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"]
+  .fc-timegrid-slot-lane,
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:45:00"]
+  .fc-timegrid-slot-lane,
+#calendar
+  .fc-timegrid-body
+  td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="18:00:00"]
+  .fc-timegrid-slot-lane {
+  position: relative;
+  z-index: 1;
 }
 
 /* ==================== 9) Event Cards（預約事件卡片） ====================
@@ -960,13 +1015,13 @@ body {
 /* 桌面版：讓事件卡片左右留白，不占滿格子 */
 @media (min-width: 1025px) {
   #calendar .fc-timegrid-event:not(.fc-bg-event) {
-    right: -1px;
-    left: 10px;
+    right: 0px;
+    left: 0px;
   }
   /* 已結帳事件：強制跟一般事件同樣的左右留白（避免寬度比一般事件更寬） */
   #calendar .fc-timegrid-event.is-paid:not(.fc-bg-event) {
-    right: -1px;
-    left: 10px;
+    right: 0px;
+    left: 0px;
   }
 }
 
@@ -1132,6 +1187,27 @@ body {
   letter-spacing: 0; /* 不約時段：字距歸零（避免太擠） */
   height: 22px; /* 不約時段：徽章高度略小 */
   padding: 0 10px; /* 不約時段：左右內距略小 */
+}
+
+.blocked-icon {
+  font-family:
+    "Material Symbols Outlined", "Material Symbols Filled", sans-serif !important;
+  font-feature-settings: "liga", "calt";
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 500;
+  font-size: 32px;
+}
+
+#calendar .fc-event.blocked-time .blocked-icon {
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-1px);
 }
 
 .evt-col-name::before,
@@ -1588,6 +1664,105 @@ body {
   }
   #calendar .fc-col-header-cell-cushion {
     padding: 12px 12px !important;
+  }
+}
+/* ==================== Toast（儲存中提示） ==================== */
+#toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2000;
+  pointer-events: none;
+}
+.toast {
+  min-width: 160px;
+  max-width: 280px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(20, 20, 20, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast--success {
+  background: #2e7d32;
+}
+.toast--error {
+  background: #c62828;
+}
+.toast--loading {
+  background: #3949ab;
+}
+/* ==================== iPad Pro 10.5"（1112×834, 橫向）專用調整 ==================== */
+@media (width: 1112px) and (height: 834px) and (orientation: landscape) and (min-resolution: 2dppx),
+  (width: 1112px) and (height: 834px) and (orientation: landscape) and (-webkit-min-device-pixel-ratio: 2) {
+  /* 表頭：設計師名稱小一點並往左 */
+  #calendar .resource-cushion {
+    justify-content: flex-start;
+    padding-left: 12px;
+  }
+  #calendar .resource-name {
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+
+  /* 時間軸：稍微縮小 */
+  :root {
+    --per-resource-time-axis-width: 70px;
+    --per-resource-time-item-offset: -4px;
+  }
+  #calendar .fc-resourceTimeGridDay-view .per-resource-time-item {
+    padding: 5px 4px;
+  }
+  #calendar .fc-resourceTimeGridDay-view .per-resource-time-item.is-major {
+    font-size: 13px;
+  }
+  #calendar .fc-resourceTimeGridDay-view .per-resource-time-item.is-minor {
+    font-size: 11px;
+    color: rgba(48, 62, 72, 0.65);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 4px 10px rgba(28, 39, 45, 0.06);
+  }
+
+  /* 事件卡片：姓名 / 電話字級 */
+  #calendar .evt-col-name {
+    font-size: 16px;
+  }
+  #calendar .evt-col-phone {
+    font-size: 16px;
+  }
+  /* 事件卡片：縮減服務勳章與姓名/電話的間距 */
+  .evt-col-svc,
+  .evt-col-name,
+  .evt-col-phone {
+    padding: 0 4px;
+  }
+  .evt-col-svc {
+    padding-left: 0;
+    padding-right: 2px;
+  }
+  /* 事件卡片：服務勳章字級調整 */
+  #calendar .evt-svc {
+    font-size: 16px;
+  }
+  /* 事件卡片：三欄寬度（保持 base proportion） */
+  #calendar .fc-timegrid-event .fc-event-title.evt-line {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
   }
 }
 /* ==================== 14) Modal（彈窗：預約/排休/報表） ====================
@@ -2063,8 +2238,8 @@ body {
   .fc-resourceTimeGridDay-view
   .fc-timegrid-body
   .fc-timegrid-col-frame {
-  margin: 6px 12px;
-  border-radius: 18px;
+  margin: 4px 4px;
+  border-radius: 12px;
   border: none;
   overflow: hidden;
   position: relative;
@@ -2217,6 +2392,9 @@ body {
   }
   #calendar .fc-resourceTimeGridDay-view .per-resource-time-item {
     padding: 5px 4px;
+    text-align: left;
+    padding-left: 2px;
+    font-size: 12px !important;
   }
 }
 
