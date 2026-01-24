@@ -540,7 +540,7 @@
                   return;
                 }
                 if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-                  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return; // 手機：改由長按(select)觸發
+                  if (isPhoneLayout()) return; // 手機：改由長按(select)觸發（iPad 允許直接點）
                   openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
                 }
               },
@@ -1799,7 +1799,12 @@
             return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches);
           }
 
-          function getValidResourceId(id) {
+          // 只把「手機」視為需要長按的裝置（iPad 也算 coarse pointer，但我們希望 iPad 可以直接點）
+          function isPhoneLayout() {
+            return !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+          }
+
+function getValidResourceId(id) {
             const normalized = String(id || '').trim();
             if (!normalized) return null;
             return RESOURCE_LIST.some(r => String(r.id) === normalized) ? normalized : null;
@@ -1987,6 +1992,10 @@
           function enableDragScroll(strip) {
             if (!strip || strip.dataset.dragBound === '1') return;
             strip.dataset.dragBound = '1';
+            // 觸控裝置（iPad/手機）：讓它用原生水平滑動，避免需要長按才拖得動、也更順暢
+            if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+              return;
+            }
             // 同時支援 Pointer Events + Mouse Events（部分環境 pointer 事件不穩時，滑鼠仍可拖曳）
             let isDown = false;
             let startX = 0;
