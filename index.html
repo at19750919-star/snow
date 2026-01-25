@@ -42,15 +42,28 @@
                   <span class="sliding-glider"></span>
                 </div>
                 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px -2;">
                 
                 <div class="form-row">
                   <label for="minute_select">時間 (分)</label>
                   <select id="minute_select" name="minute_select"></select>
                 </div>
+                
+                <div class="form-row">
+                  <label for="duration_select">預約時長</label>
+                  <select id="duration_select" name="duration_select">
+                    <option value="15">15 分鐘</option>
+                    <option value="30">30 分鐘</option>
+                    <option value="45">45 分鐘</option>
+                    <option value="60">1 小時</option>
+                    <option value="90">1.5 小時</option>
+                    <option value="120">2 小時</option>
+                    <option value="180">3 小時</option>
+                  </select>
+                </div>
 
                 <div id="customer-fields-left">
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
                   
                   <div class="form-row">
                     <label for="customer_name">顧客姓名</label>
@@ -75,7 +88,7 @@
                   </div>
                 </div>
                 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
                 
                 <label for="notes">備註</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
@@ -258,7 +271,7 @@
 
     <script>
       // 後端 Google Apps Script 網址
-      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw4LqebDtz1iN3K-exID9CZ5xQwaUZ12kD0bt299NGokJhIed5F2HbNy6OceRrS5u2H2A/exec';
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzu_YLPKGVCUWqm1PcR_ANEGEdC_qqIKVW8gdPl2QLJzReHYjkPcuDwlnjobJvs04-hHw/exec';
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
         { id: '2', title: '雅婷' },
@@ -586,11 +599,48 @@
           }
 
           function bindEventListeners() {
-            phoneEl.addEventListener('input', (e) => {
+            phoneEl.addEventListener('input', async (e) => {
               let d = e.target.value.replace(/\D/g, '').slice(0, 10);
               if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
               else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
               else e.target.value = d;
+
+              // CRM: 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄
+              if (d.length === 10 && !eventIdInput.value) {
+                try {
+                  const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${d}`, { method: 'GET', mode: 'cors' });
+                  const history = await res.json();
+                  if (history && history.customer_name) {
+                    // 1. 自動填入姓名（若目前為空）
+                    const nameInput = document.getElementById('customer_name');
+                    if (nameInput && !nameInput.value.trim()) {
+                      nameInput.value = history.customer_name;
+                    }
+                    // 2. 自動帶入染髮顏色並顯示區塊
+                    if (history.dye_color) {
+                      const dyeInput = document.getElementById('dye_color_input');
+                      const dyeWrap = document.getElementById('dye-color-wrap');
+                      if (dyeInput && !dyeInput.value.trim()) {
+                        dyeInput.value = history.dye_color;
+                        if (dyeWrap) dyeWrap.style.display = 'grid'; // 強制顯示區塊
+                      }
+                    }
+                    // 3. 嘗試匹配剪髮分類（依金額發亮提示，不自動勾選）
+                    if (history.amount) {
+                      const histAmt = parseInt(history.amount, 10);
+                      const radios = document.querySelectorAll('input[name="cut_price"]');
+                      radios.forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
+                        if (parseInt(r.value, 10) === histAmt) {
+                          if (item) item.classList.add('price-item--suggested');
+                        }
+                      });
+                    }
+                    showToast('已找到歷史紀錄並帶入', 'success', 2000);
+                  }
+                } catch (err) { console.error('CRM查詢失敗:', err); }
+              }
             });
 
             notesTextarea.addEventListener('input', () => document.querySelector('.notes-meta span').textContent = '未儲存');
@@ -643,6 +693,7 @@
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
                 notes: fd.get('notes') || '',
+                duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
                 dye_color: document.getElementById('dye_color_input').value
               };
@@ -904,7 +955,11 @@
             document.getElementById('perm_custom').value = '';
             document.getElementById('other_custom').value = '';
             document.getElementById('dye-color-wrap').style.display = 'none';
-
+            document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
+            
+            // 清除 CRM 發亮狀態
+            document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
+            
             updateCalculatedTotal();
 
             const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
@@ -975,6 +1030,19 @@
             if (unsetPaidBtn && eventIdInput.value) {
                 const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
                 unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+            }
+
+            // 計算並回填時長
+            if (event.start && event.end) {
+              const dur = Math.round((event.end - event.start) / 60000);
+              const durSelect = document.getElementById('duration_select');
+              // 檢查是否有匹配的選項，若無則暫時加入
+              if (!Array.from(durSelect.options).some(opt => opt.value == dur)) {
+                const opt = document.createElement('option');
+                opt.value = dur; opt.textContent = dur + ' 分鐘';
+                durSelect.appendChild(opt);
+              }
+              durSelect.value = dur;
             }
 
             submitBtn.textContent = '儲存';

@@ -946,7 +946,8 @@ body {
 .evt-svc.svc-dye,
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
-  color: #ffeb3b !important;
+  color: #ff84a1 !important;
+  border-color: #ff84a1 !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
@@ -1331,8 +1332,9 @@ body {
   }
 
   #calendar .resource-cushion {
-    justify-content: center;
-    padding-right: 8px !important;
+    justify-content: flex-start;
+    padding-left: 4px !important;
+    padding-right: 0 !important;
   }
 
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay {
@@ -1369,12 +1371,14 @@ body {
   }
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
     grid-template-columns: auto 1fr 1fr;
+    padding-left: 0 !important;
+    padding-right: 2px !important;
   }
   .evt-svc {
     font-size: 13px;
     height: 24px;
     padding: 0 10px;
-    border-radius: 999px;
+    border-radius: 8px; /* 從 999px 改為 8px，與電腦版一致偏方型 */
   }
   .evt-col-svc {
     text-align: left;
@@ -1700,7 +1704,7 @@ body {
 }
 .blue-card-section input,
 .blue-card-section select {
-  width: 250px !important; /* 限制寬度，使其靠左而不撐滿 */
+  width: 180px; /* 統一縮小為 180px，與其他選單整齊對齊 */
   flex: 0 1 auto;
 }
 .blue-card-section textarea {
@@ -1810,12 +1814,12 @@ body {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  padding: 3px;
-  height: 36px;
-  width: 220px;
+  padding: 0px;
+  height: 40px;
+  width: 230px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 6px;
+  margin-top: 0px;
 }
 .type-toggle-container input[type="radio"] {
   display: none !important;
@@ -2411,7 +2415,8 @@ body {
   color: #ffffff !important;
 }
 .modal-col:first-child select option,
-#minute_select option {
+#minute_select option,
+#duration_select option {
   background-color: #1a237e !important;
   color: #ffffff !important;
 }
@@ -2435,14 +2440,16 @@ body {
   border: 1px solid rgba(33, 150, 243, 0.5) !important;
 }
 #minute_select,
+#duration_select,
 #customer_name,
 #customer_phone,
 #service_id {
   min-height: 44px;
   padding: 10px 12px;
   box-sizing: border-box;
-  width: 150px;
-  max-width: 150px;
+  width: 160px;
+  max-width: 180px;
+  border-radius: 12px !important;
 }
 #notes {
   flex: 1 1 auto;
@@ -2503,6 +2510,32 @@ body {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   font-size: 15px;
+  border: 1px solid transparent; /* 為發亮預留邊框空間 */
+  transition: all 0.3s ease;
+}
+.settlement-section .price-item--suggested {
+  border-color: #4ade80 !important; /* 更明亮的霓虹綠 */
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.6), 
+              0 0 30px rgba(74, 222, 128, 0.3),
+              inset 0 0 10px rgba(74, 222, 128, 0.4) !important;
+  background: rgba(74, 222, 128, 0.15) !important;
+  animation: suggested-neon-pulse 1.5s ease-in-out infinite;
+  transform: scale(1.02); /* 稍微放大增加存在感 */
+  z-index: 1;
+}
+@keyframes suggested-neon-pulse {
+  0% { 
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.2); 
+    border-color: rgba(74, 222, 128, 0.6) !important;
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(74, 222, 128, 0.8), 0 0 50px rgba(74, 222, 128, 0.4), inset 0 0 15px rgba(74, 222, 128, 0.5); 
+    border-color: rgba(74, 222, 128, 1) !important;
+  }
+  100% { 
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.2); 
+    border-color: rgba(74, 222, 128, 0.6) !important;
+  }
 }
 .settlement-section .price-label {
   display: inline-flex;
