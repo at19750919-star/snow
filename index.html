@@ -1,82 +1,27 @@
 <!DOCTYPE html>
-<!--
-  ─────────────────────────────────────────────────────────────────────────────
-  這份 `index.html` 是「世紀髮廊 景美店」的預約排程頁面（前端）。
-
-  你可以把它想成三個主要部分：
-  1) HTML：畫面骨架（日曆容器、預約彈窗、排休彈窗、報表彈窗、留言板）
-  2) CSS：外觀（此頁引用 `styles.css`；也引用 FullCalendar 的 CSS）
-  3) JavaScript：互動與資料（建立 FullCalendar、開關彈窗、呼叫後端 API）
-
-  後端資料來源：
-  - 透過 Google Apps Script Web App（APPS_SCRIPT_WEB_APP_URL）提供 JSON API
-  - 前端用 `fetch()` 以 GET/POST 呼叫不同 action，例如：
-    - `?action=getEvents` 取得預約事件
-    - `?action=getLeave` 取得排休/約滿
-    - `?action=saveLeave` / `deleteLeave` 儲存/刪除排休
-    - `?action=getNotes` / `saveNotes` 讀寫每日留言
-    - `?action=getReport` 取得區間統計
-
-  小提醒（學習重點）：
-  - `id`：用來讓 JS 精準抓到元素（getElementById）
-  - `class`：用來套 CSS、也可供 JS 選取/加上狀態（classList）
-  - 「彈窗 modal」：通常由遮罩 + 內容框組成，透過切換 `display` 顯示/隱藏
-  - IIFE：本檔用 (function(){ ... })(); 把變數包在作用域中，避免污染全域
-  ─────────────────────────────────────────────────────────────────────────────
--->
 <html lang="zh-Hant">
 
 <head>
-  <!--
-      <meta charset="UTF-8">
-      - 設定文件字元編碼為 UTF-8（可正確顯示繁中、符號等）
-    -->
   <meta charset="UTF-8">
-  <!--
-      <meta name="viewport" ...>
-      - 讓手機/平板以正確比例顯示（響應式網站的基礎設定）
-    -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 網頁分頁標題（瀏覽器 tab 上看到的文字） -->
   <title>世紀髮廊 景美店</title>
 
-  <!-- FullCalendar（行事曆套件）與 Scheduler（資源欄位：設計師）所需的樣式 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.css">
 
-  <!-- Google Fonts：先 preconnect 可加速連線，減少字型載入時間 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!--
-	      字型統一：Noto Sans JP（你指定的字型）
-	      - 只載入這一套字型，避免不同區塊混用不同 font-family
-	      - wght：300/400/500/700 足夠涵蓋本頁的字重需求
-	    -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <!-- Material Symbols（Pan Tool 手掌符號） -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap" rel="stylesheet">
 
-  <!-- 專案自己的樣式（大多數版面/顏色/按鈕/彈窗都在這裡定義） -->
   <link rel="stylesheet" href="styles.css">
 
 </head>
 
 <body>
-  <!--
-      日曆主容器
-      - `#calendar` 會被 FullCalendar 把整個日曆 UI render 進來
-      - 其他彈窗(modal)放在同一頁中，透過 JS 控制顯示/隱藏
-    -->
   <div id="calendar-container">
-    <!-- FullCalendar 的掛載點（JS 會 new FullCalendar.Calendar(calendarEl, {...})） -->
     <div id="calendar"></div>
 
-    <!--
-          預約彈窗（新增/編輯預約都用同一個表單）
-          - `#appointmentModal`：整個遮罩層
-          - `.modal-content`：彈窗內容區（表單、按鈕）
-          - `.close-button`：右上角關閉按鈕（×）
-        -->
     <div id="appointmentModal" class="modal">
       <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -84,13 +29,10 @@
           <input type="hidden" id="event_id" name="event_id">
           <input type="hidden" id="start_time" name="start_time">
           <input type="hidden" id="employee_id" name="employee_id">
-          <!-- Hidden amount filled by JS calculation before submit -->
           <input type="hidden" id="amount_input" name="amount_input">
 
           <div class="modal-layout-grid">
-            <!-- Left Column: Basic Appointment Info -->
             <div class="modal-col">
-              <!-- Single consolidated card for all appointment info -->
               <div class="modal-section blue-card-section" id="appointment-info-card">
                 <label>預約類型</label>
                 <div class="type-toggle-container">
@@ -108,7 +50,6 @@
                   <select id="minute_select" name="minute_select"></select>
                 </div>
 
-                <!-- Customer Fields wrapper for hiding when 'Blocked' -->
                 <div id="customer-fields-left">
                   <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
                   
@@ -142,21 +83,24 @@
               </div>
             </div>
 
-            <!-- Right Column: Settlement / Billing Info -->
             <div class="modal-col settlement-col" id="settlement-col">
-              <!-- Single consolidated card for all settlement items -->
               <div class="modal-section settlement-section">
                   <label>剪髮項目</label>
                   <div class="price-group">
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350" data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400" data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450" data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪+護髮</span> <span class="price-val">$1100</span></label>
-                      <!-- Only show for Xiaobai -->
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100" data-cost="0"> 剪+護髮</span> <span class="price-val">$1100</span></label>
+                      
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪+護髮</span> <span class="price-val">$900</span></label>
+                      
                       <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0"> 指定剪髮</span> <span class="price-val">$600</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="0" data-cost="0" checked> 無</span> <span class="price-val">-</span></label>
                   </div>
-                  
+                  <div class="settlement-row" style="margin-top:10px;">
+                    <label>剪髮自訂</label>
+                    <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0">
+                  </div>
+
                   <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
                   
                   <label>其他項目</label>
@@ -166,22 +110,40 @@
                       <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
                       <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
                   </div>
+                  
+                  <div class="settlement-row" style="margin-top:10px;">
+                    <label>其他自訂</label>
+                    <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0">
+                  </div>
+
+                  <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
+                    <label for="dye_color_input" style="color:#ffcc80;">染髮顏色紀錄</label>
+                    <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
+                  </div>
+
                   <div id="bleach4000-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
                     <label for="bleach4000_cost">漂4000 材料費（自填）</label>
                     <input type="number" id="bleach4000_cost" name="bleach4000_cost" min="0" inputmode="numeric" placeholder="例如：270">
                   </div>
 
-                  <div class="settlement-row settlement-row--title" style="margin-top:10px;">
-                    <label for="perm_select">燙髮</label>
-                    <select id="perm_select" name="perm_select">
-                      <option value="" data-cost="0">無</option>
-                      <option value="1200" data-cost="260">1200（材料260）</option>
-                      <option value="1500" data-cost="260">1500（材料260）</option>
-                      <option value="1800" data-cost="280">1800（材料280）</option>
-                      <option value="2000" data-cost="280">2000（材料280）</option>
-                      <option value="2400" data-cost="280">2400（材料280）</option>
-                      <option value="3600" data-cost="300">3600（材料300）</option>
-                    </select>
+                  <div class="settlement-row settlement-row--inline" style="margin-top:10px;">
+                    <div class="settlement-inline-item">
+                      <label for="perm_select">燙髮</label>
+                      <select id="perm_select" name="perm_select">
+                        <option value="" data-cost="0">無</option>
+                        <option value="1200" data-cost="260">1200（材料260）</option>
+                        <option value="1500" data-cost="260">1500（材料260）</option>
+                        <option value="1800" data-cost="280">1800（材料280）</option>
+                        <option value="2000" data-cost="280">2000（材料280）</option>
+                        <option value="2400" data-cost="280">2400（材料280）</option>
+                        <option value="3600" data-cost="300">3600（材料300）</option>
+                      </select>
+                    </div>
+
+                    <div class="settlement-inline-item">
+                      <label for="perm_custom">燙髮自訂</label>
+                      <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0">
+                    </div>
                   </div>
                   
                   <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
@@ -216,7 +178,6 @@
             </div>
           </div>
           
-          <!-- Form Actions - Bottom of entire form, spanning both columns -->
           <div id="appointment-actions-anchor"></div>
           <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 16px;">
             <button type="button" id="deleteBtn" style="display:none; background-color:#d32f2f; color:white;">刪除預約</button>
@@ -226,11 +187,6 @@
       </div>
     </div>
 
-    <!--
-          排休彈窗
-          - 用來在「日視圖」替某位設計師設定某一天的排休原因
-          - 特殊原因「已約滿」不是從這個表單輸入，而是由表頭的「約滿」切換按鈕處理
-        -->
     <div id="leaveModal" class="modal">
       <div class="modal-content">
         <span class="close-button leave-close-button">&times;</span>
@@ -251,24 +207,16 @@
       </div>
     </div>
 
-    <!--
-      月結報表按鈕
-      - 這個按鈕原本先放在 placeholder 裡（hidden）
-      - JS 會把它移到日期切換列（date scroller）旁邊顯示
-    -->
     <div id="report-trigger-placeholder" hidden>
       <button id="open-report-btn" type="button" class="report-trigger-btn">
         查看月結報表
       </button>
     </div>
 
-    <!-- 報表彈窗（查詢某段日期的客數/服務分佈） -->
     <div id="reportModal" class="modal">
       <div class="modal-content" style="max-width: 700px;">
         <span class="close-button report-close-button">&times;</span>
-
         <h3 style="margin-top:0;">區間統計 (客數)</h3>
-
         <div class="report-controls">
           <label for="report-start" class="report-label">起日</label>
           <input type="date" id="report-start">
@@ -276,9 +224,7 @@
           <input type="date" id="report-end">
           <button id="fetch-report-btn" type="button">查詢</button>
         </div>
-
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-
         <div id="report-result">
           <div style="text-align:center; color:#888; padding: 20px;">
             請選擇起訖日期，點擊「查詢」。
@@ -287,12 +233,6 @@
       </div>
     </div>
 
-    <!--
-          留言區（每日備忘/交接用）
-          - `#notes-content`：輸入文字的 textarea
-          - `#save-notes-btn`：手動儲存（透過 action=saveNotes）
-          - `.notes-meta`：顯示「未儲存 / 儲存中 / 已儲存 / 失敗」狀態
-        -->
     <div id="notes-section">
       <div class="notes-container">
         <div class="notes-header">
@@ -304,21 +244,12 @@
       </div>
     </div>
 
-    <!--
-          外部 JS 套件載入順序：
-          1) FullCalendar 核心
-          2) Scheduler（資源欄位：設計師/店長）
-          3) 中文語系檔（zh-tw）
-        -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
 
     <script>
-
-      // 後端 Google Apps Script 網址（Web App /exec）
-      // - 這是一個「公開可呼叫」的 HTTP 端點（取決於你的 Apps Script 部署權限）
-      // - 前端用 `fetch()` 串接，後端用 action 參數區分不同 API
+      // 後端 Google Apps Script 網址
       const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxYe2AD8En-WNuv-Aqw9Mbf1OqY1bturPxlIJGdJzYiCU5GXkqS2cjI_tewTT8ZUiQJiA/exec';
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
@@ -329,37 +260,22 @@
       const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 1024px)';
 
       (function () {
-        /*
-          IIFE（Immediately Invoked Function Expression）：
-          - 立刻執行的一個函式
-          - 好處：把變數/函式包在區域作用域內，避免跟其他 script 的全域變數撞名
-        */
-
-        // ==================== 全域狀態（只在這個 IIFE 內有效） ====================
-        let employeeLeaveData = []; // 排休/約滿資料快取（從後端 action=getLeave 讀回來）
-
-
-
-        // 把 Date 轉成 yyyy-mm-dd（用來對齊 DOM 的 data-date、也用來呼叫後端 API）
+        let employeeLeaveData = [];
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        let currentYmd = null;
+        let selectedDate = null;
+        let calendar;
+        let perResourceAxisTimer = null;
+        let mobileSelectedResourceId = null;
+        let displayTotal = 0;  // 全域變數儲存總金額
 
-        let currentYmd = null;      // 目前選到的日期字串（用來存取每日留言）
-        let selectedDate = null;    // 日期滑動列（date scroller）目前選取的日期
-        let calendar;               // FullCalendar 實例（宣告在外面：各函式都能用）
-        let perResourceAxisTimer = null; // 排程：每位設計師欄位的時間軸重繪（避免短時間重複算）
-        let mobileSelectedResourceId = null; // 手機日視圖：目前選取的設計師卡片
+        let appointmentModal, leaveModal, reportModal;
+        let appointmentCloseButton, leaveCloseButton, reportCloseButton;
+        let form, leaveForm, notesTextarea, phoneEl, customerFields;
+        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
 
-	        // Global DOM Elements (declared here so all functions can access them)
-	        let appointmentModal, leaveModal, reportModal;
-	        let appointmentCloseButton, leaveCloseButton, reportCloseButton;
-	        let form, leaveForm, notesTextarea, phoneEl, customerFields;
-		        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
-	        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
-
-        // ==================== DOMContentLoaded Event Listener ====================
         document.addEventListener('DOMContentLoaded', function () {
-          // --- 元素選擇：把常用 DOM 先抓起來（避免每次都 query） ---
-          // --- 元素選擇：把常用 DOM 先抓起來（避免每次都 query） ---
           const calendarEl = document.getElementById('calendar');
           if (calendarEl && isMobileLayout()) {
             mobileSelectedResourceId = ensureMobileResourceId();
@@ -367,127 +283,74 @@
           }
           appointmentModal = document.getElementById('appointmentModal');
           leaveModal = document.getElementById('leaveModal');
-          reportModal = document.getElementById('reportModal'); // Added reportModal
+          reportModal = document.getElementById('reportModal');
 
           form = document.getElementById('appointmentForm');
           leaveForm = document.getElementById('leaveForm');
           notesTextarea = document.getElementById('notes-content');
           phoneEl = document.getElementById('customer_phone');
-          customerFields = document.getElementById('customer-fields-left') || document.getElementById('customer-fields'); // Ensure we get the correct one
+          customerFields = document.getElementById('customer-fields-left');
           submitBtn = document.getElementById('submit-btn');
           deleteBtn = document.getElementById('deleteBtn');
           eventIdInput = document.getElementById('event_id');
-	          assistantSelect = document.getElementById('assistant_select');
-		          amountInput = document.getElementById('amount_input');
-		          unsetPaidBtn = document.getElementById('unsetPaidBtn');
-	          appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
-	          appointmentActions = document.querySelector('#appointmentForm .modal-actions');
-	          appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
-	          appointmentInfoCard = document.getElementById('appointment-info-card');
-	          
-	          appointmentCloseButton = appointmentModal ? appointmentModal.querySelector('.close-button') : null;
-	          leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
-	          reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
+          assistantSelect = document.getElementById('assistant_select');
+          amountInput = document.getElementById('amount_input');
+          unsetPaidBtn = document.getElementById('unsetPaidBtn');
+          appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
+          appointmentActions = document.querySelector('#appointmentForm .modal-actions');
+          appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
+          appointmentInfoCard = document.getElementById('appointment-info-card');
+          
+          appointmentCloseButton = appointmentModal ? appointmentModal.querySelector('.close-button') : null;
+          leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
+          reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
 
-	          deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
-	
-	          function placeAppointmentActions(mode) {
-	            if (!appointmentActions || !appointmentActionsAnchor) return;
-	            if (mode === 'create' && appointmentInfoCard && appointmentModal) {
-	              appointmentModal.classList.add('is-create');
-	              appointmentInfoCard.appendChild(appointmentActions);
-	              return;
-	            }
-	            if (appointmentModal) appointmentModal.classList.remove('is-create');
-	            appointmentActionsAnchor.after(appointmentActions);
-	          }
+          deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
-	          // --- 程式一開始執行的三個主要動作（建 UI → 抓資料 → 綁事件） ---
-	          // console.log('Init started');
-          // 1) 初始化日曆（只建 UI/設定，不含排休資料）
+          function placeAppointmentActions(mode) {
+            if (!appointmentActions || !appointmentActionsAnchor) return;
+            if (mode === 'create' && appointmentInfoCard && appointmentModal) {
+              appointmentModal.classList.add('is-create');
+              appointmentInfoCard.appendChild(appointmentActions);
+              return;
+            }
+            if (appointmentModal) appointmentModal.classList.remove('is-create');
+            appointmentActionsAnchor.after(appointmentActions);
+          }
+
           initializeCalendar();
-          // alert('Calendar Init Done'); 
-
-          // 2) 把雲端資料（排休/約滿）抓回來並畫到日曆上
           fetchAllCloudData();
-          // 3) 綁定各種按鈕/表單/輸入事件
           bindEventListeners();
 
-          // ========================================================
-          // 以下全部是函式的詳細定義
-          // ========================================================
-          /**
-             * 讀取「某一天」的留言內容，並填入留言板 textarea
-             *
-             * @param {string} dStr - 日期字串（yyyy-mm-dd），例如 "2026-01-17"
-             *
-             * 流程：
-             * 1) 先把 UI 清空/顯示載入中（避免上一天的內容殘留）
-             * 2) fetch 後端 action=getNotes
-             * 3) 成功就填入內容；失敗就顯示狀態並 console.error
-             */
           async function fetchDailyNote(dStr) {
             const meta = document.querySelector('.notes-meta span');
-            const notesTextarea = document.getElementById('notes-content'); // 確保抓到最新的元素
-
-            // 1. 立即清空留言區並顯示載入中，避免舊資料殘留
+            const notesTextarea = document.getElementById('notes-content');
             notesTextarea.value = '';
             notesTextarea.placeholder = '留言載入中...';
             meta.textContent = '載入中...';
-
             try {
               const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
               const j = await r.json();
-
-              // 2. 載入成功後，填入新資料
               notesTextarea.value = j.content || '';
               meta.textContent = '已載入';
             } catch (e) {
-              // 3. 載入失敗的處理
               meta.textContent = '載入失敗';
-              console.error("讀取留言失敗:", e); // 在主控台顯示詳細錯誤，方便除錯
+              console.error("讀取留言失敗:", e);
             } finally {
-              // 4. 無論成功或失敗，都恢復預設提示文字
               notesTextarea.placeholder = '請輸入備註資訊...';
             }
           }
 
-          /**
-             * 初始化 FullCalendar（建立日曆 UI + 設定所有 callback）
-             *
-             * 這裡做的事情主要是「定義規則」：
-             * - 目前視圖（initialView）
-             * - 需要顯示的資源（resources：店長/雅婷/小白）
-             * - slot 的時間範圍、間距
-             * - 點擊/長按時要做什麼（dateClick / select / eventClick）
-             * - 如何渲染事件（eventContent / eventClassNames）
-             *
-             * 實際事件資料（events）會由 FullCalendar 自己去呼叫：
-             *   APPS_SCRIPT_WEB_APP_URL + '?action=getEvents'
-             */
           function initializeCalendar() {
-            // ✅ v5.11.5：插件已通過 CDN 自動載入，不需要手動從 globalPlugins 取得
-
             calendar = new FullCalendar.Calendar(calendarEl, {
               schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
               locale: 'zh-tw',
               timeZone: 'Asia/Taipei',
               initialView: 'resourceTimeGridDay',
-
-              // 這是全域的工具列設定，對所有視圖都有效
               headerToolbar: false,
-
-              firstDay: 2,       // 全域設定，從週二開始
-              hiddenDays: [1],   // 全域設定，隱藏週一
-
-          
-              buttonText: {
-                today: '今',
-                dayGridMonth: '月',
-                resourceTimeGridDay: '日',
-                resourceTimeGridWeek: '週'
-              },
-
+              firstDay: 2,
+              hiddenDays: [1],
+              buttonText: { today: '今', dayGridMonth: '月', resourceTimeGridDay: '日', resourceTimeGridWeek: '週' },
               allDaySlot: false,
               slotMinTime: '12:00:00',
               slotMaxTime: '21:00:00',
@@ -496,13 +359,8 @@
               slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
               dayHeaderContent: function (arg) {
                 const date = arg.date;
-                const month = date.getMonth() + 1;
-                const day = date.getDate();
                 const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
-                const weekday = weekdayMap[date.getDay()];
-
-                return weekday;
-
+                return weekdayMap[date.getDay()];
               },
               displayEventTime: false,
               height: 'auto',
@@ -510,157 +368,96 @@
               handleWindowResize: true,
               businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
               resources: RESOURCE_LIST,
-
               events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-
-              // 月視圖不顯示事件卡片（只看哪天，不看單筆預約）
               views: {
-                // 週視圖的設定保持不變
-                resourceTimeGridWeek: {
-                  hiddenDays: [1]
-                  // 注意：我們把 headerToolbar 的設定移到外面，這裡保持乾淨
-                },
-
-                dayGridMonth: {
-                  // ✅ 單月視圖設定
-                  eventDisplay: 'none',
-                  displayEventTime: false,
-                  fixedWeekCount: false,  // ✅ 避免顯示額外的週數
-                  showNonCurrentDates: false  // ✅ 隱藏非本月的日期
-                }
-              }, // <--- views 區塊到此結束
-
+                resourceTimeGridWeek: { hiddenDays: [1] },
+                dayGridMonth: { eventDisplay: 'none', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false }
+              },
               selectable: true,
-
-              // 月視圖：點日期 → 跳到該天的日視圖
-              // 日/週視圖：桌機「點一下」可直接開新增；手機改用「長按」（避免滑動時誤觸）
               dateClick: function (info) {
                 if (info.view.type === 'dayGridMonth') {
                   calendar.changeView('resourceTimeGridDay', info.date);
                   return;
                 }
                 if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
-                  if (
-                    window.matchMedia &&
-                    (window.matchMedia('(pointer: coarse)').matches ||
-                     window.matchMedia('(max-width: 1024px)').matches)
-                  ) return; // 手機/平板：改由長按(select)觸發
-                  openApptModalForCreate(info.date, info.resource); // 桌面仍維持點一下開窗
+                  if (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 1024px)').matches)) return;
+                  openApptModalForCreate(info.date, info.resource);
                 }
               },
-
-              // 點擊事件卡片：開啟編輯模式
               eventClick: function(info) {
-                info.jsEvent.preventDefault(); // 防止瀏覽器跳轉
-                info.jsEvent.stopPropagation(); // 防止觸發 dateClick
-                
-                const event = info.event;
-                const extendedProps = event.extendedProps || {};
-                
-                // 開啟彈窗並填入資料
-                openApptModalForEdit(event);
+                info.jsEvent.preventDefault();
+                info.jsEvent.stopPropagation();
+                openApptModalForEdit(info.event);
               },
-
-              // 月視圖：依星期顯示固定休假底色（這是「預設規則」的視覺提示，不是從後端來的排休資料）
               dayCellDidMount: function (arg) {
                 if (arg.view.type !== 'dayGridMonth') return;
-
-                // ✅ 只對本月日期進行處理，排除其他月份的日期
                 const currentMonth = arg.view.currentStart.getMonth();
                 const cellMonth = arg.date.getMonth();
                 if (cellMonth !== currentMonth) return;
-
-                const d = arg.date.getDay(); // 0日 1一 2二 3三 4四 5五 6六
-                if (d === 4) arg.el.classList.add('leave-boss');      // 店長休（顯示「店長休」文字）
-                if (d === 2) arg.el.classList.add('leave-xiaobai');   // ✅ 週二小白休
-                if (d === 0) arg.el.classList.add('leave-yatting');   // ✅ 週日雅婷休
+                const d = arg.date.getDay();
+                if (d === 4) arg.el.classList.add('leave-boss');
+                if (d === 2) arg.el.classList.add('leave-xiaobai');
+                if (d === 0) arg.el.classList.add('leave-yatting');
               },
-
-              selectLongPressDelay: 250, // 手機長按 0.25s 觸發 select：降低等待但避免誤觸滑動
-
+              selectLongPressDelay: 250,
               datesSet: function (info) {
-                // 每次「切換日期/切換視圖」都會觸發 datesSet
-                // 常見用途：更新自訂工具列、更新顯示狀態、重新上色
                 updateToolbarTitle(info);
                 updateDateScroller(info);
                 applyMobileResourceVisibility(info);
                 paintMondayClosed(info);
                 paintEmployeeLeave();
-                // 載入新日期後，同步日視圖「約滿」按鈕的紅色狀態
                 syncFullyBookedButtons();
-                // ✅ 日視圖：讓每位設計師欄位都有自己的時間軸（視覺輔助）
                 schedulePerResourceTimeAxis(80);
+                // 更新 currentYmd
                 currentYmd = ymd(info.start);
+
+                // 在日視圖時,同步 selectedDate
+                if (info.view && info.view.type === 'resourceTimeGridDay') {
+                  selectedDate = new Date(info.view.currentStart);
+                  selectedDate.setHours(12, 0, 0, 0);
+                }
+
                 fetchDailyNote(currentYmd);
               },
-
-              // 每個資源欄（設計師欄位標題）渲染完成時
-              // - 在日視圖，會在設計師名稱旁加上「排休」與「約滿」按鈕
               resourceLabelDidMount: function (arg) {
-                // FullCalendar 版本/視圖不同時，arg.el 可能是「cell」也可能已經是「cushion」本身
-                // 這裡做成更穩健的取得方式，避免抓不到而導致按鈕整組不見。
                 const viewType = arg.view?.type || calendar?.view?.type;
-                const cushionEl =
-                  (arg.el && arg.el.classList && arg.el.classList.contains('fc-col-header-cell-cushion'))
-                    ? arg.el
-                    : (arg.el?.querySelector ? arg.el.querySelector('.fc-col-header-cell-cushion') : null);
+                const cushionEl = (arg.el && arg.el.querySelector) ? arg.el.querySelector('.fc-col-header-cell-cushion') : null;
                 const hostEl = cushionEl || arg.el;
                 if (!hostEl) return;
-                // 確保絕對定位的按鈕群（.header-button-group）有定位參考，不會跑到奇怪的位置
                 hostEl.style.position = 'relative';
                 hostEl.style.overflow = 'visible';
-
-                // 手機版會用到：讓設計師名稱靠右，避免與右側按鈕重疊
                 hostEl.classList.add('resource-cushion');
-
-                // 同一格可能會被重繪（重新 mount），先清掉舊的避免疊加
                 hostEl.querySelectorAll?.('.header-button-group').forEach(n => n.remove());
 
-                // 僅在「日視圖」顯示排休/約滿按鈕；週視圖與其他視圖不建立按鈕
                 const isDayView = viewType === 'resourceTimeGridDay';
                 if (!isDayView) return;
 
-                // 表頭背景：跟各自的「設計師欄位卡片」底色一致（對應 styles.css 的 --resource-col-*-bg）
                 const rid = String(arg?.resource?.id ?? '');
-                const headerBgByRid = {
-                  '1': 'var(--resource-col-1-bg)',
-                  '2': 'var(--resource-col-2-bg)',
-                  '3': 'var(--resource-col-3-bg)'
-                };
-                const headerBg = headerBgByRid[rid];
-                if (headerBg) {
+                const headerBgByRid = { '1': 'var(--resource-col-1-bg)', '2': 'var(--resource-col-2-bg)', '3': 'var(--resource-col-3-bg)' };
+                if (headerBgByRid[rid]) {
                   hostEl.dataset.resourceId = rid;
                   if (arg.el && arg.el !== hostEl) arg.el.dataset.resourceId = rid;
                 }
 
-                // 📅 排休：開啟排休彈窗（儲存時 action=saveLeave）
                 const btnGroup = document.createElement('div');
                 btnGroup.className = 'header-button-group';
 
                 const leaveIconButton = document.createElement('button');
                 leaveIconButton.type = 'button';
                 leaveIconButton.className = 'leave-icon-button';
-                leaveIconButton.setAttribute('aria-label', '排休');
                 leaveIconButton.textContent = '排休';
                 btnGroup.appendChild(leaveIconButton);
-                // 用 click（比 mousedown 更通用，手機/平板也穩）
                 leaveIconButton.addEventListener('click', function (event) {
-                  event.preventDefault();
-                  event.stopPropagation();
+                  event.preventDefault(); event.stopPropagation();
                   setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
                 });
 
-                // ✅ 約滿（切換）：其實也是存到 leave 資料，只是 reason 固定用「已約滿」
-                // - 目的：顯示「這位設計師這天不再接新客」的狀態
                 const dStr = ymd(calendar.view.currentStart);
-                const isFB = Array.isArray(employeeLeaveData) &&
-                  employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
-
+                const isFB = Array.isArray(employeeLeaveData) && employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
                 const fbBtn = document.createElement('button');
                 fbBtn.type = 'button';
                 fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
                 fbBtn.dataset.resourceId = String(arg.resource.id);
-                fbBtn.setAttribute('aria-label', '約滿');
                 fbBtn.textContent = isFB ? '已約滿' : '約滿';
                 btnGroup.appendChild(fbBtn);
                 hostEl.appendChild(btnGroup);
@@ -671,372 +468,191 @@
                   const resourceId = arg.resource.id;
                   try {
                     if (fbBtn.classList.contains('fb-active')) {
-                      // 取消約滿
-                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-                        method: 'POST', mode: 'cors',
-                        body: JSON.stringify({ action: 'deleteLeave', resourceId, date })
-                      });
+                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteLeave', resourceId, date }) });
                       const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
-                      // 更新快取
                       if (Array.isArray(employeeLeaveData)) {
                         const i = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId && l.reason === '已約滿');
                         if (i !== -1) employeeLeaveData.splice(i, 1);
                       }
                       fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
                     } else {
-                      // 設為約滿
-                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-                        method: 'POST', mode: 'cors',
-                        body: JSON.stringify({ action: 'saveLeave', resourceId, date, reason: '已約滿' })
-                      });
+                      const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveLeave', resourceId, date, reason: '已約滿' }) });
                       const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
-                      if (Array.isArray(employeeLeaveData)) {
-                        employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
-                      }
+                      if (Array.isArray(employeeLeaveData)) employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
                       fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
                     }
-                    // 立即重繪欄位樣式（畫外框/覆蓋層）
-                    paintEmployeeLeave();
-                    // 並同步更新日視圖按鈕紅色狀態
-                    syncFullyBookedButtons();
-                  } catch (err) {
-                    alert('切換約滿失敗：' + err.message);
-                  }
+                    paintEmployeeLeave(); syncFullyBookedButtons();
+                  } catch (err) { alert('切換約滿失敗：' + err.message); }
                 });
               },
-
-
-              // 點擊「事件本身」→ 編輯
-              eventClick: function (info) { openApptModalForEdit(info.event); },
-              // 長按/拖曳選取一段時間（selectable: true）→ 新增
               select: function (info) { openApptModalForCreate(info.start, info.resource); },
-
               eventContent: function (arg) {
-                // 自訂事件顯示內容（把服務、姓名、電話排成一行）
-                // - `arg.event.extendedProps` 是後端回來的自訂欄位（不是 FullCalendar 內建欄位）
                 const ep = arg.event.extendedProps || {};
-                const svcMap = {
-                  '剪髮': ['剪'],
-                  '剪+染': ['剪', '染'],
-                  '剪+燙': ['剪', '燙'],
-                  '剪+染+燙': ['剪', '染', '燙'],
-                  '剪+頭皮護理': ['剪', '護']
-                };
-                // 不約時段：顯示成單純的封鎖樣式（不顯示姓名電話）
+                const svcMap = { '剪髮': ['剪'], '剪+染': ['剪', '染'], '剪+燙': ['剪', '燙'], '剪+染+燙': ['剪', '染', '燙'], '剪+頭皮護理': ['剪', '護'] };
                 if (ep.appointment_type === 'blocked') {
-                  return {
-                    html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>`
-                  };
+                  return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>` };
                 }
                 const svcList = svcMap[ep.service_id] || ['預'];
-                const svcClassMap = {
-                  '剪': 'svc-cut',
-                  '染': 'svc-dye',
-                  '燙': 'svc-perm',
-                  '護': 'svc-treat',
-                  '預': 'svc-default'
-                };
-                const safeTrim = (v) => {
-                  if (v == null) return '';
-                  if (typeof v === 'string') return v.trim();
-                  if (typeof v === 'number') return String(v).trim();
-                  return '';
-                };
+                const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
+                const safeTrim = (v) => (v != null ? String(v).trim() : '');
                 const name = safeTrim(ep.customer_name) || safeTrim(ep.notes);
                 const phone = safeTrim(ep.customer_phone);
-                const paidAmount = Number(ep.amount);
+                const paidAmount = Number(ep.total_amount) || Number(ep.amount);  // 優先使用總金額，舊資料用入帳金額
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
                 const currencyFormatter = new Intl.NumberFormat('zh-TW');
-                const amountLabel = isPaid ? `$${currencyFormatter.format(paidAmount)}` : '';
+                
+                // [修改] 結帳後顯示: 助理名字 + 金額
+                let amountLabel = '';
+                if(isPaid) {
+                    const asst = ep.assistant_id || '';
+                    amountLabel = (asst ? asst + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
+                }
 
-                // ✅ 服務勳章：不管幾個項目都只顯示「一個」勳章
-                // - 文字：把項目縮寫串起來（例如：剪染、剪染燙、剪護）
-                // - 樣式 class：用第一個項目決定（例如：剪染 → 走 svc-cut 的邊框色）
                 const badgeText = svcList.join('');
                 const badgeKey = (svcList && svcList[0]) ? svcList[0] : '預';
                 const badgeCls = svcClassMap[badgeKey] || 'svc-default';
                 const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
-                return {
-                  html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span></div>`
-                };
+                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span></div>` };
               },
-
               eventClassNames: function (arg) {
-                // 依照「是哪位設計師 / 是否不約 / 是否已收款」決定事件 CSS class
                 const r = arg.event.getResources();
                 const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
                 const ep = arg.event.extendedProps || {};
-                if (ep.appointment_type === 'blocked') {
-                  cls.push('blocked-time');
-                }
+                if (ep.appointment_type === 'blocked') cls.push('blocked-time');
                 const paidAmount = Number(ep.amount);
-                if (ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0) {
-                  cls.push('is-paid');
-                }
+                if (ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0) cls.push('is-paid');
                 return cls;
               },
             });
             calendar.render();
           }
 
-          /**
-             * 把「排休/約滿」資料整包抓回來，並畫到日曆上
-             * - action=getLeave
-             * - 成功後會呼叫 paintEmployeeLeave()（把 overlay 畫到格子上）
-             */
           async function fetchAllCloudData() {
             try {
               const leaveRes = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getLeave');
               if (!leaveRes.ok) throw new Error('無法從後端獲取排休資料');
               employeeLeaveData = await leaveRes.json();
-              paintEmployeeLeave();
-              // 首次資料載入後，同步按鈕狀態（避免初次渲染時按鈕還沒變紅）
-              syncFullyBookedButtons();
-            } catch (error) {
-              console.error('讀取雲端資料失敗:', error);
-              alert('讀取雲端資料失敗，請檢查網路連線或後端設定。');
-            }
+              paintEmployeeLeave(); syncFullyBookedButtons();
+            } catch (error) { console.error('讀取雲端資料失敗:', error); }
           }
 
-          /**
-             * 同步日視圖「約滿」按鈕紅色狀態
-             * - 因為按鈕是在 resourceLabelDidMount 動態建立的
-             * - 當資料（employeeLeaveData）更新時，需要把按鈕 UI 跟資料對齊
-             */
           function syncFullyBookedButtons() {
             try {
-              if (!calendar || !employeeLeaveData || !Array.isArray(employeeLeaveData)) return;
-              if (calendar.view?.type !== 'resourceTimeGridDay') return; // 只在日視圖需要按鈕
+              if (!calendar || !employeeLeaveData || calendar.view?.type !== 'resourceTimeGridDay') return;
               const dStr = ymd(calendar.view.currentStart);
               document.querySelectorAll('#calendar .fully-booked-button[data-resource-id]').forEach(btn => {
                 const rid = btn.dataset.resourceId;
                 const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
-                if (isFB) {
-                  btn.classList.add('fb-active');
-                  btn.textContent = '已約滿';
-                } else {
-                  btn.classList.remove('fb-active');
-                  btn.textContent = '約滿';
-                }
+                if (isFB) { btn.classList.add('fb-active'); btn.textContent = '已約滿'; } else { btn.classList.remove('fb-active'); btn.textContent = '約滿'; }
               });
-            } catch (e) {
-              console.warn('syncFullyBookedButtons failed:', e);
-            }
-          }
-
-          function ensureToastContainer() {
-            let el = document.getElementById('toast-container');
-            if (!el) {
-              el = document.createElement('div');
-              el.id = 'toast-container';
-              el.setAttribute('aria-live', 'polite');
-              document.body.appendChild(el);
-            }
-            return el;
+            } catch (e) {}
           }
 
           function showToast(message, type = 'info', duration = 2000) {
-            const container = ensureToastContainer();
+            let container = document.getElementById('toast-container');
+            if (!container) { container = document.createElement('div'); container.id = 'toast-container'; document.body.appendChild(container); }
             const toast = document.createElement('div');
-            toast.className = `toast toast--${type}`;
-            toast.textContent = message;
+            toast.className = `toast toast--${type}`; toast.textContent = message;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.add('is-visible'));
-            window.setTimeout(() => {
-              toast.classList.remove('is-visible');
-              toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-            }, duration);
+            window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
           }
 
-          /**
-           * 儲存成功後：在前端立即更新事件，避免每次都 refetch
-           * - 目的：結帳/儲存後「卡片變色」能更快看到
-           */
           function applyOptimisticEventUpdate(payload) {
             if (!calendar || !payload || !payload.id) return false;
             const ev = calendar.getEventById(String(payload.id));
             if (!ev) return false;
-
-            // 若時間有變動，保留原本時長
             if (payload.start) {
               const nextStart = new Date(payload.start);
               if (!Number.isNaN(nextStart.getTime())) {
                 const durationMs = (ev.end && ev.start) ? (ev.end.getTime() - ev.start.getTime()) : null;
                 ev.setStart(nextStart);
-                if (durationMs != null && durationMs > 0) {
-                  ev.setEnd(new Date(nextStart.getTime() + durationMs));
-                }
+                if (durationMs != null && durationMs > 0) ev.setEnd(new Date(nextStart.getTime() + durationMs));
               }
             }
-
-            // 變更資源欄位（若支援）
             if (payload.employee_id) {
               const nextRes = calendar.getResourceById?.(String(payload.employee_id));
-              if (nextRes && typeof ev.setResources === 'function') ev.setResources([nextRes]);
-              else if (typeof ev.setResourceId === 'function') ev.setResourceId(String(payload.employee_id));
+              if (nextRes) ev.setResources([nextRes]);
             }
-
-            // 更新顯示會用到的欄位
             ev.setExtendedProp('appointment_type', payload.appointment_type);
             ev.setExtendedProp('customer_name', payload.customer_name);
             ev.setExtendedProp('customer_phone', payload.customer_phone);
             ev.setExtendedProp('service_id', payload.service_id);
             ev.setExtendedProp('assistant_id', payload.assistant_id);
             ev.setExtendedProp('amount', payload.amount);
+            ev.setExtendedProp('total_amount', payload.total_amount);
             ev.setExtendedProp('notes', payload.notes);
+            ev.setExtendedProp('dye_color', payload.dye_color); // Sync new field
             return true;
-          }
-
-          function getSlotDurationMinutes() {
-            const dur = calendar?.getOption?.('slotDuration');
-            if (!dur) return 15;
-            if (typeof dur === 'string') {
-              const parts = dur.split(':').map(Number);
-              if (parts.length >= 2 && parts.every(n => !Number.isNaN(n))) {
-                return (parts[0] * 60) + parts[1] + Math.floor((parts[2] || 0) / 60);
-              }
-            }
-            if (typeof dur === 'object') {
-              const mins = Number(dur.minutes || 0) + Number(dur.hours || 0) * 60;
-              if (!Number.isNaN(mins) && mins > 0) return mins;
-            }
-            return 15;
           }
 
           function addEventOptimistically(payload, createdId) {
             if (!calendar || !payload || !createdId || !payload.start) return false;
             const startDate = new Date(payload.start);
-            if (Number.isNaN(startDate.getTime())) return false;
-            const endDate = new Date(startDate.getTime() + getSlotDurationMinutes() * 60000);
-            const titleText = payload.appointment_type === 'blocked'
-              ? (payload.notes || '不約時段')
-              : (payload.customer_name || '未命名') + (payload.service_id ? ' - ' + payload.service_id : '');
-            const ev = calendar.addEvent({
-              id: String(createdId),
-              resourceId: String(payload.employee_id || ''),
-              start: startDate,
-              end: endDate,
-              title: titleText,
+            const endDate = new Date(startDate.getTime() + 15 * 60000); // simplified
+            const titleText = payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || '未命名');
+            calendar.addEvent({
+              id: String(createdId), resourceId: String(payload.employee_id || ''), start: startDate, end: endDate, title: titleText,
               extendedProps: {
-                customer_name: payload.customer_name,
-                customer_phone: payload.customer_phone,
-                service_id: payload.service_id,
-                notes: payload.notes,
-                appointment_type: payload.appointment_type,
-                amount: payload.amount,
-                assistant_id: payload.assistant_id
+                customer_name: payload.customer_name, customer_phone: payload.customer_phone, service_id: payload.service_id,
+                notes: payload.notes, appointment_type: payload.appointment_type, amount: payload.amount, total_amount: payload.total_amount, assistant_id: payload.assistant_id,
+                dye_color: payload.dye_color // Sync new field
               }
             });
-            return !!ev;
-          }
-
-          function removeEventOptimistically(eventId) {
-            if (!calendar || !eventId) return false;
-            const ev = calendar.getEventById(String(eventId));
-            if (!ev) return false;
-            ev.remove();
             return true;
           }
 
-          /**
-             * 綁定頁面上所有「互動事件」
-             * - input：電話自動格式化、留言輸入狀態
-             * - click：儲存留言、關閉彈窗、刪除/儲存預約、刪除/儲存排休
-             * - change：預約類型切換（一般預約 vs 不約時段）
-             */
+          function removeEventOptimistically(eventId) {
+            const ev = calendar.getEventById(String(eventId));
+            if (!ev) return false;
+            ev.remove(); return true;
+          }
+
           function bindEventListeners() {
-            // console.log('Binding listeners...');
-            // 電話輸入：只允許數字並加上簡單格式（09xx-xxx-xxx）
             phoneEl.addEventListener('input', (e) => {
               let d = e.target.value.replace(/\D/g, '').slice(0, 10);
-              if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, function (_, a, b, c) { return c ? `${a}-${b}-${c}` : `${a}-${b}` });
+              if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
               else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
               else e.target.value = d;
             });
 
-            let notesSaveTimeout;
-            // 留言內容變動：標記成「未儲存」
-            notesTextarea.addEventListener('input', function () {
-              document.querySelector('.notes-meta span').textContent = '未儲存';
-            });
-
-            // 手動儲存留言（寫入雲端）
-            document.getElementById('save-notes-btn').addEventListener('click', async function () {
-              const meta = document.querySelector('.notes-meta span');
-              meta.textContent = '儲存中...';
+            notesTextarea.addEventListener('input', () => document.querySelector('.notes-meta span').textContent = '未儲存');
+            document.getElementById('save-notes-btn').addEventListener('click', async () => {
+              const meta = document.querySelector('.notes-meta span'); meta.textContent = '儲存中...';
               try {
-                const payload = {
-                  action: 'saveNotes',
-                  date: currentYmd || ymd(new Date()),
-                  content: notesTextarea.value
-                };
-                const r = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-                  method: 'POST',
-                  mode: 'cors',
-                  body: JSON.stringify(payload)
-                });
-                const j = await r.json();
-                if (j.status !== 'success') {
-                  throw new Error(j.message || '寫入失敗');
-                }
+                await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveNotes', date: currentYmd || ymd(new Date()), content: notesTextarea.value }) });
                 meta.textContent = '已儲存 ✓';
-              } catch (e) {
-                meta.textContent = '儲存失敗 ❌';
-              }
+              } catch (e) { meta.textContent = '儲存失敗 ❌'; }
             });
 
-
-            // 排休表單送出：儲存排休原因
-            leaveForm.addEventListener('submit', async function (e) {
+            leaveForm.addEventListener('submit', async (e) => {
               e.preventDefault();
-              const payload = {
-                action: 'saveLeave',
-                resourceId: document.getElementById('leaveResourceId').value,
-                date: document.getElementById('leaveDate').value,
-                reason: document.getElementById('leaveReason').value.trim() || '排休'
-              };
               try {
-                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
-                const result = await res.json();
-                if (result.status !== 'success') throw new Error(result.message);
-                calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
-                leaveModal.style.display = 'none';
-
-              } catch (error) {
-                alert('儲存排休失敗: ' + error.message);
-              }
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'saveLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value, reason: document.getElementById('leaveReason').value.trim() || '排休' }), mode: 'cors' });
+                const r = await res.json(); if (r.status !== 'success') throw new Error(r.message);
+                calendar.refetchEvents(); leaveModal.style.display = 'none';
+              } catch (err) { alert('儲存排休失敗: ' + err.message); }
             });
 
-            // 取消排休：刪除該日該設計師的排休資料
-            deleteLeaveBtn.addEventListener('click', async function () {
+            deleteLeaveBtn.addEventListener('click', async () => {
               if (!confirm('確定要取消這筆排休嗎？')) return;
-              const payload = {
-                action: 'deleteLeave',
-                resourceId: document.getElementById('leaveResourceId').value,
-                date: document.getElementById('leaveDate').value
-              };
               try {
-                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
-                const result = await res.json();
-                if (result.status !== 'success') throw new Error(result.message);
-                calendar.refetchEvents(); // ✅ 通知 FullCalendar 重新取得所有事件
-                leaveModal.style.display = 'none';
-
-              } catch (error) {
-                alert('刪除排休失敗: ' + error.message);
-              }
+                await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value }), mode: 'cors' });
+                calendar.refetchEvents(); leaveModal.style.display = 'none';
+              } catch (err) { alert('刪除排休失敗: ' + err.message); }
             });
 
-            /* 取消覆蓋層點擊開窗的事件委派（僅保留表頭「排休」按鈕可用） */
-
-            // 預約表單送出：新增 or 更新（由 event_id 是否存在判斷）
-            form.addEventListener('submit', async function (e) {
+            form.addEventListener('submit', async (e) => {
               e.preventDefault();
               const isEditing = !!eventIdInput.value;
               const fd = new FormData(form);
               const amountRaw = fd.get('amount_input');
-              const parsedAmount = amountRaw === null || amountRaw === '' ? NaN : parseInt(amountRaw, 10);
+              const parsedAmount = parseInt(amountRaw, 10);
               const amountValue = Number.isFinite(parsedAmount) ? String(Math.max(0, parsedAmount)) : '';
+              
+              // 確保總金額計算最新
+              updateCalculatedTotal();
+              
               const payload = {
                 action: isEditing ? 'edit' : 'create',
                 id: fd.get('event_id') || undefined,
@@ -1048,321 +664,217 @@
                 service_id: fd.get('service_id') || '',
                 assistant_id: fd.get('assistant_select') || '',
                 amount: amountValue,
-                notes: fd.get('notes') || ''
+                total_amount: window.displayTotal,  // 新增總金額欄位
+                notes: fd.get('notes') || '',
+                // [新增] 染髮顏色傳送給後端
+                dye_color: document.getElementById('dye_color_input').value
               };
-              submitBtn.disabled = true;
-              appointmentModal.style.display = 'none';
-              showToast('儲存中...', 'loading', 3000);
-              let optimisticApplied = false;
-              let optimisticCreated = false;
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const data = await res.json();
                 if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
-                if (isEditing) {
-                  optimisticApplied = applyOptimisticEventUpdate(payload);
-                } else if (data && data.id) {
-                  optimisticCreated = addEventOptimistically(payload, data.id);
-                }
+                if (isEditing) { if(applyOptimisticEventUpdate(payload)) calendar.refetchEvents(); else calendar.refetchEvents(); }
+                else { if(addEventOptimistically(payload, data.id)) calendar.refetchEvents(); else calendar.refetchEvents(); }
                 saveOk = true;
-              } catch (err) {
-                alert('❌ 儲存失敗：' + err.message);
-              } finally {
-                submitBtn.disabled = false;
-                if (isEditing && optimisticApplied) {
-                  calendar.rerenderEvents();
-                } else if (!isEditing && optimisticCreated) {
-                  calendar.rerenderEvents();
-                } else {
-                  calendar.refetchEvents();
-                }
-                if (saveOk) showToast('已儲存', 'success', 2000);
-                else showToast('儲存失敗', 'error', 3000);
-              }
+              } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
+              finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
             });
 
-            // 刪除預約：需要 event_id 才能刪除
             deleteBtn.onclick = async function () {
               const eventId = eventIdInput.value.trim();
               if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
-              let removed = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
-                const data = await res.json();
-                if (!res.ok || data.status !== 'success') throw new Error(data.message || '刪除失敗');
-                removed = removeEventOptimistically(eventId);
-              } catch (err) {
-                alert('❌ 刪除失敗：' + err.message);
-              } finally {
+                if (removeEventOptimistically(eventId)) showToast('已刪除', 'success'); else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
-                if (!removed) calendar.refetchEvents();
-              }
+              } catch (err) { alert('❌ 刪除失敗'); }
             };
 
-
-
-
-            // Modal Close Events
             if (appointmentCloseButton) appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
             if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
             if (reportCloseButton) reportCloseButton.onclick = () => reportModal.style.display = 'none';
-
             window.addEventListener('click', (e) => {
               if (e.target === appointmentModal) appointmentModal.style.display = 'none';
               if (e.target === leaveModal) leaveModal.style.display = 'none';
               if (e.target === reportModal) reportModal.style.display = 'none';
             });
+            window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
 
-            // 視窗尺寸變動：重新計算每位設計師欄位內的時間軸位置（避免字級/高度變動後跑位）
-            window.addEventListener('resize', () => {
-              schedulePerResourceTimeAxis(150);
-              applyMobileResourceVisibility();
-            });
-
-            // 切換「一般預約 / 不約時段」：決定是否顯示顧客資料欄位、按鈕文字
             document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
               radio.addEventListener('change', function () {
                 const isBlocked = this.value === 'blocked';
-                const isEditing = !!eventIdInput.value;
                 document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
-                
-                // 決定是否顯示右側卡片：僅在「編輯」模式且「非不約時段」時顯示
-                const showSettlement = isEditing && !isBlocked;
-                document.getElementById('settlement-col').style.display = showSettlement ? 'block' : 'none';
+                document.getElementById('settlement-col').style.display = (!!eventIdInput.value && !isBlocked) ? 'block' : 'none';
                 document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
-                
-                // 根據是否顯示右側卡片調整排版
                 const actions = document.querySelector('.modal-actions');
                 const content = document.querySelector('.modal-content');
-                if (showSettlement) {
-                  actions.style.gridColumn = '1 / -1';
-                  content.style.maxWidth = '900px';
-                } else {
-                  actions.style.gridColumn = '1 / 2';
-                  content.style.maxWidth = '450px';
-                }
-                
-                // Blocked: clear certain fields
-                if (isBlocked) {
-                  assistantSelect.value = '';
-                  amountInput.value = '';
-
-                  const permSelect = document.getElementById('perm_select');
-                  if (permSelect) permSelect.value = '';
-
-                  const retailItem = document.getElementById('retail_item');
-                  const retailPrice = document.getElementById('retail_price');
-                  if (retailItem) retailItem.value = '';
-                  if (retailPrice) retailPrice.value = '';
-
-                  const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-                  const bleach4000CostInput = document.getElementById('bleach4000_cost');
-                  if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
-                  if (bleach4000CostInput) bleach4000CostInput.value = '270';
-
-                  // uncheck prices
-		                  document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
-		                  document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-		                  updateCalculatedTotal();
-                }
+                if (!isBlocked && eventIdInput.value) { actions.style.gridColumn = '1 / -1'; content.style.maxWidth = '900px'; }
+                else { actions.style.gridColumn = '1 / 2'; content.style.maxWidth = '450px'; }
                 
                 if (isBlocked) {
+                  assistantSelect.value = ''; amountInput.value = '';
+                  document.getElementById('perm_select').value = '';
+                  document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                  document.getElementById('bleach4000-cost-wrap').style.display = 'none';
+                  document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+                  document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+                  // Clear new fields
+                  document.getElementById('cut_custom').value = '';
+                  document.getElementById('perm_custom').value = '';
+                  document.getElementById('other_custom').value = '';
+                  document.getElementById('dye-color-wrap').style.display = 'none';
+                  updateCalculatedTotal();
                   submitBtn.textContent = '設定不約時段';
                 } else {
-                  submitBtn.textContent = isEditing ? '更新預約' : '儲存預約';
+                  submitBtn.textContent = eventIdInput.value ? '更新預約' : '儲存預約';
                 }
               });
             });
 
-            // 綁定價格計算事件
-			            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], #perm_select, #retail_price, #bleach4000_cost');
-		            priceInputs.forEach(input => {
-		                input.addEventListener('change', updateCalculatedTotal);
-		                if (input.id === 'retail_price') input.addEventListener('input', updateCalculatedTotal); // Immediate update for text input
-		            });
+            // [新增] 監聽左右箭頭
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if(prevBtn) prevBtn.addEventListener('click', () => {
+              calendar.prev();
+              // 更新 selectedDate
+              const newDate = calendar.getDate();
+              selectedDate = new Date(newDate);
+              selectedDate.setHours(12, 0, 0, 0);
+            });
+            if(nextBtn) nextBtn.addEventListener('click', () => {
+              calendar.next();
+              // 更新 selectedDate
+              const newDate = calendar.getDate();
+              selectedDate = new Date(newDate);
+              selectedDate.setHours(12, 0, 0, 0);
+            });
 
-		            // 漂4000：勾選時顯示材料費輸入框（可自填成本）
-		            const bleach4000Checkbox = document.querySelector('input[name="other_item"][value="4000"]');
-			            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-			            const bleach4000CostInput = document.getElementById('bleach4000_cost');
-			            const syncBleach4000CostUI = () => {
-			              const checked = !!bleach4000Checkbox?.checked;
-			              // 用 grid 才能讓「label + input」同列並排（會覆蓋 CSS 的 display:grid）
-			              if (bleach4000CostWrap) bleach4000CostWrap.style.display = checked ? 'grid' : 'none';
-			              if (checked && bleach4000CostInput && !bleach4000CostInput.value) bleach4000CostInput.value = '270';
-			              if (!checked && bleach4000CostInput) bleach4000CostInput.value = '270';
-			            };
-		            bleach4000Checkbox?.addEventListener('change', () => {
-		              syncBleach4000CostUI();
-		              updateCalculatedTotal();
-		            });
-		            bleach4000CostInput?.addEventListener('input', updateCalculatedTotal);
-		            syncBleach4000CostUI();
+            // [新增] 監聽染髮選項，顯示顏色輸入框
+            document.querySelectorAll('input[name="other_item"]').forEach(cb => {
+              cb.addEventListener('change', function() {
+                const label = this.parentElement.textContent;
+                if(label.includes('染髮')) {
+                   document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
+                }
+                updateCalculatedTotal();
+              });
+            });
 
-	            // 改回未結帳：清空金額並立即儲存
-	            if (unsetPaidBtn) {
-	              unsetPaidBtn.addEventListener('click', function () {
-	                if (!eventIdInput.value) return;
-	                const apptType = document.querySelector('input[name="appointment_type"]:checked')?.value;
-	                if (apptType === 'blocked') return;
-	                if (!confirm('要把這筆改回未結帳嗎？\\n\\n會清空入帳金額與助理，並立刻儲存。')) return;
+            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], #perm_select, #retail_price, #bleach4000_cost, #cut_custom, #perm_custom, #other_custom');
+            priceInputs.forEach(input => {
+                input.addEventListener('change', updateCalculatedTotal);
+                if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
+            });
 
-		                // Reset settlement UI
-			                document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
-			                document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-			                const permSelect = document.getElementById('perm_select');
-			                if (permSelect) permSelect.value = '';
-			                const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-			                const bleach4000CostInput = document.getElementById('bleach4000_cost');
-			                if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
-			                if (bleach4000CostInput) bleach4000CostInput.value = '270';
-			                const retailItem = document.getElementById('retail_item');
-			                const retailPrice = document.getElementById('retail_price');
-			                if (retailItem) retailItem.value = '';
-			                if (retailPrice) retailPrice.value = '';
-	                if (assistantSelect) assistantSelect.value = '';
-	                if (amountInput) amountInput.value = '';
-	                updateCalculatedTotal();
+            const bleach4000Checkbox = document.querySelector('input[name="other_item"][value="4000"]');
+            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
+            const bleach4000CostInput = document.getElementById('bleach4000_cost');
+            const syncBleach4000CostUI = () => {
+              const checked = !!bleach4000Checkbox?.checked;
+              if (bleach4000CostWrap) bleach4000CostWrap.style.display = checked ? 'grid' : 'none';
+              if (checked && bleach4000CostInput && !bleach4000CostInput.value) bleach4000CostInput.value = '270';
+            };
+            bleach4000Checkbox?.addEventListener('change', () => { syncBleach4000CostUI(); updateCalculatedTotal(); });
+            bleach4000CostInput?.addEventListener('input', updateCalculatedTotal);
 
-	                if (typeof form?.requestSubmit === 'function') form.requestSubmit(submitBtn);
-	                else submitBtn.click();
-	              });
-	            }
-	          }
+            if (unsetPaidBtn) {
+              unsetPaidBtn.addEventListener('click', function () {
+                if (!eventIdInput.value) return;
+                if (!confirm('要把這筆改回未結帳嗎？')) return;
+                document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+                document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+                document.getElementById('perm_select').value = '';
+                document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                assistantSelect.value = ''; amountInput.value = '';
+                document.getElementById('cut_custom').value = '';
+                document.getElementById('perm_custom').value = '';
+                document.getElementById('other_custom').value = '';
+                document.getElementById('dye-color-wrap').style.display = 'none';
+                updateCalculatedTotal();
+                submitBtn.click();
+              });
+            }
+          }
 
-          /**
-           * 計算總金額與入帳金額
-           * 規則：
-           * - 總金額 (Display Total): 各項單價加總
-           * - 入帳金額 (Net Amount): (單價 - 成本) 加總 → 這是要存進 DB 的 amount
-           */
           function updateCalculatedTotal() {
               let cutPrice = 0;
               let chemTotal = 0;
               let totalCost = 0;
 
-              // 1. 剪髮 (Radio)
               const cut = document.querySelector('input[name="cut_price"]:checked');
               if (cut) {
                   cutPrice = parseInt(cut.value, 10) || 0;
                   totalCost += parseInt(cut.dataset.cost || 0, 10);
               }
+              // [新增] 剪髮自訂
+              cutPrice += (parseInt(document.getElementById('cut_custom').value, 10) || 0);
 
-		              // 2. 其他項目 (Checkbox: 洗髮, 染髮, 漂髮...)
-		              document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
-		                  const p = parseInt(item.value, 10) || 0;
-		                  let c = parseInt(item.dataset.cost || 0, 10) || 0;
-		                  // 漂4000：材料費可自填（未填則用預設 270）
-		                  if (String(item.value) === '4000') {
-		                      const bleach4000CostInput = document.getElementById('bleach4000_cost');
-		                      const customCost = bleach4000CostInput ? (parseInt(bleach4000CostInput.value, 10) || 0) : 0;
-		                      c = customCost > 0 ? customCost : c;
-		                  }
-		                  chemTotal += p;
-		                  totalCost += c;
-		              });
+              document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
+                  const p = parseInt(item.value, 10) || 0;
+                  let c = parseInt(item.dataset.cost || 0, 10) || 0;
+                  if (String(item.value) === '4000') {
+                      const bleach4000CostInput = document.getElementById('bleach4000_cost');
+                      const customCost = bleach4000CostInput ? (parseInt(bleach4000CostInput.value, 10) || 0) : 0;
+                      c = customCost > 0 ? customCost : c;
+                  }
+                  chemTotal += p;
+                  totalCost += c;
+              });
+              // [新增] 其他自訂
+              chemTotal += (parseInt(document.getElementById('other_custom').value, 10) || 0);
 
-	              // 3. 燙髮 (Select, 單選 + 材料費)
-	              const permSelect = document.getElementById('perm_select');
-	              let permPrice = 0;
-	              if (permSelect) {
-	                  permPrice = parseInt(permSelect.value, 10) || 0;
-	                  const opt = permSelect.selectedOptions && permSelect.selectedOptions[0] ? permSelect.selectedOptions[0] : null;
-	                  const permCost = opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
-	                  totalCost += permCost;
-	              }
+              const permSelect = document.getElementById('perm_select');
+              let permPrice = 0;
+              if (permSelect) {
+                  permPrice = parseInt(permSelect.value, 10) || 0;
+                  const opt = permSelect.selectedOptions[0];
+                  const permCost = opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
+                  totalCost += permCost;
+              }
+              // [新增] 燙髮自訂
+              permPrice += (parseInt(document.getElementById('perm_custom').value, 10) || 0);
 
-	              // 4. 店販 (Retail)
-	              const retailInput = document.getElementById('retail_price');
-	              let retailVal = 0;
-	              if (retailInput) {
-	                  retailVal = parseInt(retailInput.value, 10) || 0;
-	              }
+              const retailInput = document.getElementById('retail_price');
+              let retailVal = parseInt(retailInput?.value, 10) || 0;
 
-	              // 計算
-	              const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
-              // 入帳金額 = 總金額 - 成本
+              const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
               const netAmount = displayTotal - totalCost;
 
-              // 更新 UI
               document.getElementById('display-total').textContent = '$' + displayTotal;
               document.getElementById('display-net').textContent = '$' + netAmount;
+              const finalAmount = netAmount > 0 ? netAmount : '';
+              document.getElementById('amount_input').value = finalAmount;
               
-	              // 更新 hidden input
-	              const finalAmount = netAmount > 0 ? netAmount : '';
-	              document.getElementById('amount_input').value = finalAmount;
-	              syncUnsettleButton();
-	          }
+              // 更新全域 displayTotal
+              window.displayTotal = displayTotal;
+              
+              if (unsetPaidBtn && eventIdInput.value) {
+                const show = !document.querySelector('input[name="appointment_type"][value="blocked"]').checked && Number.isFinite(netAmount) && netAmount > 0;
+                unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+              }
+          }
 
-	          function syncUnsettleButton() {
-	              if (!unsetPaidBtn || !amountInput || !eventIdInput) return;
-	              const isEditing = !!eventIdInput.value;
-	              const apptType = document.querySelector('input[name="appointment_type"]:checked')?.value;
-	              const isBlocked = apptType === 'blocked';
-	              const amt = Number(amountInput.value);
-	              const show = isEditing && !isBlocked && Number.isFinite(amt) && amt > 0;
-	              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
-	          }
-
-          /**
-             * 把 employeeLeaveData 畫到日曆格子上（視覺覆蓋層/外框）
-             *
-             * 規則：
-             * - reason === '已約滿'：只畫外框（不遮住內容），表示「不再接受新增」
-             * - 其他 reason：畫半透明覆蓋層 + 文字（例如：特休、進修、店休）
-             *
-             * 技術做法：
-             * - FullCalendar 每個格子 column 會有 `.fc-timegrid-col`
-             * - 我們用 data-date + data-resource-id 找到特定設計師在特定日期的欄位
-             * - 然後 append 一個自訂的 div 進去
-             */
           function paintEmployeeLeave() {
-            // 先清掉舊層（避免重複疊加）
             document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
             document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
             if (!Array.isArray(employeeLeaveData)) return;
-
             employeeLeaveData.forEach(leave => {
-              const targetColumn = document.querySelector(
-                `#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`
-              );
+              const targetColumn = document.querySelector(`#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`);
               if (!targetColumn) return;
-
-              // 日視圖有 .fc-timegrid-col-frame (card-style)，改掛在那裡才不會超出邊距
-              const frame = targetColumn.querySelector('.fc-timegrid-col-frame');
-              const container = frame || targetColumn;
-
+              const frame = targetColumn.querySelector('.fc-timegrid-col-frame') || targetColumn;
               if (leave.reason === '已約滿') {
-                // 只畫外框，不覆蓋內容
-                const o = document.createElement('div');
-                o.className = 'fully-booked-outline';
-                container.appendChild(o);
+                const o = document.createElement('div'); o.className = 'fully-booked-outline'; frame.appendChild(o);
                 return;
               }
-
-              const ov = document.createElement('div');
-              ov.className = 'closed-overlay leave-overlay';
-              const label = document.createElement('span');
-              label.className = 'overlay-label';
-              label.textContent = leave.reason;
-              ov.appendChild(label);
-              ov.dataset.resourceId = leave.resourceId;
-              ov.dataset.date = leave.date;
-              container.appendChild(ov);
+              const ov = document.createElement('div'); ov.className = 'closed-overlay leave-overlay';
+              const label = document.createElement('span'); label.className = 'overlay-label'; label.textContent = leave.reason;
+              ov.appendChild(label); frame.appendChild(ov);
             });
           }
 
-
-
-          /**
-             * 開啟「排休彈窗」並填入預設值
-             *
-             * @param {Date} date - 目前日曆的日期（通常是 calendar.view.currentStart）
-             * @param {Object} resource - FullCalendar 的 resource（設計師）
-             */
           function openLeaveModal(date, resource) {
-            const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             const dateStr = ymd(date);
             const existingLeave = Array.isArray(employeeLeaveData) ? employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id) : null;
             document.getElementById('leaveResourceId').value = resource.id;
@@ -1374,62 +886,42 @@
             leaveModal.style.display = 'block';
           }
 
-          /**
-             * 開啟「新增預約」彈窗
-             *
-             * @param {Date} startDate - 使用者點到/選到的開始時間
-             * @param {Object} resource - 哪位設計師（資源欄位）
-             */
-	          function openApptModalForCreate(startDate, resource) {
-            // alert('Open Modal: ' + (resource ? resource.title : 'No resource'));
+          function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
-            // reset() 會把表單欄位清空成預設值
-            form.reset();
-            eventIdInput.value = '';
-            submitBtn.textContent = '儲存';
-            deleteBtn.style.display = 'none';
+            form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
             document.getElementById('customer-fields-left').style.display = 'block';
-	            document.getElementById('settlement-col').style.display = 'none'; // ✅ 新增模式不顯示綠色卡片
-	            placeAppointmentActions('create');
-	            // 調整按鈕區域只佔左側欄位寬度
-	            document.querySelector('.modal-actions').style.gridColumn = '1 / 2';
-	            // 調整彈窗寬度為窄版（只有左側卡片）
-	            if (appointmentContent) appointmentContent.style.maxWidth = '450px';
-	            document.getElementById('notes').placeholder = '請輸入備註資訊.';
-	            document.getElementById('employee_id').value = resource.id;
+            document.getElementById('settlement-col').style.display = 'none';
+            placeAppointmentActions('create');
+            document.querySelector('.modal-actions').style.gridColumn = '1 / 2';
+            if (appointmentContent) appointmentContent.style.maxWidth = '450px';
+            document.getElementById('notes').placeholder = '請輸入備註資訊.';
+            document.getElementById('employee_id').value = resource.id;
             
-            // Check resource for Xiaobai rule (ID: 3)
             const isXiaobai = String(resource.id) === '3';
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
-            assistantSelect.value = '';
-            amountInput.value = '';
+            assistantSelect.value = ''; amountInput.value = '';
+            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+            document.getElementById('perm_select').value = '';
+            document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+            document.getElementById('bleach4000-cost-wrap').style.display = 'none';
             
-		            // Reset billing
-		            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
-		            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-		            const permSelect = document.getElementById('perm_select');
-		            if (permSelect) permSelect.value = '';
-		            // Reset Retail
-		            document.getElementById('retail_item').value = '';
-		            document.getElementById('retail_price').value = '';
-		            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-		            const bleach4000CostInput = document.getElementById('bleach4000_cost');
-		            if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
-		            if (bleach4000CostInput) bleach4000CostInput.value = '270';
-		            
-	            updateCalculatedTotal();
+            // Clear new fields
+            document.getElementById('cut_custom').value = '';
+            document.getElementById('perm_custom').value = '';
+            document.getElementById('other_custom').value = '';
+            document.getElementById('dye-color-wrap').style.display = 'none';
 
-            const minuteSelect = document.getElementById('minute_select');
-            minuteSelect.innerHTML = '';
+            updateCalculatedTotal();
+
+            const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const baseMin = startDate.getMinutes();
-            // 只提供 3 個選項：現在分鐘、+5、+10（讓使用者微調，避免手動輸入）
             for (let i = 0; i < 3; i++) {
               const currentMinute = baseMin + (i * 5);
               const opt = document.createElement('option');
-              opt.value = currentMinute;
-              opt.textContent = String(currentMinute).padStart(2, '0');
+              opt.value = currentMinute; opt.textContent = String(currentMinute).padStart(2, '0');
               if (i === 0) opt.selected = true;
               minuteSelect.appendChild(opt);
             }
@@ -1438,92 +930,69 @@
             appointmentModal.style.display = 'block';
           }
 
-          /**
-             * 開啟「編輯預約」彈窗
-             * - 會把事件資料（extendedProps）回填到表單
-             *
-             * @param {FullCalendar.EventApi} event - FullCalendar 的事件物件
-             */
-		          function openApptModalForEdit(event) {
-	            form.reset();
-	            const ep = event.extendedProps || {};
-	            eventIdInput.value = event.id;
-	            deleteBtn.style.display = 'inline-block';
-	            const rs = event.getResources();
-	            document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
-	            document.getElementById('customer_phone').value = ep.customer_phone || '';
-	            document.getElementById('customer_name').value = ep.customer_name || '';
-	            const serviceSelect = document.getElementById('service_id');
-	            const serviceValue = ep.service_id || '';
-	            if (serviceSelect) {
-	              if (serviceValue && !Array.from(serviceSelect.options).some(o => o.value === serviceValue)) {
-	                const opt = document.createElement('option');
-	                opt.value = serviceValue;
-	                opt.textContent = serviceValue;
-	                serviceSelect.insertBefore(opt, serviceSelect.options[1] || null);
-	              }
-	              serviceSelect.value = serviceValue;
-	            }
-	            document.getElementById('notes').value = ep.notes || '';
-	            assistantSelect.value = ep.assistant_id || '';
-	            amountInput.value = ep.amount !== undefined && ep.amount !== null ? ep.amount : '';
-	            const isBlocked = ep.appointment_type === 'blocked';
-            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
-	            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
-	            document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
-	            placeAppointmentActions('edit');
-	            // 調整按鈕區域：不約時段只佔左側，一般預約跨越兩欄
-	            document.querySelector('.modal-actions').style.gridColumn = isBlocked ? '1 / 2' : '1 / -1';
-	            // 調整彈窗寬度：不約時段窄版，一般預約寬版
-	            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '450px' : '900px';
+          function openApptModalForEdit(event) {
+            form.reset();
+            const ep = event.extendedProps || {};
+            eventIdInput.value = event.id;
+            deleteBtn.style.display = 'inline-block';
+            const rs = event.getResources();
+            document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
+            document.getElementById('customer_phone').value = ep.customer_phone || '';
+            document.getElementById('customer_name').value = ep.customer_name || '';
+            const serviceSelect = document.getElementById('service_id');
+            if(serviceSelect) serviceSelect.value = ep.service_id || '';
+            document.getElementById('notes').value = ep.notes || '';
+            assistantSelect.value = ep.assistant_id || '';
+            amountInput.value = ep.amount !== undefined ? ep.amount : '';
             
-            // Check Xiaobai rule
+            // [新增] 回填染髮顏色
+            const dyeInput = document.getElementById('dye_color_input');
+            if(dyeInput) dyeInput.value = ep.dye_color || '';
+            if(ep.dye_color) document.getElementById('dye-color-wrap').style.display = 'grid';
+            else document.getElementById('dye-color-wrap').style.display = 'none';
+
+            const isBlocked = ep.appointment_type === 'blocked';
+            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
+            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
+            document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
+            placeAppointmentActions('edit');
+            document.querySelector('.modal-actions').style.gridColumn = isBlocked ? '1 / 2' : '1 / -1';
+            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '450px' : '900px';
+            
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
-            // IMPORTANT: We do not have detailed breakdown (Cut vs Dye) stored in DB individually,
-            // we only have the total 'amount' (net).
-            // So we cannot auto-populate the checkboxes perfectly from history unless we change DB schema.
-            // For now, we just reset them or leave them empty, OR imply from amount if possible?
-            // User requirement: "Create event -> later click to input amount".
-            // So usually the amount should be 0 initially.
-            // If editing a settled event, the user might want to see what was selected.
-            // But we didn't save "which items were selected" to DB, only the single amount.
-            // So: Keep it simple: Reset checkboxes to default (None) and let user re-select if they are "editing settlement".
-            // OR checks if amount > 0, maybe show "Previously Settled: $xxx"
-	            // For now, reset billing widgets to default to avoid confusion.
-	             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
-	             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-	             const permSelect = document.getElementById('perm_select');
-	             if (permSelect) permSelect.value = '';
-	             const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-	             const bleach4000CostInput = document.getElementById('bleach4000_cost');
-	             if (bleach4000CostWrap) bleach4000CostWrap.style.display = 'none';
-	             if (bleach4000CostInput) bleach4000CostInput.value = '270';
-	             updateCalculatedTotal();
-             
-             // If there IS an amount, we fill the hidden and maybe show it?
-             // But re-selecting items will overwrite it. This is tricky without changing DB.
-             // Workaround: We will respect the fetched 'ep.amount' and put it in hidden.
-             // The UI widgets will show $0. If user touches widgets, amount updates.
-	             if (ep.amount) {
-	                 amountInput.value = ep.amount;
-	                 document.getElementById('display-net').textContent = '$' + ep.amount;
-	                 // We can't know the Display Total (Gross) without reverse engineering.
-	                 // Showing "(Database Value)" might be safer.
-	                 document.getElementById('display-total').textContent = '(已存: $' + ep.amount + ')';
-		          }
-	             syncUnsettleButton();
+            // Reset billing default
+            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+            document.getElementById('perm_select').value = '';
+            document.getElementById('bleach4000-cost-wrap').style.display = 'none';
+            // Clear new custom fields
+            document.getElementById('cut_custom').value = '';
+            document.getElementById('perm_custom').value = '';
+            document.getElementById('other_custom').value = '';
 
-	            submitBtn.textContent = '儲存';
-	            const startDate = event.start;
-	            const minuteSelect = document.getElementById('minute_select');
-            minuteSelect.innerHTML = '';
+            updateCalculatedTotal();
+            
+            if (ep.amount || ep.total_amount) {
+                const totalAmt = ep.total_amount || ep.amount;
+                amountInput.value = ep.amount || '';
+                document.getElementById('display-net').textContent = '$' + (ep.amount || 0);
+                document.getElementById('display-total').textContent = '$' + totalAmt;
+                window.displayTotal = totalAmt;  // 設置全域總金額
+            }
+            if (unsetPaidBtn && eventIdInput.value) {
+                const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
+                unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+            }
+
+            submitBtn.textContent = '儲存';
+            const startDate = event.start;
+            const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const startMinute = startDate.getMinutes();
             for (let m = 0; m < 60; m += 5) {
               const opt = document.createElement('option');
-              opt.value = m;
-              opt.textContent = String(m).padStart(2, '0');
+              opt.value = m; opt.textContent = String(m).padStart(2, '0');
               if (m === startMinute) opt.selected = true;
               minuteSelect.appendChild(opt);
             }
@@ -1532,13 +1001,6 @@
             appointmentModal.style.display = 'block';
           }
 
-          /**
-             * 根據 minute_select 的值，更新 hidden 欄位 `#start_time`
-             * - 後端通常需要一個確定的開始時間字串
-             * - 這裡用 ISO（toISOString）可以避免前後端時區處理混亂（但仍要注意後端如何解析）
-             *
-             * @param {Date} baseDate - 以這個日期/小時為基準，只調整分鐘
-             */
           function updateHiddenStartTime(baseDate) {
             const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
             const dt = new Date(baseDate.getTime());
@@ -1546,665 +1008,270 @@
             document.getElementById('start_time').value = dt.toISOString();
           }
 
-          /**
-           * 排程：稍後重繪「每位設計師欄位內的時間軸」
-           * - 因為 FullCalendar 切換視圖/重排版面可能是非同步的
-           * - 用 setTimeout + 清除舊 timer，避免連續觸發造成卡頓
-           */
           function schedulePerResourceTimeAxis(delayMs = 0) {
             if (perResourceAxisTimer) window.clearTimeout(perResourceAxisTimer);
             perResourceAxisTimer = window.setTimeout(renderPerResourceTimeAxis, delayMs);
           }
-
-          // 把日曆水平捲動拉回最左邊（避免版面重算後停在中間，導致店長欄被擠出畫面）
           function resetCalendarHorizontalScroll() {
             const scrollers = document.querySelectorAll('#calendar .fc-scroller');
-            scrollers.forEach(s => {
-              if (s && s.scrollWidth > s.clientWidth) s.scrollLeft = 0;
-            });
+            scrollers.forEach(s => { if (s && s.scrollWidth > s.clientWidth) s.scrollLeft = 0; });
           }
-
-          /**
-           * 在「日視圖」中，為每位設計師的卡片化欄位建立一條自己的時間軸（像左邊時間軸的複製版）
-           *
-           * 做法：
-           * 1) 讀取 FullCalendar 左側時間軸每一格的 DOM 位置（getBoundingClientRect）
-           * 2) 對每個設計師欄位（data-resource-id）建立 `.per-resource-time-axis`
-           * 3) 在軸內用 absolute 定位把「12:00 / 12:15 / ...」對齊到正確高度
-           */
           function renderPerResourceTimeAxis() {
-            // 清掉舊的（避免重複插入）
             document.querySelectorAll('#calendar .per-resource-time-axis').forEach(n => n.remove());
-
             if (!calendar || calendar.view?.type !== 'resourceTimeGridDay') return;
             resetCalendarHorizontalScroll();
-
-            // ⚠️ 不依賴「最左邊時間軸」的 DOM
-            // 因為你想把最左邊時間軸整個移除掉（避免多一欄）
-            // 所以這裡改用「timegrid 的每一列 slot-lane」來計算 y 座標：
-            // - `data-time="12:00:00"` 這種屬性一定存在（每一列都有）
-            // - 會出現多個（每個設計師欄位各一份），我們只取每個時間點的第一個
-            const laneCells = Array.from(
-              document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time]')
-            );
+            const laneCells = Array.from(document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time]'));
             if (!laneCells.length) return;
-
             const byTime = new Map();
-            laneCells.forEach(cell => {
-              const t = cell.getAttribute('data-time');
-              if (!t) return;
-              if (!byTime.has(t)) byTime.set(t, cell);
-            });
-
-            const labelInfos = Array.from(byTime.entries())
-              .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
-              .map(([t, cell]) => {
-                // t: "12:15:00" → 顯示 "12:15"
-                const text = String(t).slice(0, 5);
-                const rect = cell.getBoundingClientRect();
-                const minute = parseInt(String(t).slice(3, 5), 10);
-                const kind = minute === 0 || minute === 30 ? 'major' : 'minor';
-                return { text, rect, kind };
+            laneCells.forEach(cell => { const t = cell.getAttribute('data-time'); if (!byTime.has(t)) byTime.set(t, cell); });
+            const labelInfos = Array.from(byTime.entries()).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([t, cell]) => {
+                const text = String(t).slice(0, 5); const rect = cell.getBoundingClientRect(); const minute = parseInt(String(t).slice(3, 5), 10);
+                return { text, rect, kind: (minute === 0 || minute === 30 ? 'major' : 'minor') };
               });
-
-            // 每位設計師欄位（只抓有 resource-id 的欄）
-            const frames = Array.from(
-              document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id] .fc-timegrid-col-frame')
-            );
-            if (!frames.length) return;
-
+            const frames = Array.from(document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id] .fc-timegrid-col-frame'));
             frames.forEach(frame => {
-              const axis = document.createElement('div');
-              axis.className = 'per-resource-time-axis';
-              axis.setAttribute('aria-hidden', 'true');
-
+              const axis = document.createElement('div'); axis.className = 'per-resource-time-axis';
               const frameRect = frame.getBoundingClientRect();
-
               labelInfos.forEach(info => {
-                const item = document.createElement('div');
-                item.className = `per-resource-time-item ${info.kind === 'major' ? 'is-major' : 'is-minor'}`;
-                item.textContent = info.text;
-                const y = info.rect.top - frameRect.top + info.rect.height / 2;
-                item.style.top = `${y}px`;
+                const item = document.createElement('div'); item.className = `per-resource-time-item ${info.kind === 'major' ? 'is-major' : 'is-minor'}`;
+                item.textContent = info.text; item.style.top = `${info.rect.top - frameRect.top + info.rect.height / 2}px`;
                 axis.appendChild(item);
               });
-
               frame.appendChild(axis);
             });
           }
 
-          /**
-             * 建立（或取得已存在的）「日期滑動列 / 視圖切換列」UI
-             *
-             * 這是自訂 UI（不是 FullCalendar 內建 toolbar）：
-             * - 左側：年月、日
-             * - 中間：可左右滑動的日期按鈕（前後幾天）
-             * - 右側：日/週/月 視圖切換按鈕
-             * - 也會把「月結報表」按鈕 append 到右側區域
-             */
           function ensureDateScroller() {
-            const cal = document.getElementById('calendar');
-            if (!cal) return null;
+            const cal = document.getElementById('calendar'); if (!cal) return null;
             let scroller = cal.querySelector('.fc-date-scroller');
             if (scroller) return scroller;
             const toolbar = cal.querySelector('.fc-header-toolbar');
             const viewHarness = cal.querySelector('.fc-view-harness');
-            scroller = document.createElement('div');
-            scroller.className = 'fc-date-scroller';
-            // 使用 template literal 組一段 HTML，直接塞進 scroller
+            scroller = document.createElement('div'); scroller.className = 'fc-date-scroller';
             scroller.innerHTML = `
-        <div class="date-row">
-          <div class="date-left-col">
-            <div class="date-label" aria-live="polite">
-              <span class="date-header-month"></span>
-              <span class="date-header-day"></span>
-            </div>
-            <div class="date-toggle" role="tablist" aria-label="視圖切換">
-              <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
-              <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
-              <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
-            </div>
-            <div class="mobile-resource-toggle" role="tablist" aria-label="設計師切換"></div>
-          </div>
-          <div class="date-strip" role="listbox" aria-label="日期選擇"></div>
-        </div>
-      `;
-            if (toolbar) {
-              toolbar.insertAdjacentElement('afterend', scroller);
-            } else if (viewHarness) {
-              viewHarness.insertAdjacentElement('beforebegin', scroller);
-            } else {
-              cal.prepend(scroller);
-            }
+              <div class="date-row">
+                <div class="date-left-col">
+                  <div class="nav-arrows">
+                    <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                    <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                  </div>
+                  <div class="date-label"><span class="date-header-month"></span><span class="date-header-day"></span></div>
+                  <div class="date-toggle">
+                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
+                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
+                    <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
+                  </div>
+                  <div class="mobile-resource-toggle"></div>
+                </div>
+                <div class="date-strip"></div>
+              </div>`;
+            if (toolbar) toolbar.insertAdjacentElement('afterend', scroller);
+            else if (viewHarness) viewHarness.insertAdjacentElement('beforebegin', scroller);
+            else cal.prepend(scroller);
             const reportBtn = document.getElementById('open-report-btn');
-            const toggleRow = scroller.querySelector('.date-toggle');
-            if (reportBtn && toggleRow) {
-              // 把「月結報表」按鈕挪到左側切換按鈕旁邊
-              toggleRow.appendChild(reportBtn);
-            }
+            if (reportBtn) scroller.querySelector('.date-toggle').appendChild(reportBtn);
             ensureMobileResourceToggle(scroller);
             return scroller;
           }
 
-          /**
-             * 更新日期滑動列（每次切換日期/切換視圖時呼叫）
-             *
-             * @param {Object} info - FullCalendar 的 datesSet callback 參數
-             */
           function updateDateScroller(info) {
             const cal = document.getElementById('calendar');
             if (!cal || !info || !info.view) return;
             cal.classList.add('is-date-scroller');
-
-            const scroller = ensureDateScroller();
-            if (!scroller) return;
-            scroller.hidden = false;
+            const scroller = ensureDateScroller(); if (!scroller) return; scroller.hidden = false;
             ensureMobileResourceToggle(scroller);
 
-            // 在日視圖時，把使用者正在看的日期記錄下來（避免切換視圖後找不到基準日）
+            // 根據視圖類型決定顯示日期
             if (info.view.type === 'resourceTimeGridDay') {
-              // ⚠️ 用「本地時間中午」來存，避免時區/UTC 轉換造成「點 18 變 17」的日期偏移
               selectedDate = new Date(info.view.currentStart);
               selectedDate.setHours(12, 0, 0, 0);
             }
+
+            // 使用 selectedDate 或當前日期
             if (!selectedDate) {
               selectedDate = new Date(calendar.getDate());
               selectedDate.setHours(12, 0, 0, 0);
             }
-            const activeDate = selectedDate ? new Date(selectedDate) : calendar.getDate();
+
+            const activeDate = new Date(selectedDate); // 使用 selectedDate
             const dateLocale = 'zh-TW';
-            const monthFmt = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' });
-            const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'narrow' });
-            const monthRaw = monthFmt.format(activeDate);
-            const monthLabel = monthRaw.includes('月') ? monthRaw : `${monthRaw}月`;
-            // 左側：年月、日
-            scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthLabel}`;
+            const monthRaw = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' }).format(activeDate);
+
+            // 更新顯示
+            scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}`;
             scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
 
-            // 右側：視圖切換按鈕 active 狀態
-            syncDateToggleState(scroller, info.view.type);
-            bindDateToggleActions(scroller);
-
+            syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
+            
             const strip = scroller.querySelector('.date-strip');
-            const todayKey = ymd(new Date());
-            const currentKey = ymd(activeDate);
-
-            // 中間：建立前後幾天的日期按鈕（固定 21 天）
-            // 需求：亮起來（is-active）的那天要在「正中間」
-            // - 所以用「前 10 天 + 後 10 天」讓 activeDate 置中（第 11 個）
-            // - 不自動擴大範圍（維持你希望的原本寬度/數量）
-            // - 另外：因為日視圖 hiddenDays: [1]（週一不顯示），日期列也同步「移除週一」
-            strip.innerHTML = '';
-
-            // 以「可見日期」為基準組 21 個（前 10 + 當天 + 後 10），並跳過週一
-            // 這樣就不會出現「日期列有週一，但日視圖其實跳不到週一」的錯覺。
-            const dates = [];
-            const activeBase = new Date(activeDate);
-            activeBase.setHours(12, 0, 0, 0);
-            if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1); // 保險：週一 → 週二
-
-            const before = [];
-            const after = [];
-
+            const dates = []; const activeBase = new Date(activeDate); activeBase.setHours(12, 0, 0, 0);
+            if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1);
+            const before = []; const after = [];
             let cursor = new Date(activeBase);
-            while (before.length < 10) {
-              cursor.setDate(cursor.getDate() - 1);
-              if (cursor.getDay() === 1) continue; // 跳過週一
-              before.push(new Date(cursor));
-            }
-
+            while (before.length < 10) { cursor.setDate(cursor.getDate() - 1); if (cursor.getDay() === 1) continue; before.push(new Date(cursor)); }
             cursor = new Date(activeBase);
-            while (after.length < 10) {
-              cursor.setDate(cursor.getDate() + 1);
-              if (cursor.getDay() === 1) continue; // 跳過週一
-              after.push(new Date(cursor));
-            }
-
+            while (after.length < 10) { cursor.setDate(cursor.getDate() + 1); if (cursor.getDay() === 1) continue; after.push(new Date(cursor)); }
             dates.push(...before.reverse(), activeBase, ...after);
-
+            
+            strip.innerHTML = '';
+            const currentKey = ymd(activeDate); const todayKey = ymd(new Date());
+            const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'narrow' });
             dates.forEach(d => {
               const dateKey = ymd(d);
-              const btn = document.createElement('button');
-              btn.type = 'button';
-              btn.className = 'date-item';
+              const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'date-item';
               if (dateKey === currentKey) btn.classList.add('is-active');
               if (dateKey === todayKey) btn.classList.add('is-today');
-              btn.setAttribute('role', 'option');
-              btn.setAttribute('aria-selected', dateKey === currentKey ? 'true' : 'false');
               btn.dataset.date = dateKey;
               btn.innerHTML = `<span class="date-item-weekday">${weekdayFmt.format(d)}</span><span class="date-item-day">${d.getDate()}</span>`;
+              // 確保點擊會切換日期（支援滑動後的 click 與行動裝置）
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // quick visual feedback for debugging
+                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                console.log('date-item clicked', btn.dataset.date);
+                selectDateFromItem(btn);
+              });
+              // pointer/touch 支援，部分裝置會觸發 pointerdown/touchstart 而非 click
+              btn.addEventListener('pointerdown', (e) => {
+                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                console.log('date-item pointerdown', btn.dataset.date);
+                selectDateFromItem(btn);
+              });
+              btn.addEventListener('touchstart', (e) => {
+                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                console.log('date-item touchstart', btn.dataset.date);
+                selectDateFromItem(btn);
+              }, { passive: true });
               strip.appendChild(btn);
             });
-
-            // 建立完日期按鈕後再啟用拖曳（避免未渲染完成時的手勢干擾）
-            enableDragScroll(strip);
-
-            // 做弧形/縮放的視覺效果（純 UI，不影響功能）
-            applyDateStripCurve(strip);
-            // 不要強制把「選中的日期」永遠置中（會讓使用者覺得「怎麼滾都回中間」）
-            // 只要確保它在可視範圍內即可。
+            enableDragScroll(strip); applyDateStripCurve(strip);
             const active = strip.querySelector('.date-item.is-active');
             if (active) {
-              const shouldCenter = strip.dataset.centerOnNextUpdate === '1';
-              if (shouldCenter) {
-                delete strip.dataset.centerOnNextUpdate;
-                const maxScrollLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
-                const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
-                const nextLeft = Math.max(0, Math.min(targetLeft, maxScrollLeft));
-                if (typeof strip.scrollTo === 'function') strip.scrollTo({ left: nextLeft, behavior: 'smooth' });
-                else strip.scrollLeft = nextLeft;
-              } else {
-                active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-              }
+                if(strip.dataset.centerOnNextUpdate === '1') {
+                    delete strip.dataset.centerOnNextUpdate;
+                    const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
+                    if(typeof strip.scrollTo === 'function') strip.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+                    else strip.scrollLeft = Math.max(0, targetLeft);
+                } else active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
           }
 
-          function isMobileLayout() {
-            return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches);
-          }
-
-          // 手機/平板「單一設計師」切換：允許 'all' 代表顯示全部設計師欄位
-          function getValidResourceId(id) {
-            const normalized = String(id || '').trim();
-            if (!normalized) return null;
-            if (normalized === 'all') return 'all';
-            return RESOURCE_LIST.some(r => String(r.id) === normalized) ? normalized : null;
-          }
-
-          function getStoredResourceId() {
-            try {
-              return getValidResourceId(localStorage.getItem(MOBILE_RESOURCE_STORAGE_KEY));
-            } catch (err) {
-              return null;
-            }
-          }
-
-          function storeResourceId(id) {
-            try {
-              localStorage.setItem(MOBILE_RESOURCE_STORAGE_KEY, id);
-            } catch (err) {
-              // ignore storage errors (private mode / quota)
-            }
-          }
-
-          function ensureMobileResourceId() {
-            const valid = getValidResourceId(mobileSelectedResourceId) || getStoredResourceId() || String(RESOURCE_LIST[0]?.id || '1');
-            mobileSelectedResourceId = valid;
-            return valid;
-          }
-
+          function isMobileLayout() { return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches); }
+          function ensureMobileResourceId() { return mobileSelectedResourceId || String(RESOURCE_LIST[0]?.id || '1'); }
           function ensureMobileResourceToggle(scroller) {
-            if (!scroller) return;
-            const wrap = scroller.querySelector('.mobile-resource-toggle');
-            if (!wrap || wrap.dataset.bound === '1') return;
+            if (!scroller) return; const wrap = scroller.querySelector('.mobile-resource-toggle'); if (!wrap || wrap.dataset.bound === '1') return;
             wrap.dataset.bound = '1';
-            // 多一顆「全部」按鈕：在 1024 模式可一次顯示三位設計師
             const allBtn = `<button type="button" class="resource-toggle-btn" data-resource-id="all">全部</button>`;
-            const resourceBtns = RESOURCE_LIST.map(resource => {
-              const rid = String(resource.id);
-              const title = resource.title || rid;
-              return `<button type="button" class="resource-toggle-btn" data-resource-id="${rid}">${title}</button>`;
-            }).join('');
-            wrap.innerHTML = allBtn + resourceBtns;
-            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => {
-              btn.addEventListener('click', () => {
-                const rid = getValidResourceId(btn.dataset.resourceId);
-                if (!rid) return;
-                mobileSelectedResourceId = rid;
-                storeResourceId(rid);
-                applyMobileResourceVisibility();
-                schedulePerResourceTimeAxis(80);
-              });
-            });
+            wrap.innerHTML = allBtn + RESOURCE_LIST.map(r => `<button type="button" class="resource-toggle-btn" data-resource-id="${r.id}">${r.title}</button>`).join('');
+            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
+              const rid = btn.dataset.resourceId; mobileSelectedResourceId = rid;
+              localStorage.setItem(MOBILE_RESOURCE_STORAGE_KEY, rid); applyMobileResourceVisibility(); schedulePerResourceTimeAxis(80);
+            }));
           }
-
-          function syncMobileResourceToggleState(scroller) {
-            if (!scroller) return;
-            const wrap = scroller.querySelector('.mobile-resource-toggle');
-            if (!wrap) return;
-            const activeId = ensureMobileResourceId();
-            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => {
-              const isActive = String(btn.dataset.resourceId) === String(activeId);
-              btn.classList.toggle('is-active', isActive);
-              btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            });
-          }
-
           function applyMobileResourceVisibility(info) {
-            const cal = document.getElementById('calendar');
-            if (!cal) return;
+            const cal = document.getElementById('calendar'); if (!cal) return;
             const viewType = info?.view?.type || calendar?.view?.type || '';
-            const isDayView = viewType === 'resourceTimeGridDay';
-            const shouldShowSingle = isDayView && isMobileLayout();
+            const shouldShowSingle = (viewType === 'resourceTimeGridDay' && isMobileLayout());
             const scroller = cal.querySelector('.fc-date-scroller');
-            if (scroller) {
-              ensureMobileResourceToggle(scroller);
-              scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
-              syncMobileResourceToggleState(scroller);
+            if(scroller) {
+                scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
+                scroller.querySelector('.mobile-resource-toggle').querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
             }
-            if (!shouldShowSingle) {
-              cal.removeAttribute('data-mobile-resource');
-              return;
-            }
-            cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
+            if(!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
+            else cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
           }
-
-          /**
-             * 視覺效果：讓日期按鈕呈現「中間放大、兩側縮小」的弧形排列感
-             * - 透過設定 CSS 變數（--arc-offset / --arc-scale / --arc-opacity / --arc-font-scale）
-             * 
-             * 🎨 調整指南（修改下方數值即可）：
-             * - offset：距離選中日期越遠，往下偏移越多（弧形的下沉感）
-             * - scale：距離選中日期越遠，整體縮小越多
-             * - opacity：距離選中日期越遠，透明度越低（淡出效果）
-             * - fontScale：距離選中日期越遠，字體越小
-             */
           function applyDateStripCurve(strip) {
-  if (!strip || strip.dataset.curveRendering === '1') return;
-  strip.dataset.curveRendering = '1';
-  
-  requestAnimationFrame(() => {
-    const items = Array.from(strip.querySelectorAll('.date-item'));
-    if (!items.length) {
-      strip.dataset.curveRendering = '0';
-      return;
-    }
-    const activeIndex = items.findIndex(item => item.classList.contains('is-active'));
-    if (activeIndex === -1) {
-      strip.dataset.curveRendering = '0';
-      return;
-    }
-    
-    items.forEach((item, idx) => {
-      const dist = Math.abs(idx - activeIndex);
-      const offset = Math.min(22, dist * 6);
-      const scale = dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06);
-      const opacity = dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12);
-      const fontScale = dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08);
-      
-      item.style.setProperty('--arc-offset', `${offset}px`);
-      item.style.setProperty('--arc-scale', scale.toFixed(2));
-      item.style.setProperty('--arc-opacity', opacity.toFixed(2));
-      item.style.setProperty('--arc-font-scale', fontScale.toFixed(2));
-    });
-    
-    strip.dataset.curveRendering = '0';
-  });
-}
-
-          /**
-             * 點擊日期按鈕後：切到日視圖並跳到該天
-             * @param {HTMLElement} item - `.date-item` button
-             */
-          function selectDateFromItem(item) {
-            if (!item || !item.dataset.date) return;
-            const dateStr = String(item.dataset.date);
-            const parts = dateStr.split('-').map(Number);
-            if (parts.length !== 3) return;
-
-            // 用中午避免 UTC 轉換跨日（你遇到的「點 17 跳兩天 / 點 18 跳一天」就是這種狀況）
-            const pickedNoon = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
-            selectedDate = pickedNoon;
-
-            // 用 YYYY-MM-DD 字串導航，FullCalendar 會當作「日期」處理，比 Date 物件更不容易出現跨日偏移
-            calendar.changeView('resourceTimeGridDay', dateStr);
-            calendar.gotoDate(dateStr);
+             /* 簡化版曲線效果 */
+             const items = Array.from(strip.querySelectorAll('.date-item'));
+             const activeIndex = items.findIndex(i => i.classList.contains('is-active'));
+             if(activeIndex === -1) return;
+             items.forEach((item, idx) => {
+               const dist = Math.abs(idx - activeIndex);
+               item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
+               item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
+               item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
+               item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08)).toFixed(2));
+             });
           }
-
-          /**
-             * 視圖切換按鈕狀態同步：把目前視圖的按鈕加上 active 樣式
-             * @param {HTMLElement} scroller - `.fc-date-scroller`
-             * @param {string} viewType - FullCalendar 的 view.type
-             */
+          function selectDateFromItem(item) {
+            if(!item || !item.dataset.date) return;
+            const parts = item.dataset.date.split('-').map(Number);
+            selectedDate = new Date(parts[0], parts[1]-1, parts[2], 12, 0, 0, 0);
+            calendar.changeView('resourceTimeGridDay', item.dataset.date);
+            calendar.gotoDate(item.dataset.date);
+            // debug feedback
+            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) {}
+            try {
+              let dbg = document.getElementById('fc-debug-banner');
+              if (!dbg) {
+                dbg = document.createElement('div'); dbg.id = 'fc-debug-banner';
+                dbg.style.position = 'fixed'; dbg.style.right = '12px'; dbg.style.bottom = '12px'; dbg.style.padding = '6px 10px'; dbg.style.background = 'rgba(0,0,0,0.7)'; dbg.style.color = '#fff'; dbg.style.borderRadius = '6px'; dbg.style.zIndex = 99999; dbg.style.fontSize = '13px';
+                document.body.appendChild(dbg);
+              }
+              dbg.textContent = `Selected: ${item.dataset.date}`;
+              setTimeout(() => { try { dbg.textContent = ''; } catch (e) {} }, 2000);
+            } catch (e) {}
+            // 立即更新 header 顯示，避免視圖切換滯後時無反應感
+            try {
+              const sc = document.querySelector('.fc-date-scroller');
+              if (sc) {
+                const [y, m, d] = item.dataset.date.split('-').map(Number);
+                const monthRaw = `${m}`;
+                sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
+                sc.querySelector('.date-header-day').textContent = `${d}日`;
+              }
+            } catch (e) {}
+            // 強制更新日期顯示
+            updateDateScroller({ view: calendar.view });
+          }
           function syncDateToggleState(scroller, viewType) {
             scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
-              const isActive = viewType === btn.dataset.view;
-              btn.classList.toggle('is-active', isActive);
-              btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                const isActive = viewType === btn.dataset.view;
+                btn.classList.toggle('is-active', isActive);
             });
           }
-
-          /**
-             * 綁定視圖切換按鈕（避免重複綁定，使用 dataset.toggleBound 做記號）
-             */
           function bindDateToggleActions(scroller) {
-            if (!scroller || scroller.dataset.toggleBound === '1') return;
-            scroller.dataset.toggleBound = '1';
-            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
-              btn.addEventListener('click', () => {
+            if(!scroller || scroller.dataset.toggleBound === '1') return; scroller.dataset.toggleBound = '1';
+            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
                 const view = btn.dataset.view;
-                const baseDate = selectedDate ? new Date(selectedDate) : new Date(calendar.getDate());
-                baseDate.setHours(12, 0, 0, 0);
-                if (view === 'resourceTimeGridDay') {
-                  // 日視圖：一律回到今天
-                  const today = new Date();
-                  today.setHours(12, 0, 0, 0);
-                  const todayKey = ymd(today);
-                  selectedDate = today;
-                  calendar.changeView(view, todayKey);
-                  calendar.gotoDate(todayKey);
-                  return;
-                }
-                const baseKey = ymd(baseDate);
-                if (calendar.view && calendar.view.type === view) return;
-                calendar.changeView(view, baseKey);
-              });
-            });
+                if(view === 'resourceTimeGridDay') {
+                    const today = new Date(); today.setHours(12,0,0,0); selectedDate = today;
+                    calendar.changeView(view, ymd(today)); calendar.gotoDate(today);
+                } else calendar.changeView(view, ymd(selectedDate));
+            }));
           }
-
-          /**
-             * 讓元素支援「滑鼠按住拖曳捲動」（也支援觸控 / Pointer Events）
-             * - moved=false 時代表是「點擊」，會觸發選日期
-             * - moved=true 時代表是「拖曳」，不觸發選日期（避免誤點）
-             *
-             * @param {HTMLElement} strip - 要捲動的容器 (.date-strip)
-             */
           function enableDragScroll(strip) {
-            if (!strip || strip.dataset.dragBound === '1') return;
-            strip.dataset.dragBound = '1';
-            // 同時支援 Pointer Events + Mouse Events（部分環境 pointer 事件不穩時，滑鼠仍可拖曳）
-            let isDown = false;
-            let startX = 0;
-            let scrollLeft = 0;
-            let moved = false;
-            let downItem = null;
-            let activeMode = null; // 'pointer' | 'mouse' | null
-
-            const beginDrag = (clientX, item) => {
-              isDown = true;
-              moved = false;
-              downItem = item;
-              startX = clientX;
-              scrollLeft = strip.scrollLeft;
-              strip.classList.add('active'); // 對應 CSS：cursor grabbing / 避免誤觸
-            };
-
-            const moveDrag = (clientX) => {
-              if (!isDown) return;
-              const dx = clientX - startX;
-              if (Math.abs(dx) > 6 && !moved) {
-                moved = true;
-                strip.classList.add('is-dragging');
-              }
-              const walk = dx * 2; // 拖曳速度：數字越大滑越快
-              strip.scrollLeft = scrollLeft - walk;
-            };
-
-            const endDrag = () => {
-              if (!isDown) return;
-              isDown = false;
-              strip.classList.remove('is-dragging');
-              strip.classList.remove('active');
-              if (!moved && downItem) {
-                // 點擊日期後：下一次重繪日期列時，把該日期置中（視覺效果更直覺）
-                strip.dataset.centerOnNextUpdate = '1';
-                selectDateFromItem(downItem);
-              }
-              downItem = null;
-              activeMode = null;
-            };
-
-            // 防止瀏覽器把拖曳當成原生 drag 行為（某些瀏覽器會出現 ghost image）
-            strip.addEventListener('dragstart', (e) => e.preventDefault());
-
-            const onPointerDown = (e) => {
-              if (activeMode === 'touch') return;
-              if (e.button && e.button !== 0) return;
-              // 讓拖曳滾動更穩：避免瀏覽器把它當成文字選取/點擊
-              e.preventDefault();
-              activeMode = 'pointer';
-              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
-              beginDrag(e.clientX, item);
-              try { strip.setPointerCapture(e.pointerId); } catch { }
-            };
-
-            const onPointerMove = (e) => {
-              if (activeMode !== 'pointer') return;
-              e.preventDefault();
-              moveDrag(e.clientX);
-            };
-
-            const onPointerUp = (e) => {
-              if (activeMode !== 'pointer') return;
-              e.preventDefault();
-              try { strip.releasePointerCapture(e.pointerId); } catch { }
-              endDrag();
-            };
-
-            // Mouse fallback：有些環境 pointerdown/move 不會正常運作（或被瀏覽器手勢攔截）
-            const onMouseDown = (e) => {
-              if (activeMode === 'touch') return;
-              if (activeMode === 'pointer') return;
-              if (e.button !== 0) return;
-              e.preventDefault();
-              activeMode = 'mouse';
-              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
-              beginDrag(e.clientX, item);
-            };
-
-            const onMouseMove = (e) => {
-              if (activeMode !== 'mouse') return;
-              e.preventDefault();
-              moveDrag(e.clientX);
-            };
-
-            const onMouseUp = (e) => {
-              if (activeMode !== 'mouse') return;
-              e.preventDefault();
-              endDrag();
-            };
-
-            // Touch fallback：iOS 舊版 Safari/特定 WebView 可能沒有穩定的 Pointer Events
-            const onTouchStart = (e) => {
-              if (activeMode === 'pointer' || activeMode === 'mouse') return;
-              if (!e.touches || e.touches.length !== 1) return;
-              e.preventDefault();
-              activeMode = 'touch';
-              const t = e.touches[0];
-              const item = e.target && e.target.closest ? e.target.closest('.date-item') : null;
-              beginDrag(t.clientX, item);
-            };
-
-            const onTouchMove = (e) => {
-              if (activeMode !== 'touch') return;
-              if (!e.touches || e.touches.length !== 1) return;
-              e.preventDefault();
-              const t = e.touches[0];
-              moveDrag(t.clientX);
-            };
-
-            const onTouchEnd = (e) => {
-              if (activeMode !== 'touch') return;
-              e.preventDefault();
-              endDrag();
-            };
-
-            strip.addEventListener('pointerdown', onPointerDown, { passive: false });
-            strip.addEventListener('pointermove', onPointerMove, { passive: false });
-            strip.addEventListener('pointerup', onPointerUp, { passive: false });
-            strip.addEventListener('pointercancel', onPointerUp, { passive: false });
-            strip.addEventListener('pointerleave', onPointerUp, { passive: false });
-
-            strip.addEventListener('mousedown', onMouseDown, { passive: false });
-            window.addEventListener('mousemove', onMouseMove, { passive: false });
-            window.addEventListener('mouseup', onMouseUp, { passive: false });
-
-            strip.addEventListener('touchstart', onTouchStart, { passive: false });
-            strip.addEventListener('touchmove', onTouchMove, { passive: false });
-            strip.addEventListener('touchend', onTouchEnd, { passive: false });
-            strip.addEventListener('touchcancel', onTouchEnd, { passive: false });
+             /* 簡化版拖曳邏輯 */
+             let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
+             strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
+             strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
+             strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if(!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate='1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
+             strip.addEventListener('mousemove', (e) => { if(!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
+             // touch support
+             strip.addEventListener('touchstart', (e) => { if(!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
+             strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if(!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate='1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
+             strip.addEventListener('touchmove', (e) => { if(!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
           }
-
-          /**
-             * 更新 FullCalendar 原本 toolbar title 的文字
-             * - 月視圖：顯示「YYYY 年 M 月」
-             * - 日視圖：顯示「YYYY 年 M 月 D 日 < 週X >」
-             */
           function updateToolbarTitle(info) {
-            const el = document.querySelector('#calendar .fc-toolbar-title');
-            if (!el || !info || !info.view) return;
-
-            const type = info.view.type;
-            const d = info.view.currentStart;
-            const y = d.getFullYear();
-            const m = d.getMonth() + 1;
-            const day = d.getDate();
-            const wdMap = ['日', '一', '二', '三', '四', '五', '六'];
-
-            if (type === 'dayGridMonth') {
-              el.classList.add('is-month-title');
-              el.innerHTML = `<span class="title-month-text">${y} 年 ${m} 月</span>`;
-              return;
-            }
-
-            el.classList.remove('is-month-title');
-            if (type === 'resourceTimeGridDay') {
-              el.textContent = `${y} 年 ${m} 月 ${day} 日 < ${wdMap[d.getDay()]} >`;
-            } else {
-              el.textContent = info.view.title;
-            }
+             const el = document.querySelector('#calendar .fc-toolbar-title'); if(!el) return;
+             if(info.view.type === 'dayGridMonth') { el.classList.add('is-month-title'); el.textContent = info.view.title; }
+             else { el.classList.remove('is-month-title'); el.textContent = info.view.title; }
           }
-
-
-          /**
-             * 在週一的欄位畫出「公休」覆蓋層（如果該日期區間包含週一）
-             *
-             * 備註：
-             * - 本專案全域設定 hiddenDays: [1] 會隱藏週一（視圖不會顯示）
-             * - 仍保留這段程式：用於未來可能改成顯示週一時，可以直接呈現「公休」提示
-             */
           function paintMondayClosed(info) {
-            document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
-            const start = info.start, end = info.end;
-            const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-              if (d.getDay() !== 1) continue;
-              const dateStr = ymd(d);
-              document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
-                const frame = col.querySelector('.fc-timegrid-col-frame');
-                const container = frame || col;
-                const ov = document.createElement('div');
-                ov.className = 'closed-overlay';
-                ov.textContent = '公休';
-                container.appendChild(ov);
-              });
-            }
+             document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
+             const start = info.start, end = info.end;
+             for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+               if (d.getDay() !== 1) continue;
+               const dateStr = ymd(d);
+               document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                 const frame = col.querySelector('.fc-timegrid-col-frame') || col;
+                 const ov = document.createElement('div'); ov.className = 'closed-overlay';
+                 const label = document.createElement('span'); label.className = 'overlay-label'; label.textContent = '公休';
+                 ov.appendChild(label); frame.appendChild(ov);
+               });
+             }
           }
         });
-
-        // ==========================================
-        // 報表前端邏輯
-        //
-        // 架構：
-        // - 這段程式碼寫在 DOMContentLoaded 外面，但因為 <script> 放在 body 最底部
-        //   所以 HTML 已經被瀏覽器解析完成，getElementById 仍然抓得到元素。
-        //
-        // 流程：
-        // 1) 點「查看月結報表」→ 打開彈窗 + 初始化起訖日
-        // 2) 點「查詢」→ fetch action=getReport
-        // 3) renderReport() 把資料渲染成表格
-        // ==========================================
-        // const reportModal = document.getElementById('reportModal'); // Moved to global
 
         const openReportBtn = document.getElementById('open-report-btn');
         const closeReportBtn = document.querySelector('.report-close-button');
@@ -2213,149 +1280,48 @@
         const repStart = document.getElementById('report-start');
         const repEnd = document.getElementById('report-end');
 
-        /**
-         * 初始化起訖日（預設：本月 1 日 ～ 今日）
-         */
         function initReportDateRange() {
           const pad2 = (n) => String(n).padStart(2, '0');
-          const fmt = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
           const now = new Date();
-          const first = new Date(now.getFullYear(), now.getMonth(), 1);
-          if (!repStart.value) repStart.value = fmt(first);
-          if (!repEnd.value) repEnd.value = fmt(now);
+          if (!repStart.value) repStart.value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-01`;
+          if (!repEnd.value) repEnd.value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
         }
+        if (openReportBtn) openReportBtn.addEventListener('click', () => { reportModal.style.display = 'block'; initReportDateRange(); });
+        if (closeReportBtn) closeReportBtn.addEventListener('click', () => reportModal.style.display = 'none');
+        if (fetchReportBtn) fetchReportBtn.addEventListener('click', async () => {
+          const start = repStart.value; const end = repEnd.value;
+          if (!start || !end) { reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center;">請選擇起訖日期</div>'; return; }
+          reportResult.innerHTML = '<div style="text-align:center;">⏳ 資料計算中...</div>';
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + `?action=getReport&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`);
+            renderReport(await res.json());
+          } catch (e) { reportResult.innerHTML = '<div style="color:#ff6b6b; text-align:center;">❌ 讀取失敗</div>'; }
+        });
 
-        // 2. 開關視窗
-        if (openReportBtn) {
-          openReportBtn.addEventListener('click', () => {
-            reportModal.style.display = 'block';
-            initReportDateRange();
-          });
-        }
-        if (closeReportBtn) {
-          closeReportBtn.addEventListener('click', () => {
-            reportModal.style.display = 'none';
-          });
-        }
-
-        // 3. 查詢動作
-        if (fetchReportBtn) {
-          fetchReportBtn.addEventListener('click', async () => {
-            const start = repStart.value;
-            const end = repEnd.value;
-            if (!start || !end) {
-              reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center; padding:20px;">請選擇起訖日期</div>';
-              return;
-            }
-            if (start > end) {
-              reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center; padding:20px;">起日不可晚於迄日</div>';
-              return;
-            }
-            reportResult.innerHTML = '<div style="text-align:center; padding:20px;">⏳ 資料計算中...</div>';
-            try {
-              // 呼叫後端 (getReport)
-              const url = APPS_SCRIPT_WEB_APP_URL + `?action=getReport&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
-              const res = await fetch(url);
-              const data = await res.json();
-              renderReport(data);
-            } catch (e) {
-              console.error(e);
-              reportResult.innerHTML = '<div style="color:#ff6b6b; text-align:center;">❌ 讀取失敗</div>';
-            }
-          });
-        }
-
-        /**
-         * 把後端回來的報表資料渲染成 HTML 表格
-         * - 顯示總客數
-         * - 逐位設計師列出：客數 + 服務項目分佈
-         *
-         * @param {Object} data - 後端 action=getReport 回傳的 JSON
-         */
         function renderReport(data) {
           if (!data || (!Object.keys(data.designers).length && !Object.keys(data.assistants).length)) {
-            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:#ccc;">該區間尚無預約資料</div>';
-            return;
+            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:#ccc;">該區間尚無預約資料</div>'; return;
           }
-
           let html = '';
-
-          // 1. 設計師業績報表
           html += `<h4 style="margin-top:0; border-left:4px solid var(--accent-color); padding-left:10px;">設計師業績 (40%)</h4>`;
-          html += `<table class="report-table" style="margin-bottom:20px;">
-                <thead>
-                  <tr>
-                    <th width="18%">設計師</th>
-                    <th width="10%">客數</th>
-                    <th width="9%">剪</th>
-                    <th width="9%">燙</th>
-                    <th width="9%">染</th>
-                    <th width="22%">總金額</th>
-                    <th width="23%">業績抽成</th>
-                  </tr>
-                </thead>
-                <tbody>`;
-
-          // 遍歷設計師資料
+          html += `<table class="report-table" style="margin-bottom:20px;"><thead><tr><th width="18%">設計師</th><th width="10%">客數</th><th width="9%">剪</th><th width="9%">燙</th><th width="9%">染</th><th width="22%">總金額</th><th width="23%">業績抽成</th></tr></thead><tbody>`;
           const designerMap = { '1': '店長', '2': '雅婷', '3': '小白' };
           for (const [id, info] of Object.entries(data.designers)) {
-            const name = designerMap[id] || `設計師(${id})`;
-            const totalAmt = info.totalAmount || 0;
-            const count = info.count || 0;
-            const cutCount = (typeof info.cutCount === 'number') ? info.cutCount : count;
-            const permCount = info.permCount || 0;
-            const dyeCount = info.dyeCount || 0;
-            const commission = Math.round(totalAmt * 0.4);
-
-            html += `<tr>
-                    <td style="text-align:center; font-weight:bold; color:#fff;">${name}</td>
-                    <td class="num-cell">${count}</td>
-                    <td class="num-cell">${cutCount}</td>
-                    <td class="num-cell">${permCount}</td>
-                    <td class="num-cell">${dyeCount}</td>
-                    <td class="num-cell">$${totalAmt.toLocaleString()}</td>
-                    <td class="num-cell" style="color:#ffeb3b; font-weight:bold;">$${commission.toLocaleString()}</td>
-                  </tr>`;
+            const commission = Math.round((info.totalAmount || 0) * 0.4);
+            html += `<tr><td style="text-align:center; font-weight:bold; color:#fff;">${designerMap[id] || id}</td><td class="num-cell">${info.count || 0}</td><td class="num-cell">${info.cutCount || info.count || 0}</td><td class="num-cell">${info.permCount || 0}</td><td class="num-cell">${info.dyeCount || 0}</td><td class="num-cell">$${(info.totalAmount || 0).toLocaleString()}</td><td class="num-cell" style="color:#ffeb3b; font-weight:bold;">$${commission.toLocaleString()}</td></tr>`;
           }
           html += `</tbody></table>`;
-
-          // 2. 助理業績報表
           html += `<h4 style="margin-top:0; border-left:4px solid #ff9800; padding-left:10px;">助理洗頭業績 (超過300顆, 每顆$20)</h4>`;
-          html += `<table class="report-table">
-                <thead>
-                  <tr>
-                    <th width="30%">助理姓名</th>
-                    <th width="30%">洗頭數</th>
-                    <th width="40%">業績獎金</th>
-                  </tr>
-                </thead>
-                <tbody>`;
-
-          // 遍歷助理資料 (注意：assistant_id 就是姓名)
-          if (Object.keys(data.assistants).length === 0) {
-            html += `<tr><td colspan="3" style="text-align:center; color:#888;">無資料</td></tr>`;
-          } else {
-            for (const [name, info] of Object.entries(data.assistants)) {
-              if (!name || name === 'undefined') continue;
-              const count = info.washCount || 0;
-              // 規則：超過 300 顆的部分，每顆 $20
-              const excess = Math.max(0, count - 300);
-              const bonus = excess * 20;
-
-              html += `<tr>
-                      <td style="text-align:center; font-weight:bold;">${name}</td>
-                      <td class="num-cell">${count} <span style="font-size:0.8em; color:#aaa;">(超額 ${excess})</span></td>
-                      <td class="num-cell" style="color:#ff9800; font-weight:bold;">$${bonus.toLocaleString()}</td>
-                    </tr>`;
-            }
+          html += `<table class="report-table"><thead><tr><th width="30%">助理姓名</th><th width="30%">洗頭數</th><th width="40%">業績獎金</th></tr></thead><tbody>`;
+          for (const [name, info] of Object.entries(data.assistants)) {
+            if (!name || name === 'undefined') continue;
+            const excess = Math.max(0, (info.washCount || 0) - 300);
+            html += `<tr><td style="text-align:center; font-weight:bold;">${name}</td><td class="num-cell">${info.washCount || 0} <span style="font-size:0.8em; color:#aaa;">(超額 ${excess})</span></td><td class="num-cell" style="color:#ff9800; font-weight:bold;">$${(excess * 20).toLocaleString()}</td></tr>`;
           }
           html += `</tbody></table>`;
-
           reportResult.innerHTML = html;
         }
-
       })();
     </script>
 </body>
-
 </html>

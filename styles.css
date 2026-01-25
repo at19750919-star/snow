@@ -4,14 +4,14 @@
 2) Base / Layout
 3) FullCalendar Core (捲動、容器)
 4) Toolbar (保留樣式，預設隱藏)
-5) Date Scroller (自訂日期列)
+5) Date Scroller (自訂日期列 + 左右導航箭頭)
 6) Header / Resource Cards
 7) Header Buttons (排休 / 約滿)
 8) Timegrid + Gridlines
-9) Event Cards
+9) Event Cards (含服務勳章顏色修改)
 13) Notes
 15) Responsive（主要版面：手機 ≤1024px）
-14) Modal（含：小螢幕彈窗覆蓋）
+14) Modal（含：小螢幕彈窗覆蓋、新增輸入框樣式）
 10) Overlays (公休 / 排休 / 約滿)
 11) Month View
 12) Week View
@@ -19,53 +19,28 @@
 ====================================================================
 */
 
-/*
-  ─────────────────────────────────────────────────────────────────────────────
-  學習用導讀（這份 CSS 在做什麼）
-
-  這個專案的畫面主要由 FullCalendar 產生，所以你會看到很多 `.fc-*` 的 class：
-  - `.fc-*`：FullCalendar 自帶的 DOM 結構（你不用在 HTML 手寫）
-  - `#calendar`：你在 index.html 放的容器，FullCalendar 會把 UI render 進來
-  - `.modal` / `.modal-content`：你自己寫的彈窗（預約/排休/報表）
-  - `#notes-section`：留言板區塊
-
-  你需要掌握的 5 個 CSS 重點（看懂這份檔案就會進步很快）：
-  1) 變數（CSS Variables）：`var(--xxx)`，集中管理顏色/字體/圓角/陰影
-  2) 覆蓋順序（Cascade）：同一個 selector 出現多次時，後面通常會覆蓋前面
-  3) 特異性（Specificity）：`#id` > `.class` > `tag`；越具體越容易贏
-  4) `!important`：強制覆蓋（通常用在「蓋掉套件預設」時）
-  5) RWD（Media Query）：`@media (max-width: ...)` 在小螢幕調整版面
-
-  小技巧：想知道某個 CSS 寫給誰？
-  - 用瀏覽器 F12 → Elements → 點你想看的元素 → 看 class/id
-  - 再回來用搜尋（Ctrl+F）找同名 selector
-  ─────────────────────────────────────────────────────────────────────────────
-*/
-/* ==================== 1) Theme Tokens（主題變數） ====================
-   :root 是「全站變數」的根（root element = html）
-   - 你在下面看到的 `--xxx` 都是自訂變數
-   - 使用方式：`color: var(--text-primary);`
-   - 好處：想換主題色，只要改變數，不用全檔到處找顏色
-   ------------------------------------------------------------------ */
 :root {
-  /* ✅ 字型統一：全站都用 Noto Sans JP */
+  /* ✅ 字型統一 */
   --font-sans: "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --font-display:
     "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --font-mono: "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", monospace;
 
-  /* 品牌主色系（主要/較亮/較深/極淺背景） */
-  --kikyo-primary: #4b6872; /* 主要色，用在標題列、重點按鈕 */
-  --kikyo-light: #6f8894; /* 較亮點綴 */
-  --kikyo-dark: #2b3e44; /* 較深對比 */
-  --kikyo-ultra-light: #f4f1ec; /* 超淺底色（區塊背景） */
-  /* 輔助色（卡片底/間隔用，可自行替換） */
-  --accent-cream: #f6f2ee; /* 時段偶數列背景 */
+  /* 品牌主色系 */
+  --kikyo-primary: #4b6872;
+  --kikyo-light: #6f8894;
+  --kikyo-dark: #2b3e44;
+  --kikyo-ultra-light: #f4f1ec;
+
+  /* 輔助色 */
+  --accent-cream: #f6f2ee;
   --accent-lavender: #eef2f4;
+
   /* 文字色系 */
   --text-primary: #2f363b;
-  --text-light: #fbfaf8; /* 深底上的白字 */
-  --text-muted: #8b837b; /* 註解/灰字 */
+  --text-light: #fbfaf8;
+  --text-muted: #8b837b;
+
   /* 全站背景與卡片 */
   --bg-main:
     radial-gradient(
@@ -80,11 +55,11 @@
     ),
     linear-gradient(180deg, #f6f1ea 0%, #e9eef2 100%);
   --bg-card: #ffffff;
-  /*--bg-active: #cf7010;*/
+
   /* 框線/陰影/圓角 */
   --calendar-border: #e3ddd6;
-  --border-radius: 18px; /* 卡片圓角 */
-  --border-radius-small: 12px; /* 小型元件圓角 */
+  --border-radius: 18px;
+  --border-radius-small: 12px;
   --shadow-soft: 0 8px 22px rgba(28, 39, 45, 0.08);
   --shadow-medium: 0 18px 44px rgba(28, 39, 45, 0.12);
 
@@ -92,22 +67,20 @@
   --modal-overlay: rgba(33, 42, 48, 0.5);
   --modal-bg: var(--bg-card);
   --modal-border: var(--calendar-border);
-  /* 危險/警示色（已約滿） */
+
+  /* 危險/警示色 */
   --danger: #d84b40;
-  /* 月視圖標籤背景（半透明黑） */
-  --month-label-bg-weak: rgba(43, 56, 64, 0.18); /* 用於「公休」弱一點的底 */
-  --month-label-bg-strong: rgba(
-    43,
-    56,
-    64,
-    0.28
-  ); /* 用於設計師排休較明顯的底 */
+
+  /* 月視圖標籤背景 */
+  --month-label-bg-weak: rgba(43, 56, 64, 0.18);
+  --month-label-bg-strong: rgba(43, 56, 64, 0.28);
 
   /* 日期滑動卡片 */
   --date-card-bg: linear-gradient(180deg, #e8e8e8 0%, #dcdcdc 100%);
   --date-card-text: #6b6b6b;
   --date-card-muted: rgba(107, 107, 107, 0.55);
-  /* 日期列「選取中（亮起）」的高亮卡片（方形半透明＋內陰影，接近設計稿） */
+
+  /* 日期列「選取中」 */
   --date-item-active-bg: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.16) 0%,
@@ -135,45 +108,27 @@
   /* Event cards */
   --event-default-bg: var(--kikyo-primary);
   --event-default-text: var(--text-light);
-  --event-card-vertical-gap: 8px; /* 事件卡片上下留白：越大卡片看起來越不黏（例如 4px/6px） */
-  /* 事件卡片（預約）顏色：
-     - `--stylist-*-bg`：每位設計師的「主色」（HEX）
-     - `--stylist-*-bg-light`：同色系「淺色」，用來做漸層左側（左淺右深）
-     - `--stylist-*-text`：事件卡片上的文字顏色（例如姓名/電話） */
-  --stylist-1-bg: #3a6c74; /* 店長：事件卡片主色 */
-  --stylist-1-text: #fbfaf7; /* 店長：事件卡片文字色 */
-  --stylist-1-bg-light: #a8c0c5; /* 店長：事件卡片漸層左側淺色 */
-  --stylist-2-bg: #d9785a; /* 雅婷：事件卡片主色 */
-  --stylist-2-text: #fbfaf7; /* 雅婷：事件卡片文字色 */
-  --stylist-2-bg-light: #f1b7a4; /* 雅婷：事件卡片漸層左側淺色 */
-  --stylist-3-bg: #464b65; /* 小白：事件卡片主色 */
-  --stylist-3-text: #fbfaf7; /* 小白：事件卡片文字色 */
-  --stylist-3-bg-light: #afb4cc; /* 小白：事件卡片漸層左側淺色 */
+  --event-card-vertical-gap: 8px;
 
-  /* 日視圖：三張「設計師主欄位卡片」的淡色背景（欄位底，不是事件卡片） */
-  /* ✅ 深淺統一控制：
-     - 主要調整：--resource-col-strength（百分比，越大越深）
-     - 後備調整：--resource-col-alpha（舊瀏覽器 fallback 用） */
-  --resource-col-strength: 20%; /* 淡色濃度：8% → 12%/16% 會更深 */
-  --resource-col-alpha: 0.08; /* fallback 透明度：若看不到 color-mix 效果就調這個 */
-  --resource-col-1-bg: rgba(
-    58,
-    108,
-    116,
-    var(--resource-col-alpha)
-  ); /* 店長欄位底色（fallback） */
-  --resource-col-2-bg: rgba(
-    217,
-    120,
-    90,
-    var(--resource-col-alpha)
-  ); /* 雅婷欄位底色（fallback） */
-  --resource-col-3-bg: rgba(
-    107,
-    127,
-    99,
-    var(--resource-col-alpha)
-  ); /* 小白欄位底色（fallback） */
+  /* 設計師主題色 */
+  --stylist-1-bg: #3a6c74; /* 店長 */
+  --stylist-1-text: #fbfaf7;
+  --stylist-1-bg-light: #a8c0c5;
+
+  --stylist-2-bg: #d9785a; /* 雅婷 */
+  --stylist-2-text: #fbfaf7;
+  --stylist-2-bg-light: #f1b7a4;
+
+  --stylist-3-bg: #464b65; /* 小白 */
+  --stylist-3-text: #fbfaf7;
+  --stylist-3-bg-light: #afb4cc;
+
+  /* 日視圖欄位底色 */
+  --resource-col-strength: 20%;
+  --resource-col-alpha: 0.08;
+  --resource-col-1-bg: rgba(58, 108, 116, var(--resource-col-alpha));
+  --resource-col-2-bg: rgba(217, 120, 90, var(--resource-col-alpha));
+  --resource-col-3-bg: rgba(107, 127, 99, var(--resource-col-alpha));
 
   /* Notes */
   --notes-bg: var(--bg-card);
@@ -191,49 +146,36 @@
   --calendar-line-color: #e4ddd5;
   --calendar-line-width: 1px;
 
-  /* 日視圖：每位設計師欄位內的「複製時間軸」寬度 */
+  /* 日視圖時間軸 */
   --per-resource-time-axis-width: 90px;
-
-  /* 日視圖：每位設計師欄位內「時間軸膠囊」的垂直微調
-     - 負值 = 往上移（讓時間與事件卡片看起來更平行）
-     - 正值 = 往下移 */
   --per-resource-time-item-offset: -6px;
 }
 
-/* ✅ 方案 B（HEX + 統一濃度）：支援 color-mix 的瀏覽器會用 HEX 來源色自動生成淡底 */
-/* 原理：color-mix(顏色 X%, transparent) = 把顏色稀釋成一致「濃度」的淡色背景 */
+/* color-mix 支援 */
 @supports (background: color-mix(in srgb, #000 10%, transparent)) {
   :root {
-    /* 來源色直接用你的 HEX 變數 --stylist-*-bg（你喜歡用 HEX，就改那些即可） */
     --resource-col-1-bg: color-mix(
       in srgb,
       var(--stylist-1-bg) var(--resource-col-strength),
       transparent
-    ); /* 店長欄位底色（HEX + 濃度） */
+    );
     --resource-col-2-bg: color-mix(
       in srgb,
       var(--stylist-2-bg) var(--resource-col-strength),
       transparent
-    ); /* 雅婷欄位底色（HEX + 濃度） */
+    );
     --resource-col-3-bg: color-mix(
       in srgb,
       var(--stylist-3-bg) var(--resource-col-strength),
       transparent
-    ); /* 小白欄位底色（HEX + 濃度） */
+    );
   }
 }
 
-/* ==================== 2) Base / Layout（全站基礎） ====================
-   這一段是「不管日曆/彈窗/留言，整頁都共用」的設定：
-   - 重置瀏覽器預設 margin/padding
-   - 設定全站字體、文字顏色、背景
-   - 控制頁面是否能水平捲動、滾動行為等
-   ------------------------------------------------------------------ */
-/* 全域基礎設定 - 重置瀏覽器預設樣式並設定基本字體與背景 */
+/* ==================== 2) Base / Layout ==================== */
 html,
 body {
   -webkit-text-size-adjust: 100%;
-
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
@@ -248,15 +190,12 @@ body {
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  /* 去除不必要的 inset，避免右側/上方多餘空白 */
 }
 
-/* 日曆主容器 */
 #calendar-container {
   padding: 2px 2px 2px;
 }
 
-/* 日曆本體 */
 #calendar {
   width: 100% !important;
   max-width: none;
@@ -265,7 +204,7 @@ body {
   background: var(--bg-card);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-medium);
-  overflow: visible; /* ⭐將 hidden 改為 visible，解除對 sticky 的限制 */
+  overflow: visible;
   border: 1px solid var(--calendar-border);
   position: relative;
 }
@@ -287,13 +226,7 @@ body {
   filter: grayscale(1);
 }
 
-/* ==================== 3) FullCalendar Core（套件核心結構） ====================
-   FullCalendar 會產生很多巢狀 div/table，並用 `.fc-*` class 命名。
-   這段主要在做「高度/捲動」的調整：
-   - 原本 FullCalendar 會用固定高度 + 內部 scroller
-   - 你這份樣式想讓它「高度自動撐開」並交給瀏覽器捲動
-   ------------------------------------------------------------------ */
-/* 日曆捲動設定 - 還原由 FullCalendar 自行管理高度與捲動 */
+/* ==================== 3) FullCalendar Core ==================== */
 .fc .fc-scroller {
   overflow-y: visible !important;
   height: auto !important;
@@ -306,7 +239,6 @@ body {
   border-bottom: none !important;
 }
 
-/* 頁面淡入動畫 */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -318,35 +250,24 @@ body {
   }
 }
 
-/* ==================== 4) Toolbar（FullCalendar 原生工具列） ====================
-   這是 FullCalendar 自帶的 headerToolbar（上一頁/下一頁/今天/標題等）。
-   目前在 index.html 的 JS 裡把 `headerToolbar: false` 關掉了，
-   所以這裡樣式「保留備用」，但實際畫面不會顯示（display: none）。
-   ------------------------------------------------------------------ */
-/* 日曆頂部工具列（目前在 JS 中關閉，保留樣式備用） */
+/* ==================== 4) Toolbar ==================== */
 #calendar .fc-header-toolbar {
-  display: none;
+  display: none; /* 預設隱藏，改用 Date Scroller */
   align-items: center;
-  gap: 0.5rem; /* 避免因過大間距造成水平溢位 */
+  gap: 0.5rem;
   background: var(--calendar-header-bg);
-  padding: 0 16px; /* 縮小左右內距，貼齊頁面 */
+  padding: 0 16px;
   margin-bottom: 0 !important;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   height: 56px;
   border-bottom: none;
   box-shadow: none;
 }
-
-/* 清理：移除無用的 today 按鈕 margin 註解（已不採用） */
-
-/* 工具列區塊佈局 - 工具列內各區塊的排列方式 */
 #calendar .fc-toolbar-chunk {
-  display: flex; /* ✅ 修正原本錯誤的 display 值 */
-  gap: 8px; /* ✅ 增加按鈕間距 */
+  display: flex;
+  gap: 8px;
   font-size: 18px;
 }
-
-/* 工具列標題樣式 - 顯示當前日期的標題文字 */
 #calendar .fc-toolbar-title {
   color: var(--calendar-header-text);
   font-family: var(--font-display);
@@ -354,55 +275,68 @@ body {
   letter-spacing: 0.08em;
   font-weight: 700;
 }
-
-/* ✅ 月視圖標題強制為白色 */
 #calendar .fc-toolbar-title.is-month-title {
   color: var(--text-primary) !important;
 }
-
-/* 【日期標題間距】年↔月、月↔日 的固定留白寬度 */
-#calendar .fc-toolbar-title .ym-gap {
-  display: inline-block;
-  width: 2em;
-}
+#calendar .fc-toolbar-title .ym-gap,
 #calendar .fc-toolbar-title .md-gap {
   display: inline-block;
   width: 2em;
 }
 
-/* ==================== 5) Date Scroller（自訂日期列） ====================
-   這一段不是 FullCalendar 內建功能，而是你在 index.html 用 JS 動態建立的 UI：
-   - JS 會建立 `.fc-date-scroller`（年月/日、日期滑動列、日週月切換按鈕）
-   - 所以這裡的 selector 會看到 `.fc-date-scroller`、`.date-item` 等自訂 class
-   - 右側的「月結報表」按鈕也會被 JS append 進 `.date-toggle`
-   ------------------------------------------------------------------ */
-/* 🎨 顏色快速調整（Date Scroller）
-   - 整張日期卡背景：:root 的 `--date-card-bg`
-   - 整張日期卡文字：:root 的 `--date-card-text`
-   - 次要/灰字（星期/按鈕未選取）：:root 的 `--date-card-muted`
-   - 日期 hover 底色：`.date-item:hover` 的 `rgba(255,255,255,0.18)`
-   - 右側切換 pill 底色：`.date-toggle` 的 `rgba(255,255,255,0.16)`
-   - 目前選取（亮起）日期：:root 的 `--date-item-active-*`（底/框/字/陰影）
-*/
-/* 日期捲動選擇列（仿截圖的月份/日期樣式） */
+/* ==================== 5) Date Scroller (自訂日期列) ==================== */
 #calendar.is-date-scroller .fc-toolbar-title {
   display: none;
 }
 #calendar .fc-date-scroller {
   margin: 14px 16px 16px;
   padding: 16px 20px 18px;
-  background: var(
-    --date-card-bg
-  ); /* ✅ 整張日期卡的主背景（想換色系先改這個變數） */
+  background: var(--date-card-bg);
   border-radius: 22px;
-  box-shadow: var(--shadow-soft); /* ✅ 卡片陰影（想更立體/更扁平可調） */
-  color: var(--date-card-text); /* ✅ 預設文字色（年月/日期列未選取） */
+  box-shadow: var(--shadow-soft);
+  color: var(--date-card-text);
   position: relative;
   overflow: visible;
-  border: 1px solid rgba(255, 255, 255, 0.22); /* ✅ 外框白邊透明度（想更亮→調大） */
-  height: 145px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  height: auto; /* 改為 auto 以容納箭頭 */
+  min-height: 145px;
   box-sizing: border-box;
 }
+
+/* [新增] 第 6 點：左右箭頭導航樣式 */
+.nav-arrows {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px; /* 與日期內容的間距 */
+  justify-content: center;
+  align-items: center;
+}
+.nav-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff; /* 箭頭顏色 */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+.nav-btn:active {
+  transform: scale(0.95);
+}
+/* Material Symbols adjustment */
+.nav-btn .material-symbols-outlined {
+  font-size: 24px;
+}
+
 #calendar .fc-date-scroller .date-row {
   display: flex;
   align-items: stretch;
@@ -410,7 +344,6 @@ body {
   flex-wrap: nowrap;
   height: 100%;
 }
-/* 左側欄位：日期 + 按鈕垂直排列 */
 #calendar .fc-date-scroller .date-left-col {
   display: flex;
   flex-direction: column;
@@ -430,7 +363,8 @@ body {
   flex: 0 0 auto;
   padding: 0;
 }
-#calendar .fc-date-scroller .date-toggle {
+#calendar .fc-date-scroller .date-toggle,
+#calendar .fc-date-scroller .mobile-resource-toggle {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -442,21 +376,14 @@ body {
   flex: 0 0 auto;
 }
 #calendar .fc-date-scroller .mobile-resource-toggle {
-  display: none;
-  flex-direction: row;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-  flex: 0 0 auto;
+  display: none; /* 手機版才顯示 */
 }
 
-#calendar .fc-date-scroller .date-toggle-btn {
+#calendar .fc-date-scroller .date-toggle-btn,
+#calendar .fc-date-scroller .resource-toggle-btn {
   border: none;
   background: transparent;
-  color: var(--date-card-muted); /* ✅ 未選取的日/週/月文字顏色 */
+  color: var(--date-card-muted);
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 13px;
@@ -469,31 +396,16 @@ body {
     box-shadow 0.2s ease;
 }
 #calendar .fc-date-scroller .resource-toggle-btn {
-  border: none;
-  background: transparent;
-  color: var(--date-card-muted);
   padding: 6px 10px;
-  border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
 }
-#calendar .fc-date-scroller .date-toggle-btn.is-active {
-  background: rgba(255, 255, 255, 0.95); /* ✅ 選取中的 pill 底色（越大越白） */
-  color: var(--kikyo-dark); /* ✅ 選取中的文字顏色 */
-  box-shadow: 0 6px 16px rgba(33, 44, 54, 0.18); /* ✅ 選取中的陰影 */
-}
+#calendar .fc-date-scroller .date-toggle-btn.is-active,
 #calendar .fc-date-scroller .resource-toggle-btn.is-active {
   background: rgba(255, 255, 255, 0.95);
   color: var(--kikyo-dark);
   box-shadow: 0 6px 16px rgba(33, 44, 54, 0.18);
 }
-/* 報表按鈕：白色背景 */
+
 #calendar .fc-date-scroller #open-report-btn {
   border: none;
   background: rgba(255, 255, 255, 0.95);
@@ -511,10 +423,7 @@ body {
   background: #fff;
   box-shadow: 0 6px 16px rgba(33, 44, 54, 0.18);
 }
-#calendar .fc-date-scroller .date-header {
-  display: none;
-}
-/* 左上角日期（年月 / 日）：共用字體設定，避免調字體要改兩次 */
+
 #calendar .fc-date-scroller .date-header-month,
 #calendar .fc-date-scroller .date-header-day {
   font-family: var(--font-display);
@@ -527,13 +436,7 @@ body {
 #calendar .fc-date-scroller .date-header-day {
   line-height: 1;
 }
-#calendar .fc-date-scroller .date-header-sub {
-  display: none;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--date-card-muted); /* ✅ 次要說明文字顏色 */
-  letter-spacing: 0.08em;
-}
+
 #calendar .fc-date-scroller .date-strip {
   display: flex;
   align-items: center;
@@ -543,16 +446,13 @@ body {
   min-height: 100px;
   justify-content: center;
   overflow-x: auto;
-  /* 不要強制 snap 到「正中間」，避免造成「怎麼滾都回中間」的感覺 */
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -ms-overflow-style: none;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  /* 交給 JS 來處理「拖曳滾動」：避免瀏覽器預設手勢干擾 */
-  touch-action: pan-x; /* 允許原生水平滑動（iPad/手機更順） */
+  touch-action: pan-x;
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -560,20 +460,10 @@ body {
 #calendar .fc-date-scroller .date-strip::-webkit-scrollbar {
   display: none;
 }
-/* 拖曳中狀態：同時相容現有 `.is-dragging` 與你提供的 `.active` */
 #calendar .fc-date-scroller .date-strip.is-dragging,
 #calendar .fc-date-scroller .date-strip.active {
   cursor: grabbing;
-  transform: scale(1);
 }
-#calendar .fc-date-scroller .date-strip.is-dragging,
-#calendar .fc-date-scroller .date-strip.is-dragging *,
-#calendar .fc-date-scroller .date-strip.active,
-#calendar .fc-date-scroller .date-strip.active * {
-  user-select: none;
-  -webkit-user-select: none;
-}
-/* 拖曳時避免誤觸/hover（事件會落到容器上，拖曳更穩） */
 #calendar .fc-date-scroller .date-strip.is-dragging .date-item,
 #calendar .fc-date-scroller .date-strip.active .date-item {
   pointer-events: none;
@@ -586,7 +476,6 @@ body {
   bottom: 8px;
   height: 34px;
   border-radius: 999px;
-  /* ✅ 日期列底部的「光暈」：讓整排看起來更有層次（想更亮→0.25 調大） */
   background: radial-gradient(
     ellipse at center,
     rgba(255, 255, 255, 0) 0%,
@@ -595,21 +484,21 @@ body {
   );
   pointer-events: none;
 }
+
 #calendar .fc-date-scroller .date-item {
   flex: 0 0 auto;
-  width: auto; /* ✅ 寬度自動（想固定寬度可改回 70px 等） */
-  min-width: 62px; /* ✅ 最小寬度 */
+  width: auto;
+  min-width: 62px;
   padding: 10px 8px;
   border-radius: 999px;
-  border: 1px solid transparent; /* ✅ 未選取日期的外框（預設透明） */
-  background: transparent; /* ✅ 未選取日期的底色（透明） */
-  color: var(--date-card-text); /* ✅ 未選取日期的文字色 */
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--date-card-text);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  /* snap 參考點改成 start，比較符合「可以推到旁邊」的滑動行為 */
   scroll-snap-align: start;
   will-change: transform, opacity;
   transform: translateY(var(--arc-offset, 0)) scale(var(--arc-scale, 1));
@@ -623,31 +512,28 @@ body {
 #calendar .fc-date-scroller .date-item:hover {
   transform: translateY(calc(var(--arc-offset, 0) - 2px))
     scale(var(--arc-scale, 1));
-  background: rgba(255, 255, 255, 0.18); /* ✅ hover 底色（想更亮→調大） */
+  background: rgba(255, 255, 255, 0.18);
 }
 #calendar .fc-date-scroller .date-item:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45); /* ✅ focus 外框亮度（鍵盤操作可見） */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
 }
 #calendar .fc-date-scroller .date-item-weekday {
   font-size: 13px;
-  color: var(--date-card-muted); /* ✅ 星期幾的灰字顏色 */
+  color: var(--date-card-muted);
   letter-spacing: 0.16em;
 }
 #calendar .fc-date-scroller .date-item-day {
-  font-size: calc(
-    38px * var(--arc-font-scale, 1)
-  ); /* ✅ 未選中日期的基礎字體（38px × 縮放比例） */
+  font-size: calc(38px * var(--arc-font-scale, 1));
   font-weight: 700;
   font-family: var(--font-display);
   transition: font-size 0.25s ease;
 }
 #calendar .fc-date-scroller .date-item.is-active {
-  background: var(--date-item-active-bg); /* ✅ 選取中的底色（主調整點） */
-  border-color: var(--date-item-active-border); /* ✅ 選取中的外框 */
-  color: var(--date-item-active-text); /* ✅ 選取中的文字色 */
-  box-shadow: var(--date-item-shadow); /* ✅ 選取中的陰影（想更立體可調） */
-  /* ✅ 亮起來的日期：方形卡片（比例偏直），並取消弧形效果對 active 的 transform 影響 */
+  background: var(--date-item-active-bg);
+  border-color: var(--date-item-active-border);
+  color: var(--date-item-active-text);
+  box-shadow: var(--date-item-shadow);
   width: 72px;
   height: 92px;
   padding: 10px 0 12px;
@@ -661,41 +547,37 @@ body {
   margin-bottom: 8px;
 }
 #calendar .fc-date-scroller .date-item.is-active .date-item-day {
-  font-size: 48px; /* ✅ 選中日期的字體大小（想調大調小改這裡） */
+  font-size: 48px;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
-  color: rgba(255, 255, 255, 0.82); /* ✅ 選取中的星期字顏色（比純白淡一點） */
+  color: rgba(255, 255, 255, 0.82);
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.14em;
   line-height: 1;
 }
 #calendar .fc-date-scroller .date-item.is-today {
-  border-color: rgba(255, 255, 255, 0.55); /* ✅ 今天的外框提示 */
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
-/* 日曆按鈕樣式 - 導航按鈕的基本樣式與效果 */
 .fc-button {
   background-color: rgba(75, 104, 114, 0.12) !important;
   border: 1px solid rgba(75, 104, 114, 0.28) !important;
-  color: var(--kikyo-primary) !important; /* 按鈕文字顏色 */
-  height: 30px; /* 工具列按鈕高度（桌面） */
-  width: 30px; /* 工具列按鈕寬度（桌面） */
+  color: var(--kikyo-primary) !important;
+  height: 30px;
+  width: 30px;
   border-radius: var(--border-radius-small) !important;
-  padding: 0px !important; /* 例如：上下 6px，左右 10px */
+  padding: 0px !important;
   font-weight: 500;
   transition: all 0.3s ease;
   box-shadow: none;
 }
-/* 群組內相鄰按鈕間距（prev/next、日/週/月） */
 .fc .fc-button-group .fc-button + .fc-button {
   margin-left: 6px !important;
 }
-
-/* 按鈕懸停/焦點效果 */
 .fc-button:hover {
   background-color: rgba(75, 104, 114, 0.2) !important;
   transform: translateY(-1px);
@@ -704,47 +586,30 @@ body {
   box-shadow: 0 0 0 2px rgba(75, 104, 114, 0.2) !important;
 }
 
-/* ==================== 6) Header / Resource Cards（表頭與設計師欄） ====================
-   FullCalendar Scheduler 會把「資源（resource）」顯示在上方表頭：
-   - 你的 resources 是：店長/雅婷/小白（在 index.html 的 JS 裡設定）
-   - 表頭是 `.fc-col-header-*` 相關結構
-   - 你把表頭做成卡片化（圓角、陰影、漸層底）
-   ------------------------------------------------------------------ */
-/* 表頭高度與卡片化間距 */
+/* ==================== 6) Header / Resource Cards ==================== */
 #calendar .fc-col-header {
   height: var(--col-header-height);
   background: transparent;
   border-bottom: none;
 }
-/*text-shadow: 0.71px 0.71px 0 rgba(222, 201, 232, 0.42), 1.41px 1.41px 0 rgba(198, 180, 206, 0.42), 2.12px 2.12px 0 rgba(173, 158, 180, 0.42), 2.83px 2.83px 0 rgba(149, 137, 154, 0.42), 3.54px 3.54px 0 rgba(124, 115, 129, 0.42), 4.24px 4.24px 0 rgba(100, 94, 103, 0.42), 4.95px 4.95px 0 rgba(75, 72, 77, 0.42), 5.66px 5.66px 0 rgba(51, 51, 51, 0.42);*/
-
-/* 表頭單元格 */
 #calendar .fc-col-header-cell {
   height: 100%;
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
 }
-
-/* Timegrid 表頭卡片間距（僅作用在實際表頭 cell） */
 #calendar .fc-timegrid .fc-col-header-cell {
   padding: 0 7px 12px !important;
 }
-
-/* 表頭內容同步區 */
 #calendar .fc-col-header-cell .fc-scrollgrid-sync-inner {
   height: 100%;
 }
-
-/* 表頭表格：時間格視圖用 padding 做卡片間距，避免左側軸心出現空白卡 */
 #calendar .fc-timegrid table.fc-col-header {
   border-collapse: separate !important;
   border-spacing: 0 !important;
 }
 
-/* 表頭文字樣式 - 星期幾文字的樣式設定 */
 #calendar .fc-col-header-cell-cushion {
-  /* 使用 flex 排列，讓內文置中；同時設定為 relative，讓按鈕群可絕對定位到右側而不推動標題 */
   position: relative;
   display: flex;
   align-items: center;
@@ -759,7 +624,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.88em;
   white-space: nowrap;
-  overflow: visible; /* 允許按鈕不被截斷 */
+  overflow: visible;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.94) 0%,
@@ -769,14 +634,12 @@ body {
   border-radius: var(--border-radius-small) !important;
 }
 
-/* 表頭內容排版 */
 #calendar .resource-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
-
 #calendar .resource-name {
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -785,7 +648,7 @@ body {
   color: var(--kikyo-dark);
 }
 
-/* 日視圖：表頭底色跟「設計師欄位卡片」一致（對應 JS 在 resourceLabelDidMount 設的 data-resource-id） */
+/* Header BG by resource ID */
 #calendar
   .fc-resourceTimeGridDay-view
   .fc-col-header-cell-cushion[data-resource-id="1"],
@@ -817,7 +680,6 @@ body {
   color: #7a809a !important;
 }
 
-/* 表頭捲動與邊框設定 */
 #calendar .fc-scrollgrid-section-header .fc-scroller {
   overflow-y: hidden !important;
 }
@@ -826,15 +688,6 @@ body {
 }
 
 /* ==================== 7) Header Buttons ==================== */
-/* 排休 / 已約滿按鈕群 */
-/* 這兩顆按鈕是 JS 動態塞進表頭的（index.html 的 resourceLabelDidMount）：
-   - 「排休」：開啟排休彈窗
-   - 「約滿/已約滿」：切換某日某設計師是否滿檔（紅色狀態）
-   - 只在「日視圖」出現（週/月視圖會 return，不建立按鈕）
-   註：按鈕都放在 `.header-button-group` 裡，所以樣式集中寫在群組選擇器。
-*/
-
-/* 通用 header 按鈕群（靠右） */
 #calendar .header-button-group {
   position: absolute;
   right: 8px;
@@ -845,11 +698,8 @@ body {
   gap: 8px;
   z-index: 10;
 }
-
-/* 統一按鈕樣式（兩個按鈕共用） */
 #calendar .header-button-group .leave-icon-button,
 #calendar .header-button-group .fully-booked-button {
-  /* 毛玻璃：半透明背景 + 背景模糊（只影響外觀，不影響功能） */
   background: rgba(255, 255, 255, 0.18) !important;
   border: 3px solid rgba(255, 255, 255, 0.28) !important;
   backdrop-filter: blur(12px) saturate(150%);
@@ -858,71 +708,50 @@ body {
   height: 34px;
   padding: 0 12px !important;
   font-size: 17px;
-  font-weight: 500; /* 與 .fc-button 一致 */
-  border-radius: var(--border-radius-small) !important; /* 同工具列圓角 */
+  font-weight: 500;
+  border-radius: var(--border-radius-small) !important;
   line-height: 1;
-  transition: all 0.3s ease; /* 與工具列相同的過渡 */
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 72px; /* 保留可點擊最小寬度 */
+  min-width: 72px;
   box-shadow: 0 10px 22px rgba(24, 34, 46, 0.18);
 }
-
 #calendar .header-button-group .leave-icon-button:hover,
-#calendar .header-button-group .fully-booked-button:hover,
-#calendar .header-button-group .leave-icon-button:focus,
-#calendar .header-button-group .fully-booked-button:focus {
-  /* hover：更亮一點、浮起一點 */
+#calendar .header-button-group .fully-booked-button:hover {
   background: rgba(255, 255, 255, 0.28) !important;
   border-color: rgba(255, 255, 255, 0.38) !important;
   transform: translateY(-1px);
   box-shadow: 0 14px 28px rgba(24, 34, 46, 0.22);
   outline: none;
 }
-
-/* 已約滿狀態：保持強烈紅色 */
 #calendar .fully-booked-button.fb-active {
-  /* 已約滿狀態：紅色毛玻璃 */
   background: rgba(216, 75, 64, 0.35) !important;
   border-color: rgba(216, 75, 64, 0.6) !important;
   color: #fff !important;
   box-shadow: 0 12px 26px rgba(216, 75, 64, 0.22);
 }
 
-/* ==================== 8) Timegrid + Gridlines（時間格與格線） ====================
-   TimeGrid 是 FullCalendar 顯示「一天/一週」時間格的主要區塊：
-   - 左邊是時間軸（slot label）
-   - 右邊是每個設計師的欄位（col）
-   這段做的事：
-   - 控制每一格高度、奇偶列底色
-   - 標示用餐時段
-   - 畫垂直格線（用偽元素 ::after，避免表格 border 破版）
-   ------------------------------------------------------------------ */
-/* 時間欄 (Time Column) */
-/* 時間槽高度與背景設定 */
+/* ==================== 8) Timegrid + Gridlines ==================== */
 #calendar .fc-timegrid-slot {
   height: 2.7em !important;
-} /* 【調整】時間格高度 */
+}
 #calendar .fc-timegrid-slot-lane {
   background-color: transparent !important;
 }
 #calendar .fc-timegrid-slots tbody tr:nth-child(odd) td.fc-timegrid-slot-lane {
   background: var(--calendar-content-odd) !important;
-} /* 基數 */
+}
 #calendar .fc-timegrid-slots tbody tr:nth-child(even) td.fc-timegrid-slot-lane {
   background: var(--calendar-content-even) !important;
-} /* 偶數 */
-
-/* 非營業區塊背景（覆蓋整個欄位/全天） */
+}
 #calendar .fc-non-business {
   background: transparent !important;
 }
 
-/* 用餐時段：17:30、17:45、18:00 變色（含左側時間標籤與右側欄位） */
-/* 用餐時段（命中 td；提高特異性；放在奇偶列規則之後） */
-/* 右側內容欄 */
+/* 用餐時段 */
 #calendar
   .fc-timegrid-body
   td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"],
@@ -935,7 +764,6 @@ body {
   position: relative;
   background: transparent !important;
 }
-
 #calendar
   .fc-timegrid-body
   td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"]::after,
@@ -952,9 +780,7 @@ body {
   opacity: 0.9;
   pointer-events: none;
   z-index: 0;
-  border-radius: 0;
 }
-
 #calendar
   .fc-timegrid-body
   td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"]
@@ -971,39 +797,18 @@ body {
   z-index: 1;
 }
 
-/* ==================== 9) Event Cards（預約事件卡片） ====================
-   事件卡片是「每一筆預約」顯示在時間格上的小卡片：
-   - FullCalendar 預設會用 `.fc-event`、`.fc-timegrid-event`
-   - 你的 index.html 裡有自訂 eventContent，會產生：
-     - `.evt-line`：把內容排成一列（服務/姓名/電話）
-     - `.evt-svc` + `.svc-*`：服務徽章（剪/染/燙/護/預）
-   - 你的 JS 也會加上 class：
-     - `.sty-1/.sty-2/.sty-3`：不同設計師顏色
-     - `.blocked-time`：不約時段
-     - `.is-paid`：已收款（用漸層底）
-   ------------------------------------------------------------------ */
+/* ==================== 9) Event Cards ==================== */
 #calendar .fc-timegrid-event {
   border-radius: 10px;
-  /* ✅ 事件卡片外框（線條）：
-     - 線條粗細：1px（想更粗改 2px）
-     - 線條顏色：這裡是預設色；但你下面的 `.fc-event.sty-* { border-color: ... }`
-       會依設計師/狀態覆蓋 border-color（因此常見做法是：粗細在這裡改、顏色在 sty-* 改） */
-  /* ✅ 你要「不要外框線」：直接把 border 拿掉即可 */
   border: none !important;
-  /* ✅ 你要「不要陰影」：事件卡片本體陰影關閉 */
   box-shadow: none !important;
 }
-
 #calendar .fc-event {
   font-family: var(--font-sans);
 }
 
-/* --- B. 事件卡片的文字與內容排版 (合併版) --- */
-
-/* 將兩個選擇器用逗號隔開，共用相同的樣式 */
 #calendar .fc-timegrid-event .fc-event-title,
 #calendar .fc-event.blocked-time .fc-event-title {
-  /* --- 以下是它們共用的樣式 --- */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1015,60 +820,35 @@ body {
   overflow: hidden;
 }
 
-/* 桌面版：讓事件卡片左右留白，不占滿格子 */
 @media (min-width: 1025px) {
-  #calendar .fc-timegrid-event:not(.fc-bg-event) {
-    right: 0px;
-    left: 0px;
-  }
-  /* 已結帳事件：強制跟一般事件同樣的左右留白（避免寬度比一般事件更寬） */
+  #calendar .fc-timegrid-event:not(.fc-bg-event),
   #calendar .fc-timegrid-event.is-paid:not(.fc-bg-event) {
     right: 0px;
     left: 0px;
   }
 }
 
-/* 針對【一般預約】卡片的文字大小 */
 #calendar .fc-timegrid-event .fc-event-title {
-  font-size: clamp(
-    14px,
-    2.4vw,
-    22px
-  ); /* 一般預約：跟著螢幕寬度縮放（iPad/桌機更一致） */
+  font-size: clamp(14px, 2.4vw, 22px);
 }
-
-/* 針對【不約時段】卡片的圖示大小 */
 #calendar .fc-event.blocked-time .fc-event-title {
-  font-size: clamp(13px, 2.1vw, 20px); /* 不約時段：跟著螢幕寬度縮放 */
+  font-size: clamp(13px, 2.1vw, 20px);
 }
-
-/* 事件卡片懸停效果 */
 #calendar .fc-timegrid-event:hover {
-  /* ✅ 你要「不要陰影」：hover 也不要陰影；同時取消位移避免畫面跳動 */
   transform: none;
   box-shadow: none !important;
 }
 
-/* 事件多段文字佈局 */
-/* 調整提示：
-   1) 字體大小：#calendar .fc-timegrid-event .fc-event-title（整體）
-   2) 欄位寬度：.fc-event-title.evt-line 的 grid-template-columns（項目/姓名/電話比例）
-   3) 欄內左右留白：.evt-col-* 的 padding
-   4) 分隔線高度/透明度：.evt-col-name::before / .evt-col-phone::before
-   5) 服務徽章大小：.evt-svc 的 font-size / padding */
+/* 內容排版 */
 #calendar .fc-timegrid-event .fc-event-title.evt-line {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) minmax(0, 1.1fr);
   align-items: center;
-  gap: 0; /* 用分隔線取代 gap */
+  gap: 0;
   width: 100%;
-  /* ✅ 事件卡片內容（服務/姓名/電話）整體往左貼一點
-     - 你如果想更貼：把 2px 改 0px
-     - 如果覺得太貼：改回 6px（跟上面的共用 padding 一樣） */
-  padding-left: 0; /* ✅ 內容再往左貼一點：讓服務勳章更靠近事件卡片邊緣 */
+  padding-left: 0;
   padding-right: 6px;
 }
-/* 三欄文字（項目/姓名/電話）共用設定 */
 .evt-col-svc,
 .evt-col-name,
 .evt-col-phone {
@@ -1081,90 +861,70 @@ body {
   padding: 0 6px;
 }
 .evt-col-svc {
-  /* 服務欄位（勳章所在的第一欄） */
-  text-align: left; /* ✅ 勳章靠左，避免卡在中間「移不過去」 */
-  padding-left: 0; /* ✅ 取消左側內距，讓勳章更貼近事件卡片左邊 */
-  padding-right: 4px; /* 右側留一點縫，避免勳章貼到姓名欄 */
-  /* ✅ 服務徽章位置微調：往上移一點，讓它看起來跟「姓名 / 電話」更平行
-     - 想再往上：數值更負（例如 -6px）
-     - 想往下：改成 -2px、0px 或正值 */
+  text-align: left;
+  padding-left: 0;
+  padding-right: 4px;
   transform: translateY(-4px);
 }
-/* 服務徽章容器：調整徽章排列間距用 */
 .evt-services {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start; /* ✅ 配合服務欄位靠左 */
+  justify-content: flex-start;
   gap: 6px;
   flex-wrap: nowrap;
 }
-/* ==================== 
-   3D 服務勳章 (透明變色龍版) 
-   功能：保留設計師卡片底色，只加上白框、內陰影與立體光澤
-   ==================== */
 
+/* 3D 服務勳章 (透明變色龍版) */
 .evt-svc {
-  /* 1. 形狀與排版 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 80px;
-  height: 34px; /* 配合粗框，高度微調 */
+  height: 34px;
   padding: 0 px;
   box-sizing: border-box;
-  border-radius: 10px; /* 膠囊圓角 */
-
-  /* 2. 文字設定 */
+  border-radius: 10px;
   font-size: 20px;
   font-weight: 800;
   line-height: 1;
   color: #ffffff;
-  /* 文字陰影加強，確保在各種底色上都清楚立體 */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-
-  /* =========== 3D 效果核心 (無色濾鏡) =========== */
-
-  /* A. 白色粗外框 */
   border: 3px solid #ffffff;
-
-  /* B. 內陰影 (讓圓框內看起來凹陷) */
   box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35);
-
-  /* C. 3D 光源 (半透明白色光澤) */
-  /* 關鍵：這層漸層是半透明的，會直接透出底下「設計師卡片」的顏色 */
   background-image: radial-gradient(
     circle at 30% 20%,
     rgba(255, 255, 255, 0.8) 0%,
-    /* 左上角高光 */ rgba(255, 255, 255, 0.2) 40%,
-    /* 光暈擴散 */ transparent 70% /* 變透明，透出原本底色 */
+    rgba(255, 255, 255, 0.2) 40%,
+    transparent 70%
   );
-
-  /* D. 底色設為透明 */
   background-color: transparent;
-
-  /* =========== 防跑版設定 =========== */
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 強制重置個別服務的顏色設定 
-   (確保剪/染/燙都使用上面的透明 3D 效果，不要被舊的顏色蓋掉)
-*/
+/* 共用基礎設定 */
 .evt-svc.svc-cut,
 .evt-svc.svc-dye,
 .evt-svc.svc-perm,
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
-  background-color: transparent !important; /* 強制透明 */
-  background-image: inherit !important; /* 繼承上面的 3D 光澤 */
-  border: 3px solid #ffffff !important; /* 確保框線一致 */
-  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35) !important; /* 確保陰影一致 */
+  background-color: transparent !important;
+  background-image: inherit !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* [修改] 第 5 點：燙/染/護文字改黃色，加強陰影 */
+.evt-svc.svc-perm,
+.evt-svc.svc-dye,
+.evt-svc.svc-treat {
+  color: #ffeb3b !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
 .evt-col-name {
-  /* 事件卡片：姓名文字（你之後可在開發者工具直接調整） */
   color: #ffffff;
   font-family: var(--font-display);
   font-weight: 600;
@@ -1173,7 +933,6 @@ body {
   line-height: 1.1;
 }
 .evt-col-phone {
-  /* 事件卡片：電話文字（你之後可在開發者工具直接調整） */
   color: rgba(255, 255, 255, 0.88);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -1182,10 +941,10 @@ body {
   opacity: 0.9;
   text-align: center;
 }
+
+/* Blocked time styles */
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
-  display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.7fr);
-  align-items: center;
   width: 100%;
   padding-left: 0;
   padding-right: 6px;
@@ -1196,29 +955,19 @@ body {
   display: none;
 }
 #calendar .fc-event.blocked-time .evt-svc {
-  font-size: 14px; /* 不約時段：徽章字小一點 */
-  letter-spacing: 0; /* 不約時段：字距歸零（避免太擠） */
-  height: 22px; /* 不約時段：徽章高度略小 */
-  padding: 0 10px; /* 不約時段：左右內距略小 */
+  font-size: 14px;
+  letter-spacing: 0;
+  height: 22px;
+  padding: 0 10px;
 }
-
-/* 不約卡片手圖案：置中於服務欄 */
 .blocked-icon {
-  font-family:
-    "Material Symbols Outlined", "Material Symbols Filled", sans-serif !important;
-  font-feature-settings: "liga", "calt";
-  font-variation-settings:
-    "FILL" 1,
-    "wght" 500;
+  font-family: "Material Symbols Outlined", sans-serif !important;
   font-size: 32px;
-  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.95);
   display: block;
   grid-column: 1 / 2;
-  justify-self: center;
-  align-self: center;
+  margin: 0 auto;
 }
-
-/* 不約卡片備註：橫跨姓名+電話欄，置中 */
 .fc-event.blocked-time .evt-col-note {
   grid-column: 2 / 3;
   text-align: center;
@@ -1230,18 +979,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-#calendar .fc-event.blocked-time .blocked-icon {
-  font-size: 32px;
-  color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 0;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateX(-1px);
-}
-
 .evt-col-name::before,
 .evt-col-phone::before {
   content: "";
@@ -1252,22 +989,19 @@ body {
   width: 1px;
   background: rgba(255, 255, 255, 0.35);
 }
-
 #calendar .fc-event.blocked-time .evt-col-name::before,
 #calendar .fc-event.blocked-time .evt-col-phone::before {
   display: none;
 }
 
-/* --- C. 設計師顏色套用規則 --- */
-/* 事件卡片：改成「左→右」漸層（左邊比較淺、右邊比較深） */
-/* - 方案 A（推薦）：只套用在「一般預約」；blocked-time 仍用淺色底（更像停用狀態） */
+/* Designer Colors */
 #calendar .fc-event.sty-1:not(.blocked-time):not(.is-paid) {
   background: linear-gradient(
     90deg,
     var(--stylist-1-bg-light) 0%,
     var(--stylist-1-bg) 100%
-  ) !important; /* 左淺右深 */
-  border-color: var(--stylist-1-bg) !important; /* 外框用深色，讓輪廓更清楚 */
+  ) !important;
+  border-color: var(--stylist-1-bg) !important;
   color: var(--stylist-1-text) !important;
 }
 #calendar .fc-event.sty-2:not(.blocked-time):not(.is-paid) {
@@ -1305,19 +1039,16 @@ body {
   color: var(--stylist-3-text) !important;
 }
 
+/* Paid status */
 #calendar .fc-event.is-paid:not(.blocked-time) {
-  /* 已結帳：低調的黃色系（去金黃、偏霧黃/橄欖黃），用外框 + 微光澤拉開辨識度 */
   overflow: hidden;
-  background: #9aa81a !important; /* 深黃色純色（不使用漸層） */
+  background: #9aa81a !important;
   color: rgba(255, 255, 255, 0.96) !important;
-  /* 用「內框」取代 outline/外陰影，避免視覺上看起來比其他卡片更寬 */
   box-shadow:
     inset 0 0 0 2px rgba(255, 249, 210, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     inset 0 0 0 999px rgba(0, 0, 0, 0.08) !important;
 }
-
-/* 已結帳：加一層淡淡的斜向光澤（不突兀、但更好辨識） */
 #calendar .fc-event.is-paid:not(.blocked-time)::before {
   content: "";
   position: absolute;
@@ -1330,8 +1061,6 @@ body {
   );
   pointer-events: none;
 }
-
-/* 已結帳：文字再亮一點、增加可讀性 */
 #calendar .fc-event.is-paid:not(.blocked-time) .evt-col-name {
   color: rgba(255, 255, 255, 0.98);
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
@@ -1340,14 +1069,7 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* ==================== 13) Notes（留言板） ====================
-   index.html 的「留言板」區塊：
-   - 外層：`#notes-section`
-   - 卡片：`.notes-container`
-   - 標題列：`.notes-header`（含儲存狀態 `.notes-meta` 與儲存按鈕 `#save-notes-btn`）
-   - 內容：`#notes-content`（textarea）
-   ------------------------------------------------------------------ */
-/* 留言區外容器 */
+/* ==================== 13) Notes ==================== */
 #notes-section {
   width: 100%;
   max-width: none;
@@ -1355,8 +1077,6 @@ body {
   padding: 0;
   animation: fadeInUp 0.8s ease-out;
 }
-
-/* 留言卡片容器 */
 .notes-container {
   background: var(--notes-bg);
   border: 1px solid var(--notes-border);
@@ -1369,8 +1089,6 @@ body {
   box-shadow: var(--shadow-medium);
   transform: translateY(-2px);
 }
-
-/* 留言板標題列 */
 .notes-header {
   display: flex;
   align-items: center;
@@ -1392,8 +1110,6 @@ body {
   content: "💭";
   font-size: 24px;
 }
-
-/* 自動儲存提示 */
 .notes-meta {
   margin-left: auto;
   color: var(--text-muted);
@@ -1406,7 +1122,6 @@ body {
   content: "💾";
   font-size: 14px;
 }
-/* 拉開『已載入』與右側儲存按鈕的距離 */
 #save-notes-btn {
   margin-left: 16px;
   background: linear-gradient(
@@ -1431,8 +1146,6 @@ body {
   box-shadow: var(--shadow-medium);
   filter: brightness(1.02);
 }
-
-/* 筆記輸入框 */
 #notes-content {
   width: 100%;
   min-height: 200px;
@@ -1455,17 +1168,9 @@ body {
   border-color: var(--kikyo-primary);
   box-shadow: 0 0 0 3px rgba(75, 104, 114, 0.12);
 }
-/* ==================== 15) Responsive（RWD：手機/平板） ====================
-   這裡用 media query 針對小螢幕做覆蓋：
-   - `@media (max-width: 1024px)`：平板/手機（最常用）
-   - `@media (max-width: 560px)`：更小的手機
-   規則：
-   - 這裡寫的同 selector 通常會覆蓋上面的 base 規則（因為出現在後面）
-   - 若仍蓋不過 FullCalendar 內建，就會看到 `!important`
-   ------------------------------------------------------------------ */
-/* 手機 (≤1024px) */
+
+/* ==================== 15) Responsive (Mobile) ==================== */
 @media (max-width: 1024px) {
-  /* Mobile > Global（整體容器） */
   #calendar-container {
     padding: 8px;
   }
@@ -1474,24 +1179,20 @@ body {
     margin: 0 -10px;
     border-radius: 0;
   }
-
-  /* Mobile > Toolbar（工具列） */
   #calendar .fc-header-toolbar {
     padding: 8px 16px;
     height: 42px;
   }
   #calendar .fc-toolbar-title {
     white-space: nowrap;
-    font-size: clamp(16px, 6vw, 24px); /* 依螢幕自動縮放 */
-    letter-spacing: clamp(0px, 0.3vw, 1px); /* 防止字距過寬 */
-    min-width: 0; /* 允許縮小以避免被擠出 */
+    font-size: clamp(16px, 6vw, 24px);
+    letter-spacing: clamp(0px, 0.3vw, 1px);
+    min-width: 0;
   }
-  /* 手機：工具列按鈕隨畫面縮放（但保留易點擊下限） */
   #calendar .fc-button {
     width: clamp(26px, 7.5vw, 32px) !important;
     height: clamp(26px, 7.5vw, 32px) !important;
   }
-  /* Mobile > 日期捲動列 */
   #calendar .fc-date-scroller {
     margin: 8px 10px 12px;
     padding: 12px 12px 14px;
@@ -1512,7 +1213,6 @@ body {
     width: 58px;
     padding: 8px 0;
   }
-  /* 手機：亮起來的日期方形卡片縮小，避免把日期列擠爆 */
   #calendar .fc-date-scroller .date-item.is-active {
     width: 60px;
     height: 74px;
@@ -1540,7 +1240,7 @@ body {
     display: flex;
   }
 
-  /* Mobile > 日視圖：只顯示單一設計師卡片 */
+  /* Mobile Resource hiding logic */
   #calendar[data-mobile-resource="1"]
     .fc-resourceTimeGridDay-view
     .fc-timegrid-col[data-resource-id="2"],
@@ -1561,6 +1261,7 @@ body {
     .fc-col-header-cell-cushion[data-resource-id="3"] {
     display: none !important;
   }
+
   #calendar[data-mobile-resource="2"]
     .fc-resourceTimeGridDay-view
     .fc-timegrid-col[data-resource-id="1"],
@@ -1581,6 +1282,7 @@ body {
     .fc-col-header-cell-cushion[data-resource-id="3"] {
     display: none !important;
   }
+
   #calendar[data-mobile-resource="3"]
     .fc-resourceTimeGridDay-view
     .fc-timegrid-col[data-resource-id="1"],
@@ -1601,26 +1303,21 @@ body {
     .fc-col-header-cell-cushion[data-resource-id="2"] {
     display: none !important;
   }
-  /* Mobile > Header（資源列） */
-  /* 資源（設計師）表頭置中 */
+
   #calendar .resource-cushion {
     justify-content: center;
-    padding-right: 8px !important; /* 保留與右側一點距離（原本就有左右 8px padding） */
+    padding-right: 8px !important;
   }
-  /* 7) 手機 > Week 視圖：覆蓋層字級縮小與位置微調 */
+
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay {
     font-size: clamp(18px, 6vw, 28px);
     letter-spacing: 0.1em;
-    padding-bottom: 350px; /* 依手機視口略減，避免壓到更多格 */
+    padding-bottom: 350px;
   }
-  /* 7) 手機 > Header：表頭字級/高度 */
   :root {
-    /* 手機下的星期列高度與字級 */
     --col-header-height: 34px;
     --col-header-size: 16px;
   }
-
-  /* 7) 手機 > Header：週/月視圖共用星期列高度 */
   #calendar .fc-col-header {
     height: var(--col-header-height) !important;
   }
@@ -1628,18 +1325,15 @@ body {
     text-shadow:
       0 1px 0 #fff,
       0 1px 4px rgba(0, 0, 0, 0.18);
-    font-size: clamp(14px, 4.5vw, 18px); /* 手機自適應縮小 */
-    letter-spacing: 2px; /* 收斂字距避免擠在一起 */
+    font-size: clamp(14px, 4.5vw, 18px);
+    letter-spacing: 2px;
     line-height: var(--col-header-height);
   }
-
-  /* 7) 手機 > Week 視圖：表頭置中 */
   #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion {
     justify-content: center !important;
     text-align: center;
   }
 
-  /* 7) 手機 > Timegrid：事件卡片與互動（空白可點、卡片可點） */
   #calendar .fc-timegrid-event {
     height: 100% !important;
   }
@@ -1651,10 +1345,10 @@ body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.8fr);
   }
   .evt-svc {
-    font-size: 13px; /* 手機：徽章字體縮小，避免擠到姓名/電話 */
-    height: 24px; /* 手機：徽章高度縮小（外框變粗後保留一點空間） */
-    padding: 0 10px; /* 手機：左右內距縮小 */
-    border-radius: 999px; /* 手機：膠囊圓角 */
+    font-size: 13px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
   }
   .evt-col-svc,
   .evt-col-name,
@@ -1668,26 +1362,20 @@ body {
   .evt-col-phone {
     font-size: 13px;
   }
-
-  /* 7) 手機 > Timegrid：event-harness 擺位還原（交由全域 right:5% 控制右側留白） */
   #calendar .fc-timegrid-event-harness {
-    width: auto !important; /* 還原為自動，交由全域 right:5% 控制右側留白 */
-    left: 0 !important; /* 靠左貼齊 */
+    width: auto !important;
+    left: 0 !important;
   }
 
-  /* 7) 手機 > Timegrid：事件卡片（空白可點與右側留白） */
-  /* 指向全域：沿用 4) Timegrid 的 pointer-events 設定（空白可點、卡片可點） */
-
-  /* 7) 手機 > Month 視圖：右下角標籤 nowrap/clamp/auto 寬 */
   .fc-dayGridMonth-view .leave-boss::after,
   .fc-dayGridMonth-view .leave-xiaobai::after,
   .fc-dayGridMonth-view .leave-yatting::after {
-    white-space: nowrap !important; /* 強制不換行（含 CJK） */
-    word-break: keep-all; /* CJK 保持整字，不任意斷行 */
-    font-size: clamp(10px, 2.8vw, 13px); /* 依視窗寬度縮放，防止超出 */
-    padding: 2px 4px; /* 手機內距略縮小避免擠爆 */
-    width: auto; /* 取消 1/3 寬的繼承，改為內容自適應 */
-    display: inline-block; /* 依內容寬度收縮 */
+    white-space: nowrap !important;
+    word-break: keep-all;
+    font-size: clamp(10px, 2.8vw, 13px);
+    padding: 2px 4px;
+    width: auto;
+    display: inline-block;
   }
 }
 @media (max-width: 560px) {
@@ -1698,7 +1386,8 @@ body {
     padding: 12px 12px !important;
   }
 }
-/* ==================== Toast（儲存中提示） ==================== */
+
+/* ==================== Toast ==================== */
 #toast-container {
   position: fixed;
   top: 16px;
@@ -1739,9 +1428,9 @@ body {
 .toast--loading {
   background: #3949ab;
 }
-/* ==================== iPad Pro 10.5"（1112×834, 橫向）專用調整 ==================== */
+
+/* iPad Pro Landscape */
 @media (min-width: 1024px) and (max-width: 1200px) and (orientation: landscape) {
-  /* 表頭：設計師名稱小一點並往左 */
   #calendar .resource-cushion {
     justify-content: flex-start;
     padding-left: 12px;
@@ -1751,8 +1440,6 @@ body {
     letter-spacing: 0.04em;
     text-align: left;
   }
-
-  /* 時間軸：稍微縮小 */
   :root {
     --per-resource-time-axis-width: 70px;
     --per-resource-time-item-offset: -4px;
@@ -1769,15 +1456,11 @@ body {
     background: rgba(255, 255, 255, 0.72);
     box-shadow: 0 4px 10px rgba(28, 39, 45, 0.06);
   }
-
-  /* 事件卡片：姓名 / 電話字級 */
-  #calendar .evt-col-name {
+  #calendar .evt-col-name,
+  #calendar .evt-col-phone,
+  #calendar .evt-svc {
     font-size: 16px;
   }
-  #calendar .evt-col-phone {
-    font-size: 16px;
-  }
-  /* 事件卡片：縮減服務勳章與姓名/電話的間距 */
   .evt-col-svc,
   .evt-col-name,
   .evt-col-phone {
@@ -1787,28 +1470,12 @@ body {
     padding-left: 0;
     padding-right: 2px;
   }
-  /* 事件卡片：服務勳章字級調整 */
-  #calendar .evt-svc {
-    font-size: 16px;
-  }
-  /* 事件卡片：三欄寬度（保持 base proportion） */
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
   }
 }
-/* ==================== 14) Modal（彈窗：預約/排休/報表） ====================
-   你的 index.html 有三種彈窗（modal）：
-   - 預約 appointmentModal
-   - 排休 leaveModal
-   - 報表 reportModal
 
-   結構大致相同：
-   - `.modal`：全螢幕遮罩（黑色半透明 + blur）
-   - `.modal-content`：中間的內容框
-   - `.close-button`：右上角 X
-   - `.modal-form`：表單網格（兩欄，手機改一欄）
-   ------------------------------------------------------------------ */
-/* 彈窗背景遮罩 */
+/* ==================== 14) Modal ==================== */
 .modal {
   display: none;
   position: fixed;
@@ -1819,8 +1486,6 @@ body {
   background: rgba(8, 8, 8, 0.6);
   backdrop-filter: blur(8px);
 }
-
-/* 彈窗內容容器 */
 .modal-content {
   position: relative;
   background: linear-gradient(180deg, #303030 0%, #262626 100%);
@@ -1843,7 +1508,6 @@ body {
   }
 }
 
-/* 彈窗關閉按鈕 */
 .close-button {
   position: absolute;
   top: 10px;
@@ -1873,7 +1537,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* 彈窗表單樣式 */
 .modal-content h3 {
   color: #ededed;
   font-weight: 600;
@@ -1893,6 +1556,7 @@ body {
   color: rgba(255, 255, 255, 0.65);
   font-size: 28px;
 }
+
 .modal-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1911,7 +1575,7 @@ body {
 .modal-form select,
 .modal-form textarea {
   width: 100%;
-  padding: 14px 12px; /* ✅ 增加高度：從 10px 改為 14px */
+  padding: 14px 12px;
   margin-top: 4px;
   border: none;
   box-sizing: border-box;
@@ -1925,8 +1589,6 @@ body {
     transform 0.2s ease,
     background 0.2s ease;
 }
-
-/* 彈窗內的所有輸入元件：統一圓角（避免有的方、有的圓） */
 .modal-content
   input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
 .modal-content select,
@@ -1944,7 +1606,6 @@ body {
   color: #1c1c1c;
 }
 
-/* 彈窗分段卡片 */
 .modal-section {
   background: rgba(255, 255, 255, 0.04);
   border: none;
@@ -1954,75 +1615,185 @@ body {
   display: flex;
   flex-direction: column;
 }
-/* NOTE:
-   結帳區塊（`.settlement-section`）的視覺強化樣式，已集中在 Step12（約 2490 行附近）。
-   這裡不要再用 `.modal-section.settlement-section ...`，否則會因為選擇器更精準而覆蓋後面設定。 */
-
 .form-span-2 {
   grid-column: 1 / -1;
 }
-
 .modal-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 300px 1fr !important;
   gap: 20px;
+  align-items: stretch;
 }
+@media (max-width: 600px) {
+  .modal-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .modal-col {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 100%;
 }
-.price-group {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 10px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
+.modal-col > .modal-section {
+  flex: 1 1 auto;
+}
+
+/* 藍卡 (左欄) */
+.blue-card-section {
+  background: rgba(33, 150, 243, 0.12);
+  border: 1px solid rgba(33, 150, 243, 0.28);
+  border-radius: 12px;
+  padding: 12px 8px; /* reduce right padding to shift inputs left */
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.blue-card-section label {
+  color: #1976d2 !important;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 14px;
+}
+.blue-card-section .form-row {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr); /* narrower label column */
+  align-items: center;
+  gap: 8px; /* reduce gap between label and input */
+  margin-bottom: 10px;
+}
+.blue-card-section .form-row > * {
+  min-width: 0; /* allow children to shrink within grid */
+}
+.blue-card-section input,
+.blue-card-section select,
+.blue-card-section textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.blue-card-section .form-row > label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  text-align: right; /* 將標籤文字靠右，靠近輸入欄 */
+  padding-right: 6px;
+}
+
+/* 綠卡 (右欄 - 結帳) */
+.settlement-section {
+  background: rgba(76, 175, 80, 0.12);
+  border: 1px solid #81c784;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.settlement-section label[for] {
+  color: #81c784;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 14px;
+}
+.settlement-section .settlement-row {
+  display: grid;
+  grid-template-columns: 80px 1fr; /* label column narrowed to 80px for specific fields */
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.settlement-section .settlement-row > label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #81c784; /* 其他自訂 / 燙髮自訂 等欄位標籤使用淺綠色 */
+}
+.settlement-section .settlement-row--title > label {
+  color: #81c784 !important;
+  font-weight: 700;
+  font-size: 16px;
+}
+.settlement-row.settlement-row--inline {
+  grid-template-columns: 1fr 1fr; /* two equal columns for inline pairing */
+}
+.settlement-row.settlement-row--inline .settlement-inline-item {
+  display: grid;
+  grid-template-columns: 80px 1fr; /* label + control within each half (label 80px) */
   gap: 8px;
-}
-.price-item {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
 }
-.price-label {
+.settlement-row.settlement-row--inline .settlement-inline-item label {
+  justify-self: end;
+  padding-right: 6px;
+}
+/* 讓第一個 inline 項（燙髮）整組靠左顯示 */
+.settlement-row.settlement-row--inline .settlement-inline-item:first-child {
+  grid-template-columns: 80px 1fr; /* label 固定 80px for first item */
+}
+.settlement-row.settlement-row--inline
+  .settlement-inline-item:first-child
+  label {
+  justify-self: start;
+  padding-right: 8px;
+}
+.settlement-row.settlement-row--inline
+  .settlement-inline-item:first-child
+  select {
+  justify-self: start;
+  margin-left: 0;
+  width: 50% !important;
+  min-width: 110px;
+  max-width: 220px;
+}
+/* 將燙髮（下拉）靠左顯示：限制寬度並靠左對齊，數字輸入也靠左 */
+.settlement-row.settlement-row--inline {
+  justify-items: start; /* 兩個欄位內容靠左 */
+}
+.settlement-row.settlement-row--inline .settlement-inline-item select,
+.settlement-row.settlement-row--inline
+  .settlement-inline-item
+  .custom-price-input {
+  width: auto; /* 不撐滿整欄，維持內容寬度 */
+  justify-self: start;
+  max-width: 220px; /* 避免過長 */
+  min-width: 110px;
+}
+.settlement-row.settlement-row--inline .settlement-inline-item select {
+  height: 40px;
+  padding: 2px 2px;
+  border-radius: 8px;
+}
+.settlement-row.settlement-row--inline
+  .settlement-inline-item
+  .custom-price-input {
+  height: 40px;
+  padding: 2px 2px;
+  border-radius: 8px;
+}
+.settlement-section .shop-sales-inputs {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  color: #eee;
+  gap: 8px;
+  min-width: 0;
 }
-.price-val {
-  color: #ddd;
-  font-size: 0.9em;
+.settlement-section .shop-sales-inputs #retail_item {
+  flex: 2 1 0;
+  min-width: 0;
 }
-.total-display {
-  text-align: right;
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #ffeb3b;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.settlement-section .shop-sales-inputs #retail_price {
+  flex: 1 0 110px;
+  min-width: 0;
 }
-
-/* Mobile responsive for modal grid */
-@media (max-width: 768px) {
-  .modal-layout-grid {
-    grid-template-columns: 1fr;
-  }
+.settlement-section > label {
+  color: #81c784 !important; /* 剪髮項目、其他項目 使用淺綠 */
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 16px;
 }
 
-#customer-fields {
-  display: contents;
-}
-.modal-section input + label,
-.modal-section select + label,
-.modal-section textarea + label {
-  margin-top: 12px;
-}
-
-/* 預約類型選擇區塊 */
+/* 類型切換 */
 .appointment-type-section {
   margin: 0;
 }
@@ -2031,7 +1802,6 @@ body {
   font-weight: 700;
   color: var(--text-primary);
 }
-/* 滑動切換按鈕 (Sliding Toggle) */
 .type-toggle-container {
   position: relative;
   display: flex;
@@ -2044,11 +1814,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 6px;
 }
-
 .type-toggle-container input[type="radio"] {
   display: none !important;
 }
-
 .toggle-label {
   flex: 1 !important;
   display: flex !important;
@@ -2061,10 +1829,9 @@ body {
   color: rgba(255, 255, 255, 0.45) !important;
   transition: color 0.3s ease !important;
   position: relative !important;
-  margin: 0 !important; /* ✅ 移除全域 label 可能的外距 */
-  padding: 0 !important; /* ✅ 移除全域 label 可能的內距 */
+  margin: 0 !important;
+  padding: 0 !important;
 }
-
 .sliding-glider {
   position: absolute !important;
   top: 4px !important;
@@ -2080,23 +1847,20 @@ body {
     background 0.3s ease,
     border-color 0.3s ease !important;
 }
-
 #appointment-normal:checked ~ .sliding-glider {
   transform: translateX(0);
 }
-
 #appointment-blocked:checked ~ .sliding-glider {
   transform: translateX(100%);
-  background: rgba(158, 158, 158, 0.15); /* 不約時段使用不飽和色彩 */
+  background: rgba(158, 158, 158, 0.15);
   border-color: rgba(158, 158, 158, 0.35);
 }
-
 #appointment-normal:checked ~ .toggle-label.left,
 #appointment-blocked:checked ~ .toggle-label.right {
   color: #fff;
 }
 
-/* 表單按鈕 */
+/* 按鈕區 */
 #submit-btn,
 #deleteBtn,
 #submitLeaveBtn,
@@ -2135,7 +1899,6 @@ body {
 #deleteLeaveBtn:active {
   transform: translateY(0);
 }
-
 .modal-actions {
   margin-top: 2px;
   text-align: right;
@@ -2149,8 +1912,6 @@ body {
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
   grid-column: 1 / -1;
 }
-
-/* 新增預約：把底部按鈕區塊併入「預約資訊」同一張卡片 */
 #appointmentModal.is-create #appointment-info-card .modal-actions {
   margin-top: 14px;
   padding: 14px 0 0;
@@ -2159,8 +1920,6 @@ body {
   border-radius: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
-
-/* 手機/平板：彈窗在小螢幕更好用（放在 Modal 區塊後面，確保能覆蓋上方 base 規則） */
 @media (max-width: 1024px) {
   .modal-content {
     width: 95%;
@@ -2172,63 +1931,41 @@ body {
   }
 }
 
-/* ==================== 🔗 日曆格線與分隔線 ==================== */
-/* --- 新增這段來移除事件容器的左右外邊距 --- */
+/* 網格線與事件擺位 */
 #calendar .fc-timegrid-col-events {
   margin-left: 0 !important;
   margin-right: 0 !important;
-  /* 讓欄位的空白處可點（建立事件），但事件卡片仍可點擊編輯 */
   pointer-events: none;
 }
-
-/* b) 為【內容區的每一欄】的右邊，畫一條垂直線 (使用偽元素，佈局最安全) */
 #calendar .fc-timegrid-body .fc-timegrid-col {
   position: relative;
 }
 #calendar .fc-timegrid-body .fc-timegrid-col:not(:last-child)::after {
-  content: ""; /* 確保偽元素能被生成 */
+  content: "";
   position: absolute;
   top: 0;
   bottom: 0;
   right: 0;
-  width: var(--calendar-line-width); /* 使用變數控制粗細 */
-  background: var(--calendar-line-color); /* 使用變數控制顏色 */
-  z-index: 4; /* 確保線條顯示在背景之上 */
+  width: var(--calendar-line-width);
+  background: var(--calendar-line-color);
+  z-index: 4;
   pointer-events: none;
 }
-
-/* a) 移除時間格的水平線 */
 #calendar .fc-timegrid-slot {
   border-bottom: none !important;
 }
-
-/* ---- 4) 時間格/格線 Timegrid > 互動與事件擺位（全域） ---- */
-/* 讓事件卡片右邊保留 5% 留白，避免貼齊邊緣；維持可讀性 */
 #calendar .fc-timegrid-event-harness {
   right: 2% !important;
-  /* ✅ 事件卡片上下不要黏在一起：
-     - `fc-timegrid-event-harness` 是 FullCalendar 用來定位事件高度/位置的容器
-     - 我們用 padding 上下各留一點空白，事件本體（height:100%）就會自然變矮 */
   padding-top: var(--event-card-vertical-gap);
   padding-bottom: var(--event-card-vertical-gap);
   box-sizing: border-box;
 }
 #calendar .fc-timegrid-col-events .fc-timegrid-event,
 #calendar .fc-timegrid-col-events .fc-timegrid-event * {
-  /* 搭配上面 `.fc-timegrid-col-events { pointer-events: none; }`
-     這裡把事件卡片本身「點擊恢復」：
-     - 空白處可點：新增預約
-     - 卡片可點：編輯預約
-  */
   pointer-events: auto;
 }
 
-/* 日視圖：三位設計師欄位做成卡片式分隔（卡片化版）
-   觀念：
-   - FullCalendar 的 timegrid 原本像「一張表格」
-   - 這裡把每位設計師的一欄，做成像卡片的容器（圓角/內縮 margin）
-   - 並用 data-resource-id 套不同的淡色背景（對應三位設計師）
-*/
+/* 日視圖卡片化 */
 #calendar .fc-resourceTimeGridDay-view .fc-scrollgrid,
 #calendar .fc-resourceTimeGridDay-view .fc-scrollgrid td,
 #calendar .fc-resourceTimeGridDay-view .fc-scrollgrid th {
@@ -2275,7 +2012,7 @@ body {
   overflow: hidden;
   position: relative;
   z-index: 1;
-  height: calc(100% - 12px) !important; /* ✅ 確保填滿高度 (扣除上下 margin) */
+  height: calc(100% - 12px) !important;
 }
 #calendar
   .fc-resourceTimeGridDay-view
@@ -2302,7 +2039,6 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: none;
   pointer-events: none;
   z-index: 0;
 }
@@ -2319,13 +2055,10 @@ body {
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  border-radius: 18px; /* ✅ 與 .fc-timegrid-col-frame 保持一致 */
+  border-radius: 18px;
 }
 
-/* ✅ 日視圖：把「最左邊」原本的時間軸縮到 0（改用每位設計師欄位內各自的時間軸）
-   - 用 `display:none` 在表格欄位上有時會讓 FullCalendar 的版面計算出現偏移（造成左邊欄被截斷）
-   - 改用「保留 DOM / 保留欄位，但寬度=0 + 不顯示內容」會更穩定
-*/
+/* 日視圖時間軸處理 */
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-axis,
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-slot-label {
   width: 0 !important;
@@ -2334,24 +2067,17 @@ body {
   padding: 0 !important;
   border: none !important;
   overflow: hidden !important;
-  /* 讓這一欄的「最小內容寬度」也變成 0，避免表格仍幫它保留空白寬度 */
   font-size: 0 !important;
   line-height: 0 !important;
   visibility: hidden !important;
 }
-
-/* 有些版本會在 colgroup 的 col 上加 class，順手一起壓到 0 */
 #calendar .fc-resourceTimeGridDay-view col.fc-timegrid-axis,
 #calendar .fc-resourceTimeGridDay-view col.fc-timegrid-slot-label {
   width: 0 !important;
 }
-
-/* 有些版本 colgroup 沒 class：第一欄就是時間軸欄，直接壓到 0 */
 #calendar .fc-resourceTimeGridDay-view .fc-scrollgrid colgroup col:first-child {
   width: 0 !important;
 }
-
-/* 把時間軸欄裡的任何子元素也縮到 0（避免文字/內距撐開欄寬） */
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-axis *,
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-slot-label * {
   font-size: 0 !important;
@@ -2360,14 +2086,7 @@ body {
   margin: 0 !important;
   border: none !important;
 }
-
-/* 日視圖：在每位設計師欄位內，新增一條「自己的時間軸」（由 JS 動態插入）
-   - `.per-resource-time-axis`：容器（絕對定位在欄位左側）
-   - `.per-resource-time-item`：每一筆時間（12:00 / 12:15 ...）
-   注意：為了不讓事件卡片蓋住時間軸，這裡也會把事件容器往右推一點。
-*/
 #calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion {
-  /* 讓「表頭的設計師名稱」也跟內容區對齊（內容區左側多了一條時間軸） */
   padding-left: calc(10px + var(--per-resource-time-axis-width)) !important;
   padding-right: 10px !important;
 }
@@ -2381,13 +2100,12 @@ body {
   left: 10px;
   width: calc(var(--per-resource-time-axis-width) - 20px);
   pointer-events: none;
-  z-index: 3; /* 在背景之上、事件之下（事件本身有更高層級） */
+  z-index: 3;
 }
 #calendar .fc-resourceTimeGridDay-view .per-resource-time-item {
   position: absolute;
   left: 0;
   right: 0;
-  /* 以 slot 的中心點定位，再用 offset 做微調 */
   transform: translateY(calc(-50% + var(--per-resource-time-item-offset)));
   text-align: center;
   font-family: var(--font-mono);
@@ -2412,7 +2130,6 @@ body {
   box-shadow: 0 4px 12px rgba(28, 39, 45, 0.06);
   padding: 6px 6px;
 }
-
 @media (max-width: 1024px) {
   :root {
     --per-resource-time-axis-width: 60px;
@@ -2429,51 +2146,32 @@ body {
   }
 }
 
-/* ==================== 10) 覆蓋層（公休/排休/約滿） ====================
-   這一段是「畫在日曆格子上方」的提示層：
-   - `.closed-overlay`：公休或排休的遮罩（通常會蓋滿整欄）
-   - `.leave-overlay`：排休（JS 會額外加上這個 class）
-   - `.overlay-label`：覆蓋層上的文字（例如：特休/進修）
-   - `.fully-booked-outline`：已約滿外框（只畫框，不遮住預約內容）
-
-   這些元素大多不是 HTML 直接寫死，而是 index.html 的 JS 動態 append 進去：
-   - `paintMondayClosed()`：畫公休
-   - `paintEmployeeLeave()`：畫排休/約滿
-   ------------------------------------------------------------------ */
-/* 週一公休覆蓋層 */
+/* ==================== 10) Overlays ==================== */
 #calendar .closed-overlay {
-  position: absolute; /* 絕對定位，鎖在父層欄位內 */
+  position: absolute;
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  background: rgba(43, 56, 61, 0.6); /* ✅ 修正為 60% 不透明度 */
-  display: flex; /* 用 flex 讓文字置中 */
-  align-items: center; /* 垂直置中 */
-  padding-bottom: 0; /* ✅ 移除之前的 padding-bottom */
-  justify-content: center; /* 水平置中 */
-  color: #fff; /* 文字顏色 */
-  font-weight: 700; /* 粗體 */
-  font-size: clamp(
-    36px,
-    12vw,
-    96px
-  ); /* 自適應字級；要固定大小可改成 64px 等固定值 */
-  letter-spacing: 0.2em; /* 字距；數值越大越疏 */
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* 文字陰影，提升對比 */
-  z-index: 1000 !important; /* ✅ 極高層級，確保在所有內容之上 */
-  pointer-events: none; /* 不擋滑鼠操作；若要鎖住底下操作改成 auto */
-  text-align: center; /* ⭐新增：文字水平置中 */
+  background: rgba(43, 56, 61, 0.6);
+  display: flex;
+  align-items: center;
+  padding-bottom: 0;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(36px, 12vw, 96px);
+  letter-spacing: 0.2em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 1000 !important;
+  pointer-events: none;
+  text-align: center;
 }
-
-/* ✅ 新增：讓遮罩內的 label 垂直顯示（日視圖 & 週視圖） */
 #calendar .closed-overlay .overlay-label {
   display: block;
   writing-mode: vertical-rl;
   text-orientation: upright;
   line-height: 1.2;
 }
-
-/* 約滿外框（不擋點擊） */
 #calendar .fully-booked-outline {
   position: absolute;
   inset: 0 !important;
@@ -2482,82 +2180,51 @@ body {
   border: 4px solid var(--danger);
   box-shadow: inset 0 0 0 2px rgba(255, 77, 79, 0.4);
   pointer-events: none;
-  z-index: 1000 !important; /* ✅ 極高層級，確保在所有內容最上方 */
-  border-radius: 18px; /* 與卡片一致 */
-}
-
-/* 確保遮罩與框也蓋過時間軸 */
-#calendar .closed-overlay {
   z-index: 1000 !important;
+  border-radius: 18px;
 }
 #calendar .fc-resourceTimeGridDay-view .per-resource-time-axis {
-  z-index: 3; /* 確保在遮罩之下 */
+  z-index: 3;
 }
 
-/* ==================== 11) 月視圖 ====================
-   月視圖主要是「看日期」，你在 JS 裡把事件卡片隱藏（eventDisplay: 'none'）。
-   這裡的重點是：用底色 + 右下角標籤提示「固定休假規則」。
-
-   來源（在 index.html 的 JS）：
-   - dayCellDidMount：依星期加 class
-     - `.leave-boss`：週四店長休
-     - `.leave-xiaobai`：週二小白休
-     - `.leave-yatting`：週日雅婷休
-   ------------------------------------------------------------------ */
-/* 月視圖：固定休假底色與標籤文字 */
-/* 提示：右下角標籤底色由 :root 的 --month-label-bg-weak / --month-label-bg-strong 控制 */
+/* ==================== 11) Month View ==================== */
 #calendar {
   touch-action: manipulation;
-} /* 僅優化點擊，與月視圖無衝突 */
-
-/* 多月視圖：每個「月份」之間留白（僅作用於 multiMonth 月視圖） */
+}
 .fc-multiMonthMonth-view .fc-multimonth-month {
   padding: 8px;
 }
-
-/* 週四店長休：底色 + 右下角「店長休」 */
 .fc-dayGridMonth-view .leave-boss {
   background-color: var(--stylist-1-bg-light) !important;
+  position: relative;
 }
 .fc-dayGridMonth-view .leave-boss::after {
   content: "店長休";
 }
-
-/* 週二小白休：底色 + 右下角「小白休」 */
 .fc-dayGridMonth-view .leave-xiaobai {
   background-color: var(--stylist-3-bg-light) !important;
+  position: relative;
 }
 .fc-dayGridMonth-view .leave-xiaobai::after {
   content: "小白休";
 }
-
-/* 週日雅婷休：底色 + 右下角「雅婷休」 */
 .fc-dayGridMonth-view .leave-yatting {
   background-color: var(--stylist-2-bg-light) !important;
+  position: relative;
 }
 .fc-dayGridMonth-view .leave-yatting::after {
   content: "雅婷休";
 }
-
-.fc-dayGridMonth-view .leave-boss,
-.fc-dayGridMonth-view .leave-xiaobai,
-.fc-dayGridMonth-view .leave-yatting {
-  position: relative;
-}
-
-/* 月視圖右下角標籤：共用定位與尺寸屬性 */
 .fc-dayGridMonth-view .leave-boss::after,
 .fc-dayGridMonth-view .leave-xiaobai::after,
 .fc-dayGridMonth-view .leave-yatting::after {
   position: absolute;
   right: 6px;
   bottom: 4px;
-  /* 三分之一寬 */
   width: 33.333%;
   display: block;
   text-align: center;
   box-sizing: border-box;
-  /* 共用外觀（除文字內容外一致） */
   padding: 4px 8px;
   font-size: 14px;
   border-radius: 6px;
@@ -2565,70 +2232,46 @@ body {
   color: white;
   font-weight: 600;
 }
-
-/* （已整合至「7) 手機 > Timegrid / 月視圖」；移除重複手機區塊） */
-
-/* ✅ 非本月日期顏色調整為更接近白色 */
 .fc-dayGridMonth-view .fc-daygrid-day.fc-day-other {
   background-color: #f1ede7 !important;
   color: #c6bbb0 !important;
 }
-
-/* 強制保險：月視圖隱藏所有事件元素 */
 .fc-dayGridMonth-view .fc-event,
 .fc-dayGridMonth-view .fc-daygrid-event,
 .fc-dayGridMonth-view .fc-daygrid-dot-event,
 .fc-dayGridMonth-view .fc-daygrid-block-event {
   display: none !important;
 }
-
-/* 月視圖標題配色（改為白色） */
 #calendar .fc-toolbar-title.is-month-title .title-month-text {
-  color: #ffffff; /* 月份文字顏色 */
+  color: #ffffff;
 }
 
-/* ==================== 12) 週視圖 ====================
-   週視圖在你的需求裡偏向「看排休/格子」，所以：
-   - 隱藏表頭的排休/約滿按鈕（只在日視圖用）
-   - 隱藏事件卡片的文字（讓畫面更乾淨）
-   ------------------------------------------------------------------ */
-/* 只調整週視圖日期字樣大小與字距 */
+/* ==================== 12) Week View ==================== */
 #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion {
   font-size: 16px;
   letter-spacing: 0.08em;
   font-family: var(--font-display);
 }
-
-/* 週視圖：隱藏表頭「排休 / 約滿」按鈕群（僅日視圖顯示） */
 #calendar .fc-resourceTimeGridWeek-view .header-button-group {
   display: none !important;
 }
-
-/* 僅在週視圖 (resourceTimeGridWeek) 中，隱藏所有的事件卡片元素 */
 .fc-resourceTimeGridWeek-view .fc-event-title {
   display: none !important;
 }
-
-/* ==================== 8) 桌面（≥1025px） > 週視圖 ==================== */
 @media (min-width: 1025px) {
-  /* 週視圖（桌面）：設計師表頭的字放大 */
   #calendar .fc-resourceTimeGridWeek-view .fc-col-header-cell-cushion {
     font-size: 20px !important;
     letter-spacing: 0.1em;
   }
-
-  /* 週視圖（桌面）：紫色排休覆蓋層文字縮小並保持直書顯示 */
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay {
-    font-size: 34px; /* 加大一些：週視圖的直書字級 */
+    font-size: 34px;
     line-height: 1.1;
-    padding: 0 !important; /* 移除任何 padding 影響位置 */
-    position: absolute; /* 覆蓋整欄位 */
-    inset: 0; /* 充滿父層欄位 */
-    display: flex; /* 仍使用 flex 以便其他情境對齊 */
-    pointer-events: none !important; /* 禁用點擊，避免誤觸 */
+    padding: 0 !important;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    pointer-events: none !important;
   }
-
-  /* 將排休文字固定在欄位高度的三分之一處，並強制直書 */
   #calendar
     .fc-resourceTimeGridWeek-view
     .closed-overlay.leave-overlay
@@ -2637,31 +2280,22 @@ body {
     top: 33%;
     left: 50%;
     transform: translate(-50%, -50%);
-    writing-mode: vertical-rl !important; /* 強制直書 */
-    text-orientation: upright !important; /* 中文直立易讀 */
+    writing-mode: vertical-rl !important;
+    text-orientation: upright !important;
   }
 }
 
-/* ==================== 16) 載入狀態／回饋／報表 ====================
-   這段是「使用者體感」相關的 UI：
-   - `#calendar.fc-loading`：當你想鎖住日曆互動（例如正在抓資料）可以加上這個 class
-   - `.btn-loading`：按鈕轉圈圈（把文字隱藏，用 ::after 畫轉圈動畫）
-   - `.report-*`：月結報表彈窗與表格的樣式
-   ------------------------------------------------------------------ */
-/* 當日曆正在讀取資料時，讓背景稍微變淡並禁止操作 */
+/* ==================== 16) Loading & Report ==================== */
 #calendar.fc-loading {
   opacity: 0.6;
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
-
-/* 定義按鈕轉圈圈的動畫樣式 */
 .btn-loading {
   position: relative;
-  color: transparent !important; /* 隱藏原本的按鈕文字 */
+  color: transparent !important;
   pointer-events: none;
 }
-
 .btn-loading::after {
   content: "";
   position: absolute;
@@ -2672,20 +2306,15 @@ body {
   margin: -9px 0 0 -9px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: #fff; /* 旋轉圈圈的顏色 */
+  border-top-color: #fff;
   animation: spin 0.8s linear infinite;
 }
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* ===========================
-   [新增] 報表相關樣式
-   =========================== */
-/* 開啟報表按鈕 */
 .report-trigger-btn {
   background: rgba(255, 255, 255, 0.16);
   color: var(--date-card-text);
@@ -2707,8 +2336,6 @@ body {
   background: rgba(255, 255, 255, 0.28);
   transform: translateY(-1px);
 }
-
-/* 報表控制列 */
 .report-controls {
   display: flex;
   align-items: center;
@@ -2717,13 +2344,7 @@ body {
   padding: 10px;
   border-radius: 8px;
 }
-.report-controls select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
-}
+.report-controls select,
 .report-controls input[type="date"] {
   padding: 6px 10px;
   border-radius: 6px;
@@ -2747,8 +2368,6 @@ body {
 .report-controls button:hover {
   background: #4a858f;
 }
-
-/* 報表表格樣式 */
 .report-table {
   width: 100%;
   border-collapse: collapse;
@@ -2773,8 +2392,6 @@ body {
   font-weight: bold;
   color: #fff;
 }
-
-/* 服務項目小標籤 */
 .service-tag {
   display: inline-block;
   font-size: 12px;
@@ -2785,163 +2402,35 @@ body {
   color: #ccc;
 }
 
-/* ==================== 12) 彈窗樣式更新（Step 374 & 464） ==================== */
-/* 左欄位寬度調整：
-   需求是「左欄縮小、右欄不要被撐太寬」；因此採用「左欄固定寬度、右欄自適應」的網格布局。 */
-.modal-layout-grid {
-  display: grid;
-  /* grid-template-columns: 1fr 2fr !important; 舊嘗試 */
-  /* 新方案：右欄用 1fr 自適應，避免被撐太寬 */
-  grid-template-columns: 220px 1fr !important;
-  gap: 20px;
-}
-@media (max-width: 600px) {
-  .modal-layout-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* 左欄卡片（藍色系）- 強化辨識 */
-.blue-card-section {
-  background: rgba(33, 150, 243, 0.18); /* 提高透明度，提升可見度 */
-  border: 1px solid rgba(33, 150, 243, 0.45); /* 邊框更明顯 */
-  border-radius: 10px; /* 圓角更明顯 */
-  padding: 4px 8px; /* 內距更舒服 */
-  margin-bottom: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* 輕微立體感 */
-}
-.blue-card-section label {
-  color: #64b5f6 !important; /* 藍色字更亮、提高可讀性 */
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: block;
-  font-size: 16px;
-}
-/* 左欄（藍卡）：讓「label + 下拉/輸入」同列（時間/顧客姓名/電話/服務備註） */
-.blue-card-section .form-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.blue-card-section .form-row > label {
-  margin: 0;
-  white-space: nowrap;
-}
-
-/* 結帳區塊（右欄，綠色系）- 強化辨識 */
-.settlement-section {
-  background: rgba(76, 175, 80, 0.18); /* 提高透明度 */
-  border: 1px solid rgba(76, 175, 80, 0.45); /* 邊框更明顯 */
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* 輕微立體感 */
-}
-/* 結帳區：一般「欄位 label」（有 for 的那種，例如：漂4000 材料費、操作助理） */
-.settlement-section label[for] {
-  color: rgba(232, 245, 233, 0.78);
-  font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
-  font-size: 16px;
-}
-/* 結帳區：讓「label + 下拉/輸入」同列（燙髮/店販/操作助理） */
-.settlement-section .settlement-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.settlement-section .settlement-row > label {
-  margin: 0;
-  white-space: nowrap;
-}
-.settlement-section .settlement-row--title > label {
-  /* 燙髮/店販：標題字樣與「剪髮項目/其他項目」一致 */
-  color: #81c784 !important;
-  font-weight: 600;
-  font-size: 18px;
-}
-.settlement-section .settlement-row label[for] {
-  margin-bottom: 0;
-}
-.settlement-section .shop-sales-inputs {
-  display: flex;
-  gap: 10px;
-  min-width: 0;
-}
-.settlement-section .shop-sales-inputs #retail_item {
-  flex: 2;
-  min-width: 0;
-}
-.settlement-section .shop-sales-inputs #retail_price {
-  flex: 1;
-  min-width: 0;
-}
-/* 結帳卡內的「標題 label」（剪髮項目/其他項目/店販...）：用更大的字 */
-.settlement-section > label {
-  color: #81c784 !important; /* 綠色字更亮、提高可讀性 */
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: block;
-  font-size: 18px;
-}
-
-/* 類型選擇：直向排列的單選鈕 */
-.appointment-type-section .radio-group {
-  flex-direction: column !important;
-  gap: 8px;
-}
-.appointment-type-section .radio-pill {
-  width: 100%;
-  margin: 0;
-  text-align: center;
-  justify-content: center;
-  display: flex; /* 用 flex 才能置中 */
-}
-
-/* 下拉選單選項樣式 */
-/* 預設：深色背景 */
+/* Modal Inputs Enhancement */
 .modal-content select option {
   background-color: #2c2c2c !important;
   color: #ffffff !important;
 }
-
-/* 時間選單（左欄）- 深藍 */
 .modal-col:first-child select option,
 #minute_select option {
-  background-color: #1a237e !important; /* 深藍 */
+  background-color: #1a237e !important;
   color: #ffffff !important;
 }
-
-/* 助理選單（右欄）- 深綠 */
 #assistant_select option {
-  background-color: #1b5e20 !important; /* 深綠 */
+  background-color: #1b5e20 !important;
   color: #ffffff !important;
 }
-
-/* 滑入 / 選取狀態 */
 .modal-content select option:hover,
 .modal-content select option:checked {
-  background-color: #0d47a1 !important; /* 滑入時用更亮的藍色 */
+  background-color: #0d47a1 !important;
   color: #ffffff !important;
 }
 
-/* 左欄輸入框（藍色調）- 強化辨識 */
 .modal-col:first-child input[type="text"],
 .modal-col:first-child input[type="tel"],
 .modal-col:first-child input[type="number"],
 .modal-col:first-child select,
 .modal-col:first-child textarea {
-  background-color: rgba(33, 150, 243, 0.15) !important; /* 提高透明度 */
+  background-color: rgba(33, 150, 243, 0.15) !important;
   color: #e3f2fd !important;
-  border: 1px solid rgba(33, 150, 243, 0.5) !important; /* 邊框加粗 */
+  border: 1px solid rgba(33, 150, 243, 0.5) !important;
 }
-
-/* 左欄：預約資訊欄位加高（時間/姓名/電話/服務備註/備註） */
 #minute_select,
 #customer_name,
 #customer_phone,
@@ -2949,7 +2438,6 @@ body {
   min-height: 44px;
   padding: 10px 12px;
   box-sizing: border-box;
-  /* 依需求：統一寬度 150px（不含備註 textarea） */
   width: 150px;
   max-width: 150px;
 }
@@ -2967,15 +2455,14 @@ body {
   background-color: rgba(33, 150, 243, 0.22) !important;
 }
 
-/* 右欄輸入框（綠色調）- 強化辨識 */
 .settlement-col input[type="text"],
 .settlement-col input[type="tel"],
 .settlement-col input[type="number"],
 .settlement-col select,
 .settlement-col textarea {
-  background-color: rgba(76, 175, 80, 0.15) !important; /* 提高透明度 */
+  background-color: rgba(76, 175, 80, 0.15) !important;
   color: #e8f5e9 !important;
-  border: 1px solid rgba(76, 175, 80, 0.5) !important; /* 邊框加粗 */
+  border: 1px solid rgba(76, 175, 80, 0.5) !important;
 }
 .settlement-col input:focus,
 .settlement-col select:focus,
@@ -2984,20 +2471,17 @@ body {
   outline: none;
   background-color: rgba(76, 175, 80, 0.22) !important;
 }
-
-/* 佔位文字顏色 */
 .modal-col:first-child input::placeholder,
 .modal-col:first-child textarea::placeholder {
-  color: rgba(227, 242, 253, 0.32) !important; /* 更淡 */
-  font-weight: 400 !important; /* 不要粗體 */
+  color: rgba(227, 242, 253, 0.32) !important;
+  font-weight: 400 !important;
 }
 .settlement-col input::placeholder,
 .settlement-col textarea::placeholder {
-  color: rgba(232, 245, 233, 0.32) !important; /* 更淡 */
-  font-weight: 400 !important; /* 不要粗體 */
+  color: rgba(232, 245, 233, 0.32) !important;
+  font-weight: 400 !important;
 }
 
-/* 價格群組（結帳卡）：改成 3 欄排列（兩行，每行 3 個）＋列高加大 */
 .settlement-section .price-group {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3007,48 +2491,68 @@ body {
 .settlement-section .price-item {
   display: flex !important;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: flex-start; /* keep label and price close */
+  gap: 30px; /* smaller gap between label and price */
   margin: 0 !important;
-  padding: 4px 4px;
-  min-height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  /* 結帳卡的「選項按鈕（label.price-item）」字體大小（助理最常看的字） */
-  font-size: 20px;
+  padding: 2px 2px;
+  min-height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 15px;
 }
 .settlement-section .price-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
+  font-size: 14px;
+  margin-right: 6px; /* reduce distance to price */
 }
 .settlement-section .price-val {
   white-space: nowrap;
-  /* 結帳卡：右側金額顏色（與左側文字分開） */
-  color: rgba(160, 230, 168, 0.9);
+  color: #fff59d; /* 淺黃色 */
+  font-weight: 700;
 }
 
-/* 店販 / 助理：列高加大（結帳卡內的文字輸入與下拉） */
 #settlement-col #retail_item,
 #settlement-col #retail_price,
 #settlement-col #perm_select,
 #settlement-col #bleach4000_cost,
 #settlement-col #assistant_select {
-  min-height: 44px;
-  padding: 10px 12px;
+  min-height: 40px;
+  padding: 8px 10px;
   box-sizing: border-box;
-  /* 依需求：統一寬度 150px（不含備註 textarea） */
-  width: 150px;
-  max-width: 150px;
-}
-/* 店販兩個輸入原本是 flex 比例分配；若要固定 50px，需把 flex 收斂 */
-#settlement-col #retail_item,
-#settlement-col #retail_price {
-  flex: 0 0 150px;
+  width: auto;
+  max-width: 100%;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--modal-border);
+  background: transparent;
+  color: var(--text-primary);
 }
 
-/* 結帳卡底部：操作助理 + 總金額 同列並排（總金額靠右） */
+/* 設定操作助理下拉固定寬高 150x40 */
+#settlement-col #assistant_select {
+  width: 150px !important;
+  min-width: 150px;
+  max-width: 150px;
+  height: 40px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+/* 設定燙髮下拉固定寬高 150x40 並靠左 */
+#settlement-col #perm_select {
+  width: 150px !important;
+  min-width: 150px;
+  max-width: 150px;
+  height: 40px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  justify-self: start;
+}
+/* retail inputs flex handled in .shop-sales-inputs */
+
 #settlement-col .assistant-total-row {
   display: flex;
   align-items: flex-end;
@@ -3057,7 +2561,7 @@ body {
 }
 #settlement-col .assistant-total-row .assistant-field {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 80px minmax(0, 1fr); /* label column set to 80px */
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -3065,10 +2569,15 @@ body {
 #settlement-col .assistant-total-row .assistant-field > label {
   margin: 0;
   white-space: nowrap;
-  /* 操作助理：標題字樣與「剪髮項目/其他項目」一致 */
-  color: #81c784 !important;
+  color: #81c784 !important; /* 操作助理 使用淺綠 */
   font-weight: 600;
   font-size: 18px;
+}
+
+/* 價目文字（例如：「高中剪髮」）顯示為白色 */
+.settlement-section .price-item,
+.settlement-section .price-item .price-label {
+  color: #ffffff;
 }
 #settlement-col .assistant-field {
   flex: 1 1 auto;
@@ -3082,9 +2591,8 @@ body {
   text-align: right;
 }
 
-/* 結帳卡：改回未結帳（清空金額）按鈕 */
 #settlement-col .unset-paid-btn {
-  display: none; /* 由 JS 控制顯示（僅已結帳時） */
+  display: none;
   margin-top: 6px;
   padding: 6px 10px;
   border-radius: 10px;
@@ -3104,47 +2612,41 @@ body {
   cursor: not-allowed;
 }
 
-/* 價格群組（右欄）：水平排列 */
+/* Right col price group reset for horizontal flow in settlement section overrides */
 .price-group {
   display: flex;
-  flex-direction: row !important; /* 由直向改為橫向 */
+  flex-direction: row !important;
   flex-wrap: wrap;
-  gap: 10px 12px; /* 垂直/水平間距 */
+  gap: 10px 12px;
 }
 .price-item {
-  flex: 0 0 auto; /* 不撐開，依內容寬度 */
+  flex: 0 0 auto;
   min-width: fit-content;
 }
 
-/* 網格版面：右欄寬度依內容自適應 */
+/* Final Layout Grid */
 .modal-layout-grid {
   display: grid;
-  grid-template-columns: 280px auto !important; /* 左欄固定、右欄依內容 */
+  grid-template-columns: 280px auto !important;
   gap: 20px;
-  align-items: stretch; /* 讓左右兩欄可以拉齊高度 */
+  align-items: stretch;
 }
-
-/* 預約彈窗：讓藍/綠卡片在同一列時可拉齊高度 */
 #appointmentModal .modal-col {
   height: 100%;
 }
 #appointmentModal .modal-col > .modal-section {
   flex: 1 1 auto;
 }
-
-/* 結帳欄隱藏時：切回單欄 */
 .settlement-col[style*="display: none"] ~ * .modal-layout-grid,
 .modal-layout-grid:has(.settlement-col[style*="display: none"]) {
   grid-template-columns: 1fr !important;
 }
 
-/* 防止彈窗過寬的限制 */
 .modal-content {
   width: auto !important;
-  max-width: 900px; /* 預設最大寬度；JS 會依模式調整 */
+  max-width: 900px;
   min-width: 350px !important;
 }
-
 @media (max-width: 600px) {
   .modal-layout-grid {
     grid-template-columns: 1fr !important;
@@ -3154,13 +2656,77 @@ body {
     max-width: 95vw !important;
   }
 }
-
-/* iOS：避免長按出現選單/選取，讓滑動更順 */
 @media (pointer: coarse) {
   #calendar .fc-date-scroller .date-strip,
   #calendar .fc-date-scroller .date-item {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+  }
+}
+
+/* [新增] 自訂金額輸入框微調 */
+.custom-price-input {
+  width: 100% !important;
+  min-width: 80px;
+  margin-top: 4px;
+  border-radius: 8px !important; /* 強制 8px，覆蓋 var(--border-radius-small) */
+}
+
+/* 結帳總額樣式整理 */
+#settlement-col .total-display #display-total {
+  display: inline-block;
+  font-size: 24px; /* enlarged */
+  font-weight: 900;
+  color: #fff59d; /* light yellow */
+}
+/* 讓總金額、按鈕與入帳金額水平並排 */
+.total-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.total-display .total-label {
+  font-size: 12px;
+  color: #aaa;
+  font-weight: normal;
+}
+.total-display .net-display {
+  font-size: 12px;
+  color: #aaa;
+  font-weight: normal;
+}
+.unset-paid-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff59d;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* 統一 settlement 欄位內的輸入/選單外觀 */
+.settlement-col input[type="text"],
+.settlement-col input[type="tel"],
+.settlement-col input[type="number"],
+.settlement-col select,
+.settlement-col textarea {
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--modal-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+/* 小螢幕調整 */
+@media (max-width: 700px) {
+  .blue-card-section .form-row,
+  .settlement-section .settlement-row {
+    grid-template-columns: 1fr;
+  }
+  .modal-layout-grid {
+    grid-template-columns: 1fr !important;
   }
 }

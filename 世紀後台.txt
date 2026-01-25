@@ -1,0 +1,628 @@
+/** =========================
+ *  1) 全域常數與欄位映射
+ * ========================= */
+function doOptions(e) {
+  // Apps Script 的 ContentService.TextOutput 沒有 setHeader()，手動執行此函式會報錯。
+  // 另外 Web App 大多情境也不會真的呼叫到 doOptions（fetch 未設 Content-Type: application/json 時不會 preflight）。
+  return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+}
+const APPOINTMENT_SHEET_NAME = '預約';
+const LEAVE_SHEET_NAME       = '排休紀錄';
+const NOTES_SHEET_NAME       = '每日留言';
+const SCRIPT_PROPERTIES_KEY  = 'LAST_ID';
+const FIXED_DURATION_MIN     = 15;
+const EVENTS_CACHE_KEY       = 'EVENTS_CACHE_V1';
+const EVENTS_CACHE_TTL_SEC   = 15; // 快取秒數：太長會看到舊資料
+
+// 與你既有試算表一致的欄位映射
+const HEADER_MAP = {
+  '編號': 'id',
+  '設計師ID': 'employee_id',
+  '開始時間': 'start',
+  '結束時間': 'end',
+  '顧客姓名': 'customer_name',
+  '顧客電話': 'customer_phone',
+  '服務項目': 'service_id',
+  '備註': 'notes',
+  '預約類型': 'appointment_type',
+  '金額': 'amount',
+  '總金額': 'total_amount',
+  '助理ID': 'assistant_id',
+  '染髮顏色': 'dye_color'
+};
+const REVERSE_HEADER_MAP = {
+  id: '編號',
+  employee_id: '設計師ID',
+  start: '開始時間',
+  end: '結束時間',
+  customer_name: '顧客姓名',
+  customer_phone: '顧客電話',
+  service_id: '服務項目',
+  notes: '備註',
+  appointment_type: '預約類型',
+  amount: '金額',
+  total_amount: '總金額',
+  assistant_id: '助理ID',
+  dye_color: '染髮顏色'
+};
+
+/** =========================
+ *  2) 通用工具
+ * ========================= */
+function spreadsheetTZ() {
+  return SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+}
+function ensureSheet(name, headers) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+  }
+  const lastCol = sh.getLastColumn();
+  const lastRow = sh.getLastRow();
+  const hasHeader = lastRow >= 1 && lastCol >= headers.length;
+  if (!hasHeader) {
+    sh.clear();
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  } else {
+    const cur = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+    const same = cur.length === headers.length && cur.join('|') === headers.join('|');
+    if (!same) {
+      sh.clear();
+      sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
+  }
+  return sh;
+}
+
+function parseIsoAsTaipeiLocal(iso) {
+  return new Date(iso); // ISO 直接可解析
+}
+function computeEndTextFromIso(startIso) {
+  const startDate = parseIsoAsTaipeiLocal(startIso);
+  if (isNaN(startDate.getTime())) throw new Error('無效的開始時間: ' + startIso);
+  const endDate = new Date(startDate.getTime() + FIXED_DURATION_MIN * 60000);
+  return Utilities.formatDate(endDate, spreadsheetTZ(), 'yyyy-MM-dd HH:mm');
+}
+function formatPhoneTW10(input) {
+  const d = String(input || '').replace(/\D/g, '').slice(0, 10);
+  if (d.length <= 4) return d;
+  return d.replace(/^(\d{4})(\d{0,6}).*$/, function(_, a, b) {
+    return b ? (a + '-' + b) : a;
+  });
+}
+function getRowById(sheet, eventId) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 1) return null;
+  const headers = data[0];
+  const idCol = headers.indexOf(REVERSE_HEADER_MAP.id);
+  if (idCol === -1) return null;
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]) === String(eventId)) {
+      const row = {};
+      headers.forEach(function(h, j) {
+        row[HEADER_MAP[h] || h] = data[i][j];
+      });
+      return { rowData: row, rowIndex: i + 1, sheetHeaders: headers };
+    }
+  }
+  return null;
+}
+function setup() {
+  const p = PropertiesService.getScriptProperties();
+  if (!p.getProperty(SCRIPT_PROPERTIES_KEY)) {
+    p.setProperty(SCRIPT_PROPERTIES_KEY, '0');
+  }
+}
+
+function toYmd(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+  var s = String(v || '').trim();
+  var m = s.match(/^(\d{4})[\/-](\d{2})[\/-](\d{2})/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  var d = new Date(s);
+  return isNaN(d) ? s : Utilities.formatDate(d, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'yyyy-MM-dd');
+}
+function parseDateOnly(input) {
+  var ymd = toYmd(input);
+  var m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+function getEventsCache() {
+  return CacheService.getScriptCache();
+}
+function getCachedEventsJson() {
+  try {
+    return getEventsCache().get(EVENTS_CACHE_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+function setCachedEventsJson(json) {
+  try {
+    if (json) getEventsCache().put(EVENTS_CACHE_KEY, json, EVENTS_CACHE_TTL_SEC);
+  } catch (e) {}
+}
+function clearEventsCache() {
+  try {
+    getEventsCache().remove(EVENTS_CACHE_KEY);
+  } catch (e) {}
+}
+/** =========================
+ *  3) GET 路由
+ * ========================= */
+function doGet(e) {
+  const action = e && e.parameter && e.parameter.action;
+
+  // A) 排休資料
+  if (action === 'getLeave') {
+    const sh = ensureSheet(LEAVE_SHEET_NAME, ['id', 'date', 'resourceId', 'reason']);
+    const rows = sh.getDataRange().getValues();
+    const out = [];
+    for (let i = 1; i < rows.length; i++) {
+      const [id, date, resourceId, reason] = rows[i];
+      if (!date || !resourceId) continue;
+      const ymd = toYmd(date); // 統一成 'YYYY-MM-DD'
+      out.push({ id: String(id || (ymd + '-' + resourceId)), date: ymd, resourceId: String(resourceId), reason: String(reason || '') });
+
+    }
+    return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // B) 每日留言：回最新一筆 content
+  if (action === 'getNotes') {
+  const sh = ensureSheet(NOTES_SHEET_NAME, ['date', 'content']);
+  const qDate = toYmd(e && e.parameter && e.parameter.date ? e.parameter.date : '');
+  let content = '';
+  const rows = sh.getDataRange().getValues();
+  if (qDate) {
+    for (let i = 1; i < rows.length; i++) {
+      if (toYmd(rows[i][0]) === qDate) { content = String(rows[i][1] || ''); break; }
+    }
+  } else {
+    const lastRow = sh.getLastRow();
+    if (lastRow >= 2) content = String(sh.getRange(lastRow, 2).getValue() || '');
+  }
+  return ContentService.createTextOutput(JSON.stringify({ content })).setMimeType(ContentService.MimeType.JSON);
+}
+
+  // ==========================================
+  // [NEW] B-2) 區間報表功能 (新增這一段)
+  // ==========================================
+  if (action === 'getReport') {
+    try {
+      const startParam = (e.parameter && (e.parameter.startDate || e.parameter.start)) || '';
+      const endParam = (e.parameter && (e.parameter.endDate || e.parameter.end)) || '';
+      const debug = e && e.parameter && (e.parameter.debug === '1' || e.parameter.debug === 'true');
+      let data;
+      if (startParam || endParam) {
+        const startDate = parseDateOnly(startParam);
+        const endDate = parseDateOnly(endParam);
+        if (!startDate || !endDate) throw new Error('startDate/endDate 格式錯誤，請用 YYYY-MM-DD');
+        data = getRangeReportData(startDate, endDate, debug);
+      } else {
+        const year = parseInt(e.parameter.year);
+        const month = parseInt(e.parameter.month);
+        data = getMonthlyReportData(year, month, debug);
+      }
+      return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.stack })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // ==========================================
+
+
+  // C) 預約事件（相容舊 `?action=get` 與新 `?action=getEvents`）
+  if (action === 'get' || action === 'getEvents' || !action) {
+    let response;
+    try {
+      const cached = getCachedEventsJson();
+      if (cached) {
+        return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+      }
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(APPOINTMENT_SHEET_NAME);
+      if (!sheet) throw new Error('找不到工作表: ' + APPOINTMENT_SHEET_NAME);
+
+      const data = sheet.getDataRange().getValues();
+      if (data.length < 2) {
+        response = ContentService.createTextOutput(JSON.stringify([]));
+      } else {
+        const chineseHeaders = data.shift();
+        const headers = chineseHeaders.map(function(ch) { return HEADER_MAP[ch] || ch; });
+
+        const events = data.map(function(rowArray) {
+          const ev = {};
+          headers.forEach(function(header, j) { ev[header] = rowArray[j]; });
+
+          if (!ev.id || !ev.start) return null;
+
+          const startDate = new Date(ev.start);
+          if (isNaN(startDate.getTime())) return null;
+
+          // 若沒結束時間，自動補固定 15 分鐘
+          let endDate = ev.end ? new Date(ev.end) : null;
+          if (!endDate || isNaN(endDate.getTime())) {
+            endDate = new Date(startDate.getTime() + FIXED_DURATION_MIN * 60000);
+          }
+
+          const titleText = ev.appointment_type === 'blocked'
+              ? (ev.notes || '不約時段')
+              : (ev.customer_name || '未命名') + (ev.service_id ? ' - ' + ev.service_id : '');
+
+          // 前端期望的格式（含 extendedProps）
+          return {
+            id: String(ev.id),
+            resourceId: String(ev.employee_id),
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
+            title: titleText,
+            extendedProps: {
+              customer_name: ev.customer_name,
+              customer_phone: ev.customer_phone,
+              service_id: ev.service_id,
+              notes: ev.notes,
+              appointment_type: ev.appointment_type,
+              amount: ev.amount,
+              total_amount: ev.total_amount,
+              assistant_id: ev.assistant_id,
+              dye_color: ev.dye_color
+            }
+          };
+        }).filter(Boolean);
+
+        const eventsJson = JSON.stringify(events);
+        setCachedEventsJson(eventsJson);
+        response = ContentService.createTextOutput(eventsJson);
+      }
+    } catch (err) {
+      response = ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.stack }));
+    }
+    return response.setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 未知 action
+  return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: '未知的 action: ' + action }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** =========================
+ *  4) POST 路由
+ * ========================= */
+function doPost(e) {
+  let payload = {};
+  try {
+    const raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
+    payload = JSON.parse(raw || '{}');
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'JSON 解析失敗: ' + err }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const action = payload.action;
+  try {
+    // A) 排休寫入/刪除
+    if (action === 'saveLeave') {
+  const sh = ensureSheet(LEAVE_SHEET_NAME, ['id', 'date', 'resourceId', 'reason']);
+  const { date, resourceId, reason } = payload;
+  const dateYmd = toYmd(date); // 'YYYY-MM-DD'
+  if (!dateYmd || !resourceId) throw new Error('缺少 date 或 resourceId');
+
+  const rng = sh.getDataRange().getValues();
+  let rowIndex = -1;
+  for (let i = 1; i < rng.length; i++) {
+    if (toYmd(rng[i][1]) === dateYmd && String(rng[i][2]) === String(resourceId)) {
+      rowIndex = i + 1; break;
+    }
+  }
+
+  const newId = dateYmd + '-' + resourceId;
+  const row = [newId, dateYmd, String(resourceId), String(reason || '')];
+  if (rowIndex === -1) sh.appendRow(row);
+  else sh.getRange(rowIndex, 1, 1, 4).setValues([row]);
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+}
+
+    if (action === 'deleteLeave') {
+  const sh = ensureSheet(LEAVE_SHEET_NAME, ['id', 'date', 'resourceId', 'reason']);
+  const { date, resourceId } = payload;
+  const dateYmd = toYmd(date);
+  if (!dateYmd || !resourceId) throw new Error('缺少 date 或 resourceId');
+
+  const rng = sh.getDataRange().getValues();
+  for (let i = 1; i < rng.length; i++) {
+    if (toYmd(rng[i][1]) === dateYmd && String(rng[i][2]) === String(resourceId)) {
+      sh.deleteRow(i + 1); break;
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+}
+
+    // B) 每日留言寫入（追加一筆，前端只讀取最新一筆）
+  console.log('收到 saveNotes 請求:', JSON.stringify(payload));
+if (action === 'saveNotes') {
+  console.log('saveNotes 開始執行, payload:', JSON.stringify(payload));
+  console.log('saveNotes 處理完成');
+  try {
+    const sh = ensureSheet(NOTES_SHEET_NAME, ['date', 'content']);
+    const dateYmd = toYmd(payload.date || new Date());
+    const content = String(payload.content || '');
+    console.log('處理日期:', dateYmd, '內容:', content);
+    const rows = sh.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < rows.length; i++) {
+      if (toYmd(rows[i][0]) === dateYmd) { rowIndex = i + 1; break; }
+    }
+    if (rowIndex === -1) {
+      sh.appendRow([dateYmd, content]);
+      console.log('新增行:', dateYmd, content);
+    } else {
+      sh.getRange(rowIndex, 1, 1, 2).setValues([[dateYmd, content]]);
+      console.log('更新行:', rowIndex, dateYmd, content);
+    }
+    console.log('saveNotes 執行成功');
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    console.error('saveNotes 錯誤:', error);
+    throw error;
+  }
+}
+
+
+    // C) 預約 CRUD（保留你原本的三種）
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(APPOINTMENT_SHEET_NAME);
+    if (!sheet) throw new Error('找不到工作表: ' + APPOINTMENT_SHEET_NAME);
+    switch (action) {
+      case 'create':
+        return ContentService.createTextOutput(JSON.stringify(doCreate(payload, sheet))).setMimeType(ContentService.MimeType.JSON);
+      case 'edit':
+        return ContentService.createTextOutput(JSON.stringify(doEdit(payload, sheet))).setMimeType(ContentService.MimeType.JSON);
+      case 'delete':
+        return ContentService.createTextOutput(JSON.stringify(doDelete(payload, sheet))).setMimeType(ContentService.MimeType.JSON);
+      default:
+        throw new Error('無效的操作: ' + action);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.stack || String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/** =========================
+ *  5) 預約 CRUD 實作
+ * ========================= */
+function doCreate(data, sheet) {
+  let lastId = PropertiesService.getScriptProperties().getProperty(SCRIPT_PROPERTIES_KEY);
+  lastId = lastId ? parseInt(lastId, 10) + 1 : 1;
+  PropertiesService.getScriptProperties().setProperty(SCRIPT_PROPERTIES_KEY, String(lastId));
+
+  if (!data.start) throw new Error('缺少開始時間');
+  const empId = parseInt(data.employee_id, 10);
+  if (isNaN(empId)) throw new Error('缺少設計師ID');
+
+  const startDateObj = new Date(data.start);
+  const formattedStartDate =
+    startDateObj.getFullYear() + '-' +
+    String(startDateObj.getMonth() + 1).padStart(2, '0') + '-' +
+    String(startDateObj.getDate()).padStart(2, '0') + ' ' +
+    String(startDateObj.getHours()).padStart(2, '0') + ':' +
+    String(startDateObj.getMinutes()).padStart(2, '0');
+
+  const formattedEndDate = computeEndTextFromIso(data.start);
+
+  const rowData = {
+    id: lastId,
+    employee_id: empId,
+    start: formattedStartDate,
+    end: formattedEndDate,
+    customer_name: data.appointment_type === 'blocked' ? '' : (data.customer_name || ''),
+    customer_phone: data.appointment_type === 'blocked' ? '' : ("'" + formatPhoneTW10(data.customer_phone)),
+    service_id: data.appointment_type === 'blocked' ? '' : (data.service_id || ''),
+    notes: data.notes || '',
+    appointment_type: data.appointment_type || 'normal',
+    amount: data.amount || '',
+    total_amount: data.total_amount || '',
+    assistant_id: data.assistant_id || '',
+    dye_color: data.dye_color || ''
+  };
+
+  const chineseHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newRow = chineseHeaders.map(function(ch) {
+    const value = rowData[HEADER_MAP[ch]];
+    return value != null ? value : '';
+  });
+
+  sheet.appendRow(newRow);
+  clearEventsCache();
+  return { status: 'success', id: lastId };
+}
+
+function doEdit(data, sheet) {
+  if (!data.id) throw new Error('缺少預約 ID');
+  const found = getRowById(sheet, data.id);
+  if (!found) throw new Error('找不到指定 ID: ' + data.id);
+
+  const empId = parseInt(data.employee_id, 10);
+  if (isNaN(empId)) throw new Error('缺少設計師ID');
+
+  const startDateObj = new Date(data.start);
+  const formattedStartDate =
+    startDateObj.getFullYear() + '-' +
+    String(startDateObj.getMonth() + 1).padStart(2, '0') + '-' +
+    String(startDateObj.getDate()).padStart(2, '0') + ' ' +
+    String(startDateObj.getHours()).padStart(2, '0') + ':' +
+    String(startDateObj.getMinutes()).padStart(2, '0');
+
+  const formattedEndDate = computeEndTextFromIso(data.start);
+
+  const merged = Object.assign({}, found.rowData, {
+    employee_id: empId,
+    start: formattedStartDate,
+    end: formattedEndDate,
+    customer_name: data.appointment_type === 'blocked' ? '' : (data.customer_name || ''),
+    customer_phone: data.appointment_type === 'blocked' ? '' : ("'" + formatPhoneTW10(data.customer_phone)),
+    service_id: data.appointment_type === 'blocked' ? '' : (data.service_id || ''),
+    notes: data.notes || '',
+    appointment_type: data.appointment_type || 'normal',
+    amount: data.amount || '',
+    total_amount: data.total_amount || '',
+    assistant_id: data.assistant_id || '',
+    dye_color: data.dye_color || ''
+  });
+
+  const headers = found.sheetHeaders;
+  const newRow = headers.map(function(ch) {
+    const key = HEADER_MAP[ch] || ch;
+    const v = merged[key];
+    return v != null ? v : '';
+  });
+
+  sheet.getRange(found.rowIndex, 1, 1, headers.length).setValues([newRow]);
+  clearEventsCache();
+  return { status: 'success' };
+}
+
+function doDelete(data, sheet) {
+  if (!data.id) throw new Error('缺少預約 ID');
+  const found = getRowById(sheet, data.id);
+  if (!found) throw new Error('找不到指定 ID: ' + data.id);
+  sheet.deleteRow(found.rowIndex);
+  clearEventsCache();
+  return { status: 'success' };
+}
+
+/** =========================
+ * 6) 報表統計功能
+ * ========================= */
+function getMonthlyReportData(year, month, debug) {
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0);
+  return getRangeReportData(startDate, endDate, debug);
+}
+
+function getRangeReportData(startDate, endDate, debug) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(APPOINTMENT_SHEET_NAME);
+  if (!sheet) return { designers: {}, assistants: {}, _debug: debug ? { error: '找不到工作表: ' + APPOINTMENT_SHEET_NAME } : undefined };
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return { designers: {}, assistants: {}, _debug: debug ? { error: '工作表沒有資料列' } : undefined };
+
+  // 1. 取得標題列並找出對應的索引位置
+  const headers = data[0].map(function(h) { return String(h || '').trim(); });
+  const idxStart = headers.indexOf(REVERSE_HEADER_MAP.start); // 開始時間
+  const idxEmpId = headers.indexOf(REVERSE_HEADER_MAP.employee_id); // 設計師ID
+  const idxType  = headers.indexOf(REVERSE_HEADER_MAP.appointment_type); // 預約類型
+  const idxAmt   = headers.indexOf(REVERSE_HEADER_MAP.amount); // 金額 (J欄)
+  const idxAsst  = headers.indexOf(REVERSE_HEADER_MAP.assistant_id); // 助理ID (K欄)
+  const idxSvc   = headers.indexOf(REVERSE_HEADER_MAP.service_id); // 服務項目
+
+  // 如果找不到關鍵欄位，回傳空
+  if (idxStart === -1 || idxEmpId === -1) {
+    return {
+      designers: {},
+      assistants: {},
+      _debug: debug ? {
+        error: '找不到必要欄位（開始時間/設計師ID）',
+        headers: headers,
+        idxStart: idxStart,
+        idxEmpId: idxEmpId
+      } : undefined
+    };
+  }
+
+  const startYmd = toYmd(startDate);
+  const endYmd = toYmd(endDate);
+
+  // 2. 初始化統計物件
+  const report = {
+    designers: {},
+    assistants: {}
+  };
+
+  const debugInfo = debug ? {
+    startYmd: startYmd,
+    endYmd: endYmd,
+    headers: headers,
+    idxStart: idxStart,
+    idxEmpId: idxEmpId,
+    idxType: idxType,
+    idxAmt: idxAmt,
+    idxAsst: idxAsst,
+    idxSvc: idxSvc,
+    sample: []
+  } : null;
+
+  // 建立 helper 函式來初始化物件
+  function ensureDesigner(id) {
+    if (!report.designers[id]) {
+      report.designers[id] = { count: 0, cutCount: 0, permCount: 0, dyeCount: 0, totalAmount: 0 };
+    }
+  }
+  function ensureAssistant(id) {
+    if (!report.assistants[id]) {
+      report.assistants[id] = { washCount: 0 };
+    }
+  }
+
+  // 3. 遍歷資料
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const startVal = row[idxStart];
+
+    // 解析日期
+    const rowYmd = toYmd(startVal);
+    if (debugInfo && debugInfo.sample.length < 5) {
+      debugInfo.sample.push({
+        rawStart: startVal,
+        rowYmd: rowYmd,
+        passRange: (rowYmd && rowYmd >= startYmd && rowYmd <= endYmd),
+        type: idxType !== -1 ? row[idxType] : ''
+      });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(rowYmd)) continue;
+    if (rowYmd < startYmd || rowYmd > endYmd) continue;
+
+    const type = idxType !== -1 ? row[idxType] : 'normal';
+    // 排除「不約時段」
+    if (type === 'blocked') continue;
+
+    // --- 設計師統計 ---
+    const empId = String(row[idxEmpId]);
+    ensureDesigner(empId);
+
+    report.designers[empId].count++;
+    report.designers[empId].cutCount++; // 每位客人一定剪，總客數視為剪
+
+    // 服務項目細項（燙/染）
+    if (idxSvc !== -1) {
+      const svc = String(row[idxSvc] || '');
+      if (svc.indexOf('燙') !== -1) report.designers[empId].permCount++;
+      if (svc.indexOf('染') !== -1) report.designers[empId].dyeCount++;
+    }
+
+    // 累加金額
+    if (idxAmt !== -1) {
+      const amt = parseFloat(row[idxAmt]);
+      if (!isNaN(amt)) {
+        report.designers[empId].totalAmount += amt;
+      }
+    }
+
+    // --- 助理統計 ---
+    if (idxAsst !== -1) {
+      const asstId = String(row[idxAsst]);
+      // 只有當助理ID有值，且不是空字串時才統計
+      if (asstId && asstId.trim() !== '') {
+        ensureAssistant(asstId);
+        // 規則：只要有排助理，就算一顆頭
+        report.assistants[asstId].washCount++;
+      }
+    }
+  }
+
+  if (debugInfo) report._debug = debugInfo;
+  return report;
+}
