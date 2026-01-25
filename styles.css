@@ -213,9 +213,9 @@ body {
   content: "";
   position: absolute;
   top: 12px;
-  right: 40px;
-  width: 104px;
-  height: 104px;
+  right: 50px;
+  width: 150px;
+  height: 150px;
   background-image: url("呆.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -289,8 +289,8 @@ body {
   display: none;
 }
 #calendar .fc-date-scroller {
-  margin: 14px 16px 16px;
-  padding: 16px 20px 18px;
+  margin: 5px 5px 10px;
+  padding: 5px 5px 10px;
   background: var(--date-card-bg);
   border-radius: 22px;
   box-shadow: var(--shadow-soft);
@@ -347,11 +347,11 @@ body {
 #calendar .fc-date-scroller .date-left-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: 10px;
+  gap: 0px;
   flex: 0 0 auto;
-  min-width: 100px;
+  min-width: 56px;
 }
 #calendar .fc-date-scroller .date-label {
   display: flex;
@@ -374,6 +374,16 @@ body {
   background: rgba(0, 0, 0, 0.06);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
   flex: 0 0 auto;
+}
+#calendar .fc-date-scroller .date-toggle {
+  /* 還原為一般文檔流位置，保持垂直排列於日期下方 */
+  position: static;
+  left: auto;
+  bottom: auto;
+  top: auto;
+  transform: none;
+  margin: 12px 0 0 0;
+  z-index: auto;
 }
 #calendar .fc-date-scroller .mobile-resource-toggle {
   display: none; /* 手機版才顯示 */
@@ -427,7 +437,7 @@ body {
 #calendar .fc-date-scroller .date-header-month,
 #calendar .fc-date-scroller .date-header-day {
   font-family: var(--font-display);
-  font-size: clamp(30px, 2.4vw, 26px);
+  font-size: clamp(24px, 2vw, 28px);
   font-weight: 500;
 }
 #calendar .fc-date-scroller .date-header-month {
@@ -440,7 +450,7 @@ body {
 #calendar .fc-date-scroller .date-strip {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 0px;
   margin-top: 0;
   padding: 2px 2px;
   min-height: 100px;
@@ -454,8 +464,23 @@ body {
   -webkit-user-select: none;
   touch-action: pan-x;
   position: relative;
-  flex: 1 1 auto;
+  /*flex: 1 1 auto;*/
   min-width: 0;
+}
+
+/* 將左右箭頭放到日期右側 */
+#calendar .fc-date-scroller .date-left-col {
+  position: relative;
+}
+#calendar .fc-date-scroller .nav-arrows {
+  position: absolute;
+  right: -40px;
+  top: 30%;
+  transform: translateY(-50%);
+  margin-bottom: 0;
+}
+#calendar .fc-date-scroller .date-label {
+  padding-right: 72px;
 }
 #calendar .fc-date-scroller .date-strip::-webkit-scrollbar {
   display: none;
@@ -842,11 +867,10 @@ body {
 /* 內容排版 */
 #calendar .fc-timegrid-event .fc-event-title.evt-line {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) minmax(0, 1.1fr);
+  grid-template-columns: auto 1fr 1fr;
   align-items: center;
   gap: 0;
   width: 100%;
-  padding-left: 0;
   padding-right: 6px;
 }
 .evt-col-svc,
@@ -879,9 +903,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 80px;
-  height: 34px;
-  padding: 0 px;
+  min-width: 40px;
+  width: 50px;
+  height: 32px;
+  padding: 0px;
   box-sizing: border-box;
   border-radius: 10px;
   font-size: 20px;
@@ -916,10 +941,11 @@ body {
   box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35) !important;
 }
 
-/* [修改] 第 5 點：燙/染/護文字改黃色，加強陰影 */
+/* [修改] 第 5 點：燙/染/護/預設文字改黃色，加強陰影 */
 .evt-svc.svc-perm,
 .evt-svc.svc-dye,
-.evt-svc.svc-treat {
+.evt-svc.svc-treat,
+.evt-svc.svc-default {
   color: #ffeb3b !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
@@ -1342,7 +1368,7 @@ body {
     padding: 0 4px;
   }
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.8fr);
+    grid-template-columns: auto 1fr 1fr;
   }
   .evt-svc {
     font-size: 13px;
@@ -1350,14 +1376,11 @@ body {
     padding: 0 10px;
     border-radius: 999px;
   }
-  .evt-col-svc,
-  .evt-col-name,
-  .evt-col-phone {
-    padding: 0 6px;
-  }
   .evt-col-svc {
+    text-align: left;
     padding-left: 0;
     padding-right: 4px;
+    transform: translateY(2px);
   }
   .evt-col-phone {
     font-size: 13px;
@@ -1459,7 +1482,7 @@ body {
   #calendar .evt-col-name,
   #calendar .evt-col-phone,
   #calendar .evt-svc {
-    font-size: 16px;
+    font-size: 20px;
   }
   .evt-col-svc,
   .evt-col-name,
@@ -1471,8 +1494,13 @@ body {
     padding-right: 2px;
   }
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
+    grid-template-columns: auto 1fr 1fr;
   }
+}
+
+/* 強制統一事件卡片電話欄在桌機/一般視窗的字級（放在檔尾以覆蓋先前規則） */
+#calendar .evt-col-phone {
+  font-size: 18px !important;
 }
 
 /* ==================== 14) Modal ==================== */
@@ -1704,6 +1732,16 @@ body {
   gap: 10px;
   margin-bottom: 10px;
 }
+.settlement-section .settlement-row.settlement-row--flex {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: none !important;
+}
+.settlement-section .settlement-row.settlement-row--flex > label {
+  width: 80px;
+  flex: 0 0 auto;
+}
 .settlement-section .settlement-row > label {
   margin: 0;
   white-space: nowrap;
@@ -1716,74 +1754,41 @@ body {
   font-size: 16px;
 }
 .settlement-row.settlement-row--inline {
-  grid-template-columns: 1fr 1fr; /* two equal columns for inline pairing */
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 12px 10px;
+  grid-template-columns: none !important;
 }
 .settlement-row.settlement-row--inline .settlement-inline-item {
-  display: grid;
-  grid-template-columns: 80px 1fr; /* label + control within each half (label 80px) */
-  gap: 8px;
+  display: flex !important;
   align-items: center;
+  gap: 10px;
 }
 .settlement-row.settlement-row--inline .settlement-inline-item label {
-  justify-self: end;
-  padding-right: 6px;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #81c784;
 }
-/* 讓第一個 inline 項（燙髮）整組靠左顯示 */
-.settlement-row.settlement-row--inline .settlement-inline-item:first-child {
-  grid-template-columns: 80px 1fr; /* label 固定 80px for first item */
+.settlement-row.settlement-row--inline select,
+.settlement-row.settlement-row--inline .custom-price-input {
+  margin-top: 0 !important;
 }
-.settlement-row.settlement-row--inline
-  .settlement-inline-item:first-child
-  label {
-  justify-self: start;
-  padding-right: 8px;
-}
-.settlement-row.settlement-row--inline
-  .settlement-inline-item:first-child
-  select {
-  justify-self: start;
-  margin-left: 0;
-  width: 50% !important;
-  min-width: 110px;
-  max-width: 220px;
-}
-/* 將燙髮（下拉）靠左顯示：限制寬度並靠左對齊，數字輸入也靠左 */
-.settlement-row.settlement-row--inline {
-  justify-items: start; /* 兩個欄位內容靠左 */
-}
-.settlement-row.settlement-row--inline .settlement-inline-item select,
-.settlement-row.settlement-row--inline
-  .settlement-inline-item
-  .custom-price-input {
-  width: auto; /* 不撐滿整欄，維持內容寬度 */
-  justify-self: start;
-  max-width: 220px; /* 避免過長 */
-  min-width: 110px;
-}
-.settlement-row.settlement-row--inline .settlement-inline-item select {
-  height: 40px;
-  padding: 2px 2px;
-  border-radius: 8px;
-}
-.settlement-row.settlement-row--inline
-  .settlement-inline-item
-  .custom-price-input {
-  height: 40px;
-  padding: 2px 2px;
-  border-radius: 8px;
+.settlement-row.shop-sales-row {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
 }
 .settlement-section .shop-sales-inputs {
   display: flex;
   gap: 8px;
-  min-width: 0;
+  flex: none;
 }
 .settlement-section .shop-sales-inputs #retail_item {
-  flex: 2 1 0;
-  min-width: 0;
+  width: 200px;
 }
 .settlement-section .shop-sales-inputs #retail_price {
-  flex: 1 0 110px;
-  min-width: 0;
+  width: 100px;
 }
 .settlement-section > label {
   color: #81c784 !important; /* 剪髮項目、其他項目 使用淺綠 */
@@ -1806,10 +1811,10 @@ body {
   position: relative;
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 4px;
-  height: 44px;
-  width: 100%;
+  border-radius: 10px;
+  padding: 3px;
+  height: 36px;
+  width: 220px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 6px;
@@ -1825,7 +1830,7 @@ body {
   z-index: 2 !important;
   cursor: pointer !important;
   font-weight: 500 !important;
-  font-size: 18px !important;
+  font-size: 15px !important;
   color: rgba(255, 255, 255, 0.45) !important;
   transition: color 0.3s ease !important;
   position: relative !important;
@@ -1834,13 +1839,13 @@ body {
 }
 .sliding-glider {
   position: absolute !important;
-  top: 4px !important;
-  left: 4px !important;
-  height: calc(100% - 8px) !important;
-  width: calc(50% - 4px) !important;
+  top: 3px !important;
+  left: 3px !important;
+  height: calc(100% - 6px) !important;
+  width: calc(50% - 3px) !important;
   background: rgba(83, 164, 255, 0.22) !important;
   border: 1px solid rgba(83, 164, 255, 0.45) !important;
-  border-radius: 9px !important;
+  border-radius: 8px !important;
   z-index: 1 !important;
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -2442,7 +2447,8 @@ body {
   max-width: 150px;
 }
 #notes {
-  min-height: 120px;
+  flex: 1 1 auto;
+  min-height: 200px;
   padding: 10px 12px;
   box-sizing: border-box;
   resize: vertical;
@@ -2543,9 +2549,9 @@ body {
 
 /* 設定燙髮下拉固定寬高 150x40 並靠左 */
 #settlement-col #perm_select {
-  width: 150px !important;
-  min-width: 150px;
-  max-width: 150px;
+  width: 145px !important;
+  min-width: 145px;
+  max-width: 145px;
   height: 40px;
   padding: 8px 10px;
   box-sizing: border-box;
@@ -2560,11 +2566,10 @@ body {
   gap: 14px;
 }
 #settlement-col .assistant-total-row .assistant-field {
-  display: grid;
-  grid-template-columns: 80px minmax(0, 1fr); /* label column set to 80px */
+  display: flex !important;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  flex: none;
 }
 #settlement-col .assistant-total-row .assistant-field > label {
   margin: 0;
@@ -2667,8 +2672,9 @@ body {
 
 /* [新增] 自訂金額輸入框微調 */
 .custom-price-input {
-  width: 100% !important;
-  min-width: 80px;
+  width: 120px !important;
+  min-width: 120px;
+  height: 40px !important;
   margin-top: 4px;
   border-radius: 8px !important; /* 強制 8px，覆蓋 var(--border-radius-small) */
 }

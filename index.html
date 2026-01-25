@@ -21,7 +21,6 @@
 <body>
   <div id="calendar-container">
     <div id="calendar"></div>
-
     <div id="appointmentModal" class="modal">
       <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -43,7 +42,7 @@
                   <span class="sliding-glider"></span>
                 </div>
                 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
                 
                 <div class="form-row">
                   <label for="minute_select">時間 (分)</label>
@@ -51,7 +50,7 @@
                 </div>
 
                 <div id="customer-fields-left">
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
                   
                   <div class="form-row">
                     <label for="customer_name">顧客姓名</label>
@@ -68,15 +67,15 @@
                     <select id="service_id" name="service_id">
                       <option value="">-- 不選 --</option>
                       <option value="剪髮">剪髮</option>
-                      <option value="剪+染">剪+染</option>
-                      <option value="剪+燙">剪+燙</option>
-                      <option value="剪+染+燙">剪+染+燙</option>
-                      <option value="剪+頭皮護理">剪+頭皮護理</option>
+                      <option value="染">染</option>
+                      <option value="燙">燙</option>
+                      <option value="染+燙">染+燙</option>
+                      <option value="頭皮護理">頭皮護理</option>
                     </select>
                   </div>
                 </div>
                 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
                 
                 <label for="notes">備註</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
@@ -87,21 +86,29 @@
               <div class="modal-section settlement-section">
                   <label>剪髮項目</label>
                   <div class="price-group">
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350" data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400" data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                      <!-- 隱藏的 0 元選項，用於改回未結帳 -->
+                      <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
+                      
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450" data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100" data-cost="0"> 剪+護髮</span> <span class="price-val">$1100</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400" data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350" data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
                       
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪+護髮</span> <span class="price-val">$900</span></label>
-                      
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
                       <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0"> 指定剪髮</span> <span class="price-val">$600</span></label>
-                  </div>
-                  <div class="settlement-row" style="margin-top:10px;">
-                    <label>剪髮自訂</label>
-                    <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0">
+                      
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000" data-cost="0"> 過年剪髮</span> <span class="price-val">$1000</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650" data-cost="0"> 過年剪髮</span> <span class="price-val">$650</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500" data-cost="0"> 過年剪髮</span> <span class="price-val">$500</span></label>
+                      
+                      <!-- 將「剪髮自訂」移動到此處 -->
+                      <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                        <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
+                        <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0" style="margin-top:0;">
+                      </div>
                   </div>
 
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
                   
                   <label>其他項目</label>
                   <div class="price-group">
@@ -109,11 +116,12 @@
                       <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
                       <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
                       <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
-                  </div>
-                  
-                  <div class="settlement-row" style="margin-top:10px;">
-                    <label>其他自訂</label>
-                    <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0">
+                      
+                      <!-- 移動「其他自訂」到此處 -->
+                      <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                        <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">其他自訂</label>
+                        <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0" style="margin-top:0;">
+                      </div>
                   </div>
 
                   <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
@@ -121,9 +129,9 @@
                     <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
                   </div>
 
-                  <div id="bleach4000-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                    <label for="bleach4000_cost">漂4000 材料費（自填）</label>
-                    <input type="number" id="bleach4000_cost" name="bleach4000_cost" min="0" inputmode="numeric" placeholder="例如：270">
+                  <div id="material-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
+                    <label for="custom_material_cost" style="color:#ffcc80;">材料費 (自填)</label>
+                    <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric" placeholder="請輸入材料費...">
                   </div>
 
                   <div class="settlement-row settlement-row--inline" style="margin-top:10px;">
@@ -146,7 +154,7 @@
                     </div>
                   </div>
                   
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
                   
                   <div class="settlement-row settlement-row--title shop-sales-row">
                     <label for="retail_item">店販</label>
@@ -158,7 +166,7 @@
                   
                   <div class="assistant-total-row">
                     <div class="assistant-field">
-                      <label for="assistant_select">操作助理</label>
+                      <label for="assistant_select">助理</label>
                       <select id="assistant_select" name="assistant_select">
                         <option value="">-- 無助理 --</option>
                         <option value="陳翎">陳翎</option>
@@ -209,7 +217,7 @@
 
     <div id="report-trigger-placeholder" hidden>
       <button id="open-report-btn" type="button" class="report-trigger-btn">
-        查看月結報表
+        報表
       </button>
     </div>
 
@@ -224,7 +232,7 @@
           <input type="date" id="report-end">
           <button id="fetch-report-btn" type="button">查詢</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 4px 0;">
         <div id="report-result">
           <div style="text-align:center; color:#888; padding: 20px;">
             請選擇起訖日期，點擊「查詢」。
@@ -250,7 +258,7 @@
 
     <script>
       // 後端 Google Apps Script 網址
-      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxYe2AD8En-WNuv-Aqw9Mbf1OqY1bturPxlIJGdJzYiCU5GXkqS2cjI_tewTT8ZUiQJiA/exec';
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw4LqebDtz1iN3K-exID9CZ5xQwaUZ12kD0bt299NGokJhIed5F2HbNy6OceRrS5u2H2A/exec';
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
         { id: '2', title: '雅婷' },
@@ -369,9 +377,9 @@
               businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
               resources: RESOURCE_LIST,
               events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-              views: {
+                views: {
                 resourceTimeGridWeek: { hiddenDays: [1] },
-                dayGridMonth: { eventDisplay: 'none', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false }
+                dayGridMonth: { eventDisplay: 'auto', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false, dayMaxEventRows: 3 }
               },
               selectable: true,
               dateClick: function (info) {
@@ -488,7 +496,18 @@
               select: function (info) { openApptModalForCreate(info.start, info.resource); },
               eventContent: function (arg) {
                 const ep = arg.event.extendedProps || {};
-                const svcMap = { '剪髮': ['剪'], '剪+染': ['剪', '染'], '剪+燙': ['剪', '燙'], '剪+染+燙': ['剪', '染', '燙'], '剪+頭皮護理': ['剪', '護'] };
+                const svcMap = { 
+                  '剪髮': ['剪'], 
+                  '染': ['染'], 
+                  '燙': ['燙'], 
+                  '染+燙': ['燙', '染'], 
+                  '頭皮護理': ['護'],
+                  // 保留相容性
+                  '剪+染': ['染'], 
+                  '剪+燙': ['燙'], 
+                  '剪+染+燙': ['染', '燙'], 
+                  '剪+頭皮護理': ['護'] 
+                };
                 if (ep.appointment_type === 'blocked') {
                   return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>` };
                 }
@@ -717,7 +736,7 @@
                   assistantSelect.value = ''; amountInput.value = '';
                   document.getElementById('perm_select').value = '';
                   document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
-                  document.getElementById('bleach4000-cost-wrap').style.display = 'none';
+                  document.getElementById('material-cost-wrap').style.display = 'none';
                   document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
                   document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
                   // Clear new fields
@@ -737,18 +756,12 @@
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             if(prevBtn) prevBtn.addEventListener('click', () => {
+              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
               calendar.prev();
-              // 更新 selectedDate
-              const newDate = calendar.getDate();
-              selectedDate = new Date(newDate);
-              selectedDate.setHours(12, 0, 0, 0);
             });
             if(nextBtn) nextBtn.addEventListener('click', () => {
+              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
               calendar.next();
-              // 更新 selectedDate
-              const newDate = calendar.getDate();
-              selectedDate = new Date(newDate);
-              selectedDate.setHours(12, 0, 0, 0);
             });
 
             // [新增] 監聽染髮選項，顯示顏色輸入框
@@ -768,16 +781,22 @@
                 if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
             });
 
-            const bleach4000Checkbox = document.querySelector('input[name="other_item"][value="4000"]');
-            const bleach4000CostWrap = document.getElementById('bleach4000-cost-wrap');
-            const bleach4000CostInput = document.getElementById('bleach4000_cost');
-            const syncBleach4000CostUI = () => {
-              const checked = !!bleach4000Checkbox?.checked;
-              if (bleach4000CostWrap) bleach4000CostWrap.style.display = checked ? 'grid' : 'none';
-              if (checked && bleach4000CostInput && !bleach4000CostInput.value) bleach4000CostInput.value = '270';
+            const materialCostWrap = document.getElementById('material-cost-wrap');
+            const customMaterialCostInput = document.getElementById('custom_material_cost');
+            const syncMaterialCostUI = () => {
+              const otherItems = Array.from(document.querySelectorAll('input[name="other_item"]:checked')).map(i => i.parentElement.textContent.trim());
+              const isOtherCustom = (parseInt(document.getElementById('other_custom').value, 10) || 0) > 0;
+              const isPermCustom = (parseInt(document.getElementById('perm_custom').value, 10) || 0) > 0;
+              const hasTrigger = otherItems.some(label => label.includes('染髮') || label.includes('漂4000')) || isOtherCustom || isPermCustom;
+              
+              if (materialCostWrap) materialCostWrap.style.display = hasTrigger ? 'grid' : 'none';
             };
-            bleach4000Checkbox?.addEventListener('change', () => { syncBleach4000CostUI(); updateCalculatedTotal(); });
-            bleach4000CostInput?.addEventListener('input', updateCalculatedTotal);
+            // 監聽所有可能觸發材料費顯示的欄位
+            document.querySelectorAll('input[name="other_item"], #other_custom, #perm_custom').forEach(el => {
+              el.addEventListener('change', syncMaterialCostUI);
+              el.addEventListener('input', syncMaterialCostUI);
+            });
+            customMaterialCostInput?.addEventListener('input', updateCalculatedTotal);
 
             if (unsetPaidBtn) {
               unsetPaidBtn.addEventListener('click', function () {
@@ -803,6 +822,9 @@
               let chemTotal = 0;
               let totalCost = 0;
 
+              let chemTriggerActive = false;
+              let defaultChemCost = 0;
+
               const cut = document.querySelector('input[name="cut_price"]:checked');
               if (cut) {
                   cutPrice = parseInt(cut.value, 10) || 0;
@@ -814,27 +836,39 @@
               document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
                   const p = parseInt(item.value, 10) || 0;
                   let c = parseInt(item.dataset.cost || 0, 10) || 0;
-                  if (String(item.value) === '4000') {
-                      const bleach4000CostInput = document.getElementById('bleach4000_cost');
-                      const customCost = bleach4000CostInput ? (parseInt(bleach4000CostInput.value, 10) || 0) : 0;
-                      c = customCost > 0 ? customCost : c;
+                  const label = item.parentElement.textContent.trim();
+                  
+                  if (label.includes('染髮') || label.includes('漂4000')) {
+                      chemTriggerActive = true;
+                      defaultChemCost += c; // 積累染髮/漂4000的預設成本
+                  } else {
+                      totalCost += c; // 洗髮或其他
                   }
                   chemTotal += p;
-                  totalCost += c;
               });
               // [新增] 其他自訂
-              chemTotal += (parseInt(document.getElementById('other_custom').value, 10) || 0);
+              const oc = (parseInt(document.getElementById('other_custom').value, 10) || 0);
+              if (oc > 0) chemTriggerActive = true;
+              chemTotal += oc;
 
               const permSelect = document.getElementById('perm_select');
               let permPrice = 0;
               if (permSelect) {
                   permPrice = parseInt(permSelect.value, 10) || 0;
                   const opt = permSelect.selectedOptions[0];
-                  const permCost = opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
-                  totalCost += permCost;
+                  totalCost += opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
               }
               // [新增] 燙髮自訂
-              permPrice += (parseInt(document.getElementById('perm_custom').value, 10) || 0);
+              const pc = (parseInt(document.getElementById('perm_custom').value, 10) || 0);
+              if (pc > 0) chemTriggerActive = true;
+              permPrice += pc;
+
+              // 處理統一材料費
+              const customMaterialVal = parseInt(document.getElementById('custom_material_cost').value, 10) || 0;
+              if (chemTriggerActive) {
+                  if (customMaterialVal > 0) totalCost += customMaterialVal;
+                  else totalCost += defaultChemCost;
+              }
 
               const retailInput = document.getElementById('retail_price');
               let retailVal = parseInt(retailInput?.value, 10) || 0;
@@ -906,7 +940,7 @@
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
             document.getElementById('perm_select').value = '';
             document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
-            document.getElementById('bleach4000-cost-wrap').style.display = 'none';
+            document.getElementById('material-cost-wrap').style.display = 'none';
             
             // Clear new fields
             document.getElementById('cut_custom').value = '';
@@ -966,7 +1000,7 @@
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
             document.getElementById('perm_select').value = '';
-            document.getElementById('bleach4000-cost-wrap').style.display = 'none';
+            document.getElementById('material-cost-wrap').style.display = 'none';
             // Clear new custom fields
             document.getElementById('cut_custom').value = '';
             document.getElementById('perm_custom').value = '';
@@ -1081,25 +1115,28 @@
             const scroller = ensureDateScroller(); if (!scroller) return; scroller.hidden = false;
             ensureMobileResourceToggle(scroller);
 
-            // 根據視圖類型決定顯示日期
+            // 根據視圖類型決定顯示日期（避免 selectedDate 與 view 不一致）
+            let activeDate = null;
             if (info.view.type === 'resourceTimeGridDay') {
-              selectedDate = new Date(info.view.currentStart);
-              selectedDate.setHours(12, 0, 0, 0);
+              activeDate = new Date(info.view.currentStart);
+            } else if (info.view.type === 'dayGridMonth') {
+              // 月視圖：以 view.currentStart（該月第一天）為基準，避免顯示到其他月份
+              activeDate = new Date(info.view.currentStart);
             }
 
-            // 使用 selectedDate 或當前日期
-            if (!selectedDate) {
-              selectedDate = new Date(calendar.getDate());
-              selectedDate.setHours(12, 0, 0, 0);
+            // fallback: 使用 selectedDate 或 calendar.getDate()
+            if (!activeDate) {
+              if (selectedDate) activeDate = new Date(selectedDate);
+              else activeDate = new Date(calendar.getDate());
             }
-
-            const activeDate = new Date(selectedDate); // 使用 selectedDate
+            activeDate.setHours(12, 0, 0, 0);
             const dateLocale = 'zh-TW';
             const monthRaw = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' }).format(activeDate);
 
-            // 更新顯示
+            // 更新顯示（月視圖僅顯示 年/月，不顯示日）
             scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}`;
-            scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
+            if (info.view && info.view.type === 'dayGridMonth') scroller.querySelector('.date-header-day').textContent = '';
+            else scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
 
             syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
             
@@ -1214,11 +1251,12 @@
             // 立即更新 header 顯示，避免視圖切換滯後時無反應感
             try {
               const sc = document.querySelector('.fc-date-scroller');
-              if (sc) {
+                if (sc) {
                 const [y, m, d] = item.dataset.date.split('-').map(Number);
                 const monthRaw = `${m}`;
                 sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
-                sc.querySelector('.date-header-day').textContent = `${d}日`;
+                if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') sc.querySelector('.date-header-day').textContent = '';
+                else sc.querySelector('.date-header-day').textContent = `${d}日`;
               }
             } catch (e) {}
             // 強制更新日期顯示
