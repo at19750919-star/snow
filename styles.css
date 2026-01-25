@@ -1685,28 +1685,26 @@ body {
   font-size: 14px;
 }
 .blue-card-section .form-row {
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr); /* narrower label column */
+  display: flex !important;
   align-items: center;
-  gap: 8px; /* reduce gap between label and input */
+  gap: 10px;
   margin-bottom: 10px;
 }
-.blue-card-section .form-row > * {
-  min-width: 0; /* allow children to shrink within grid */
-}
-.blue-card-section input,
-.blue-card-section select,
-.blue-card-section textarea {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
 .blue-card-section .form-row > label {
+  width: 90px;
+  flex: 0 0 auto;
   margin: 0;
   white-space: nowrap;
   font-size: 14px;
-  text-align: right; /* 將標籤文字靠右，靠近輸入欄 */
-  padding-right: 6px;
+  text-align: left; /* 改為左對齊 */
+}
+.blue-card-section input,
+.blue-card-section select {
+  width: 250px !important; /* 限制寬度，使其靠左而不撐滿 */
+  flex: 0 1 auto;
+}
+.blue-card-section textarea {
+  width: 100%;
 }
 
 /* 綠卡 (右欄 - 結帳) */
@@ -1751,7 +1749,7 @@ body {
 .settlement-section .settlement-row--title > label {
   color: #81c784 !important;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
 }
 .settlement-row.settlement-row--inline {
   display: flex !important;
@@ -1795,7 +1793,7 @@ body {
   font-weight: 700;
   margin-bottom: 8px;
   display: block;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* 類型切換 */
@@ -2576,7 +2574,7 @@ body {
   white-space: nowrap;
   color: #81c784 !important; /* 操作助理 使用淺綠 */
   font-weight: 600;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 /* 價目文字（例如：「高中剪髮」）顯示為白色 */

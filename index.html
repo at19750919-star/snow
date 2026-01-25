@@ -577,49 +577,7 @@
             window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
           }
 
-          function applyOptimisticEventUpdate(payload) {
-            if (!calendar || !payload || !payload.id) return false;
-            const ev = calendar.getEventById(String(payload.id));
-            if (!ev) return false;
-            if (payload.start) {
-              const nextStart = new Date(payload.start);
-              if (!Number.isNaN(nextStart.getTime())) {
-                const durationMs = (ev.end && ev.start) ? (ev.end.getTime() - ev.start.getTime()) : null;
-                ev.setStart(nextStart);
-                if (durationMs != null && durationMs > 0) ev.setEnd(new Date(nextStart.getTime() + durationMs));
-              }
-            }
-            if (payload.employee_id) {
-              const nextRes = calendar.getResourceById?.(String(payload.employee_id));
-              if (nextRes) ev.setResources([nextRes]);
-            }
-            ev.setExtendedProp('appointment_type', payload.appointment_type);
-            ev.setExtendedProp('customer_name', payload.customer_name);
-            ev.setExtendedProp('customer_phone', payload.customer_phone);
-            ev.setExtendedProp('service_id', payload.service_id);
-            ev.setExtendedProp('assistant_id', payload.assistant_id);
-            ev.setExtendedProp('amount', payload.amount);
-            ev.setExtendedProp('total_amount', payload.total_amount);
-            ev.setExtendedProp('notes', payload.notes);
-            ev.setExtendedProp('dye_color', payload.dye_color); // Sync new field
-            return true;
-          }
 
-          function addEventOptimistically(payload, createdId) {
-            if (!calendar || !payload || !createdId || !payload.start) return false;
-            const startDate = new Date(payload.start);
-            const endDate = new Date(startDate.getTime() + 15 * 60000); // simplified
-            const titleText = payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || '未命名');
-            calendar.addEvent({
-              id: String(createdId), resourceId: String(payload.employee_id || ''), start: startDate, end: endDate, title: titleText,
-              extendedProps: {
-                customer_name: payload.customer_name, customer_phone: payload.customer_phone, service_id: payload.service_id,
-                notes: payload.notes, appointment_type: payload.appointment_type, amount: payload.amount, total_amount: payload.total_amount, assistant_id: payload.assistant_id,
-                dye_color: payload.dye_color // Sync new field
-              }
-            });
-            return true;
-          }
 
           function removeEventOptimistically(eventId) {
             const ev = calendar.getEventById(String(eventId));
@@ -694,8 +652,7 @@
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const data = await res.json();
                 if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
-                if (isEditing) { if(applyOptimisticEventUpdate(payload)) calendar.refetchEvents(); else calendar.refetchEvents(); }
-                else { if(addEventOptimistically(payload, data.id)) calendar.refetchEvents(); else calendar.refetchEvents(); }
+                calendar.refetchEvents();
                 saveOk = true;
               } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
               finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
