@@ -744,7 +744,7 @@
               const otherItems = Array.from(document.querySelectorAll('input[name="other_item"]:checked')).map(i => i.parentElement.textContent.trim());
               const isOtherCustom = (parseInt(document.getElementById('other_custom').value, 10) || 0) > 0;
               const isPermCustom = (parseInt(document.getElementById('perm_custom').value, 10) || 0) > 0;
-              const hasTrigger = otherItems.some(label => label.includes('染髮') || label.includes('漂4000')) || isOtherCustom || isPermCustom;
+              const hasTrigger = otherItems.some(label => label.includes('漂4000')) || isOtherCustom || isPermCustom;
               
               if (materialCostWrap) materialCostWrap.style.display = hasTrigger ? 'grid' : 'none';
             };
@@ -795,11 +795,11 @@
                   let c = parseInt(item.dataset.cost || 0, 10) || 0;
                   const label = item.parentElement.textContent.trim();
                   
-                  if (label.includes('染髮') || label.includes('漂4000')) {
+                  if (label.includes('漂4000')) {
                       chemTriggerActive = true;
-                      defaultChemCost += c; // 積累染髮/漂4000的預設成本
+                      defaultChemCost += c; // 累計漂4000的預設成本
                   } else {
-                      totalCost += c; // 洗髮或其他
+                      totalCost += c; // 染髮、洗髮或其他
                   }
                   chemTotal += p;
               });
