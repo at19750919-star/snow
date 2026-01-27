@@ -31,6 +31,7 @@
           <input type="hidden" id="amount_input" name="amount_input">
 
           <div class="modal-layout-grid">
+            <!-- [彈窗左欄] 藍色卡片區域：顧客資料與預約時長 -->
             <div class="modal-col">
               <div class="modal-section blue-card-section" id="appointment-info-card">
                 <label>預約類型</label>
@@ -49,6 +50,7 @@
                   <select id="minute_select" name="minute_select"></select>
                 </div>
                 
+                <!-- [功能] 預約時長選擇：15分至3小時 -->
                 <div class="form-row">
                   <label for="duration_select">預約時長</label>
                   <select id="duration_select" name="duration_select">
@@ -92,9 +94,11 @@
                 
                 <label for="notes">備註</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
+                <div id="last-visit-info" class="last-visit-info" hidden>上次消費：-</div>
               </div>
             </div>
 
+            <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目與助理 -->
             <div class="modal-col settlement-col" id="settlement-col">
               <div class="modal-section settlement-section">
                   <label>剪髮項目</label>
@@ -137,6 +141,7 @@
                       </div>
                   </div>
 
+                  <!-- [CRM功能] 染髮顏色紀錄區塊 (僅在 CRM 找到色號時顯示) -->
                   <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
                     <label for="dye_color_input" style="color:#ffcc80;">染髮顏色紀錄</label>
                     <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
@@ -291,10 +296,13 @@
         let displayTotal = 0;  // 全域變數儲存總金額
 
         let appointmentModal, leaveModal, reportModal;
-        let appointmentCloseButton, leaveCloseButton, reportCloseButton;
-        let form, leaveForm, notesTextarea, phoneEl, customerFields;
-        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
-        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
+          let appointmentCloseButton, leaveCloseButton, reportCloseButton;
+          let form, leaveForm, notesTextarea, phoneEl, customerFields;
+          let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+          let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
+          let lastVisitInfo;
+          let lastVisitLabelValue = '';
+          let lastVisitPhoneValue = '';
 
         document.addEventListener('DOMContentLoaded', function () {
           const calendarEl = document.getElementById('calendar');
@@ -317,6 +325,7 @@
           assistantSelect = document.getElementById('assistant_select');
           amountInput = document.getElementById('amount_input');
           unsetPaidBtn = document.getElementById('unsetPaidBtn');
+          lastVisitInfo = document.getElementById('last-visit-info');
           appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
           appointmentActions = document.querySelector('#appointmentForm .modal-actions');
           appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
@@ -590,6 +599,30 @@
             window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
           }
 
+          function normalizePhone(value) {
+            return String(value || '').replace(/\D/g, '').slice(0, 10);
+          }
+
+          function formatLastVisitLabel(rawStart) {
+            if (!rawStart) return null;
+            const normalized = String(rawStart || '').trim().replace(/\s+/g, 'T');
+            const parsed = new Date(normalized);
+            if (isNaN(parsed.getTime())) return String(rawStart).trim();
+            const pad = v => String(v).padStart(2, '0');
+            return `${parsed.getFullYear()}/${pad(parsed.getMonth() + 1)}/${pad(parsed.getDate())}`;
+          }
+
+          function updateLastVisitInfo(label) {
+            if (!lastVisitInfo) return;
+            if (label) {
+              lastVisitInfo.textContent = `上次消費：${label}`;
+              lastVisitInfo.hidden = false;
+            } else {
+              lastVisitInfo.textContent = '';
+              lastVisitInfo.hidden = true;
+            }
+          }
+
 
 
           function removeEventOptimistically(eventId) {
@@ -605,7 +638,7 @@
               else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
               else e.target.value = d;
 
-              // CRM: 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄
+              // [CRM功能] 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄並追溯配方
               if (d.length === 10 && !eventIdInput.value) {
                 try {
                   const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${d}`, { method: 'GET', mode: 'cors' });
@@ -636,6 +669,12 @@
                           if (item) item.classList.add('price-item--suggested');
                         }
                       });
+                    }
+                    const lastVisitLabel = formatLastVisitLabel(history.start);
+                    if (lastVisitLabel) {
+                      lastVisitLabelValue = lastVisitLabel;
+                      lastVisitPhoneValue = normalizePhone(history.customer_phone || d);
+                      updateLastVisitInfo(lastVisitLabel);
                     }
                     showToast('已找到歷史紀錄並帶入', 'success', 2000);
                   }
@@ -957,8 +996,9 @@
             document.getElementById('dye-color-wrap').style.display = 'none';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
             
-            // 清除 CRM 發亮狀態
+            // [CRM功能] 清除上一次留下的建議發亮狀態
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
+            updateLastVisitInfo('');
             
             updateCalculatedTotal();
 
@@ -985,6 +1025,12 @@
             document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
             document.getElementById('customer_phone').value = ep.customer_phone || '';
             document.getElementById('customer_name').value = ep.customer_name || '';
+            const normalizedEditPhone = normalizePhone(ep.customer_phone || '');
+            if (normalizedEditPhone && normalizedEditPhone === lastVisitPhoneValue && lastVisitLabelValue) {
+              updateLastVisitInfo(lastVisitLabelValue);
+            } else {
+              updateLastVisitInfo('');
+            }
             const serviceSelect = document.getElementById('service_id');
             if(serviceSelect) serviceSelect.value = ep.service_id || '';
             document.getElementById('notes').value = ep.notes || '';
