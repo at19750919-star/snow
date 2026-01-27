@@ -107,19 +107,6 @@
   --event-default-text: var(--text-light);
   --event-card-vertical-gap: 8px;
 
-  /* 設計師主題色 */
-  --stylist-1-bg: #3a6c74; /* 店長 */
-  --stylist-1-text: #fbfaf7;
-  --stylist-1-bg-light: #a8c0c5;
-
-  --stylist-2-bg: #d9785a; /* 雅婷 */
-  --stylist-2-text: #fbfaf7;
-  --stylist-2-bg-light: #f1b7a4;
-
-  --stylist-3-bg: #464b65; /* 小白 */
-  --stylist-3-text: #fbfaf7;
-  --stylist-3-bg-light: #afb4cc;
-
   /* 日視圖欄位底色 */
   --resource-col-strength: 20%;
   --resource-col-alpha: 0.08;
@@ -1022,6 +1009,21 @@ body {
 }
 
 /* Designer Colors */
+:root {
+  /* 設計師主題色（此處與事件卡背景放一起，方便調整） */
+  --stylist-1-bg: #51a8dd; /* 店長 */
+  --stylist-1-text: #fbfaf7;
+  --stylist-1-bg-light: #abcde2;
+
+  --stylist-2-bg: #d9785a; /* 雅婷 */
+  --stylist-2-text: #fbfaf7;
+  --stylist-2-bg-light: #f1b7a4;
+
+  --stylist-3-bg: #464b65; /* 小白 */
+  --stylist-3-text: #fbfaf7;
+  --stylist-3-bg-light: #afb4cc;
+}
+/* #1：漸層從淺到深，前者是卡片頂部/左側底色，後者是右下角的主色 */
 #calendar .fc-event.sty-1:not(.blocked-time):not(.is-paid) {
   background: linear-gradient(
     90deg,
@@ -1031,6 +1033,7 @@ body {
   border-color: var(--stylist-1-bg) !important;
   color: var(--stylist-1-text) !important;
 }
+/* #2：漸層延續同邏輯，淺色控制左側層次，深色是卡片主色 */
 #calendar .fc-event.sty-2:not(.blocked-time):not(.is-paid) {
   background: linear-gradient(
     90deg,
@@ -1040,6 +1043,7 @@ body {
   border-color: var(--stylist-2-bg) !important;
   color: var(--stylist-2-text) !important;
 }
+/* #3：三張卡共用同樣角度，調整這三個變數即可改整排漸層 */
 #calendar .fc-event.sty-3:not(.blocked-time):not(.is-paid) {
   background: linear-gradient(
     90deg,
@@ -2104,7 +2108,7 @@ body {
   border: none !important;
 }
 #calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion {
-  padding-left: calc(10px + var(--per-resource-time-axis-width)) !important;
+  padding-left: calc(-70px + var(--per-resource-time-axis-width)) !important;
   padding-right: 10px !important;
 }
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-col-events {
