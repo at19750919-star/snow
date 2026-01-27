@@ -1,21 +1,18 @@
 /*
 ===================== CSS 目錄（依檔案目前順序） =====================
-1) Theme Tokens (變數)
-2) Base / Layout
-3) FullCalendar Core (捲動、容器)
-4) Toolbar (保留樣式，預設隱藏)
-5) Date Scroller (自訂日期列 + 左右導航箭頭)
-6) Header / Resource Cards
-7) Header Buttons (排休 / 約滿)
-8) Timegrid + Gridlines
-9) Event Cards (含服務勳章顏色修改)
-13) Notes
-15) Responsive（主要版面：手機 ≤1024px）
-14) Modal（含：小螢幕彈窗覆蓋、新增輸入框樣式）
-10) Overlays (公休 / 排休 / 約滿)
-11) Month View
-12) Week View
-16) Loading & Feedback + Report
+1) Theme Tokens (變數區：控制字型與顏色)
+2) Base / Layout (基礎排版：含全站背景與卡片外框)
+3) FullCalendar Core (月曆核心捲動容器)
+4) Toolbar (控制列：預設隱藏，改用日期列)
+5) Date Scroller (自訂日期列：含左右導航箭頭與日期卡片)
+6) Header / Resource Cards (設計師表頭：姓名與標題背景)
+7) Header Buttons (表頭按鈕：排休 / 約滿)
+8) Timegrid + Gridlines (時間軸與格線：含時間格與用餐時段)
+9) Event Cards (預約卡片樣式：含服務勳章、姓名、電話、已結帳顏色)
+10) Notes (備註欄位)
+11) Month / Week View (月視圖 / 週視圖樣式)
+12) Modal / Form (彈窗與表單：包含藍色資料卡與結帳綠卡)
+13) Loading & Feedback (讀取狀態與報表)
 ====================================================================
 */
 
@@ -209,6 +206,7 @@ body {
   position: relative;
 }
 
+/* [樣式] 右上角背景裝飾圖 (呆.png)：可調整 top/right 控制位置，opacity 控制透明度 */
 #calendar::after {
   content: "";
   position: absolute;
@@ -634,6 +632,7 @@ body {
   border-spacing: 0 !important;
 }
 
+/* [樣式] 設計師表頭容器 (姓名區域) */
 #calendar .fc-col-header-cell-cushion {
   position: relative;
   display: flex;
@@ -759,9 +758,9 @@ body {
   box-shadow: 0 12px 26px rgba(216, 75, 64, 0.22);
 }
 
-/* ==================== 8) Timegrid + Gridlines ==================== */
+/* ==================== 8) Timegrid + Gridlines (時間軸樣式) ==================== */
 #calendar .fc-timegrid-slot {
-  height: 2.7em !important;
+  height: 2.7em !important; /* 控制每一格 15 分鐘的高度 */
 }
 #calendar .fc-timegrid-slot-lane {
   background-color: transparent !important;
@@ -898,7 +897,7 @@ body {
   flex-wrap: nowrap;
 }
 
-/* 3D 服務勳章 (透明變色龍版) */
+/* [樣式] 3D 服務勳章 (透明變色龍版)：調整圓角與內邊距 */
 .evt-svc {
   display: inline-flex;
   align-items: center;
@@ -929,7 +928,7 @@ body {
   white-space: nowrap;
 }
 
-/* 共用基礎設定 */
+/* [樣式] 分類勳章邊框：剪、染、燙、護 同一為白色或淺色系 */
 .evt-svc.svc-cut,
 .evt-svc.svc-dye,
 .evt-svc.svc-perm,
@@ -942,12 +941,13 @@ body {
 }
 
 /* [修改] 第 5 點：燙/染/護/預設文字改黃色，加強陰影 */
+/* [樣式] 修改特殊項目文字色：燙、染、護 使用更柔和的淺桃紅色 */
 .evt-svc.svc-perm,
 .evt-svc.svc-dye,
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
-  color: #ff84a1 !important;
-  border-color: #ff84a1 !important;
+  color: #f371ec !important;
+  border-color: #f371ec !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
@@ -1331,6 +1331,7 @@ body {
     display: none !important;
   }
 
+  /* [手機版] 設計師表頭對齊：靠左對齊解決偏右問題 */
   #calendar .resource-cushion {
     justify-content: flex-start;
     padding-left: 4px !important;
@@ -1374,6 +1375,7 @@ body {
     padding-left: 0 !important;
     padding-right: 2px !important;
   }
+  /* [手機版] 服務勳章：調整為方矩型並貼齊左側 */
   .evt-svc {
     font-size: 13px;
     height: 24px;
@@ -1647,6 +1649,13 @@ body {
   display: flex;
   flex-direction: column;
 }
+.last-visit-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+  min-height: 18px;
+}
 .form-span-2 {
   grid-column: 1 / -1;
 }
@@ -1702,6 +1711,7 @@ body {
   font-size: 14px;
   text-align: left; /* 改為左對齊 */
 }
+/* [樣式] 藍色卡片輸入區域：統一寬度為 160-180px 確保整齊 */
 .blue-card-section input,
 .blue-card-section select {
   width: 180px; /* 統一縮小為 180px，與其他選單整齊對齊 */
@@ -2513,27 +2523,36 @@ body {
   border: 1px solid transparent; /* 為發亮預留邊框空間 */
   transition: all 0.3s ease;
 }
+/* [CRM功能] 建議項目發亮特效：霓虹燈呼吸閃爍動畫 */
 .settlement-section .price-item--suggested {
   border-color: #4ade80 !important; /* 更明亮的霓虹綠 */
-  box-shadow: 0 0 15px rgba(74, 222, 128, 0.6), 
-              0 0 30px rgba(74, 222, 128, 0.3),
-              inset 0 0 10px rgba(74, 222, 128, 0.4) !important;
+  box-shadow:
+    0 0 15px rgba(74, 222, 128, 0.6),
+    0 0 30px rgba(74, 222, 128, 0.3),
+    inset 0 0 10px rgba(74, 222, 128, 0.4) !important;
   background: rgba(74, 222, 128, 0.15) !important;
   animation: suggested-neon-pulse 1.5s ease-in-out infinite;
   transform: scale(1.02); /* 稍微放大增加存在感 */
   z-index: 1;
 }
 @keyframes suggested-neon-pulse {
-  0% { 
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.2); 
+  0% {
+    box-shadow:
+      0 0 10px rgba(74, 222, 128, 0.4),
+      0 0 20px rgba(74, 222, 128, 0.2);
     border-color: rgba(74, 222, 128, 0.6) !important;
   }
-  50% { 
-    box-shadow: 0 0 25px rgba(74, 222, 128, 0.8), 0 0 50px rgba(74, 222, 128, 0.4), inset 0 0 15px rgba(74, 222, 128, 0.5); 
+  50% {
+    box-shadow:
+      0 0 25px rgba(74, 222, 128, 0.8),
+      0 0 50px rgba(74, 222, 128, 0.4),
+      inset 0 0 15px rgba(74, 222, 128, 0.5);
     border-color: rgba(74, 222, 128, 1) !important;
   }
-  100% { 
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4), 0 0 20px rgba(74, 222, 128, 0.2); 
+  100% {
+    box-shadow:
+      0 0 10px rgba(74, 222, 128, 0.4),
+      0 0 20px rgba(74, 222, 128, 0.2);
     border-color: rgba(74, 222, 128, 0.6) !important;
   }
 }
