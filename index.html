@@ -112,10 +112,10 @@
                       
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
-                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0"> 指定剪髮</span> <span class="price-val">$600</span></label>
+                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span class="price-val">$600</span></label>
                       
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000" data-cost="0"> 過年剪髮</span> <span class="price-val">$1000</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0"> 過年剪髮</span> <span class="price-val">$600</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650" data-cost="0"> 過年剪髮</span> <span class="price-val">$600</span></label>
                       <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500" data-cost="0"> 過年剪髮</span> <span class="price-val">$500</span></label>
                       
                       <!-- 將「剪髮自訂」移動到此處 -->
@@ -182,11 +182,11 @@
                     </div>
                   </div>
                   
-                  <div class="assistant-total-row">
-                    <div class="assistant-field">
-                      <label for="assistant_select">助理</label>
-                      <select id="assistant_select" name="assistant_select">
-                        <option value="">-- 無助理 --</option>
+                <div class="assistant-total-row">
+                  <div class="assistant-field">
+                    <label for="assistant_select">助理</label>
+                    <select id="assistant_select" name="assistant_select">
+                      <option value="">-- 無助理 --</option>
                         <option value="陳翎">陳翎</option>
                         <option value="洪苡芳">洪苡芳</option>
                         <option value="曹家溱">曹家溱</option>
@@ -201,6 +201,7 @@
                     </div>
                   </div>
               </div>
+              <div id="last-visit-info-right" class="last-visit-info" hidden>上次消費：-</div>
             </div>
           </div>
           
@@ -276,7 +277,7 @@
 
     <script>
       // 後端 Google Apps Script 網址
-      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzu_YLPKGVCUWqm1PcR_ANEGEdC_qqIKVW8gdPl2QLJzReHYjkPcuDwlnjobJvs04-hHw/exec';
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwds2EP3YgVB8DK9ctuAtg--4JDt0jGaEbTvjm5l1t-2lSV08xkptRk2ozW2bxE8du29A/exec';
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
         { id: '2', title: '雅婷' },
@@ -301,8 +302,10 @@
           let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
           let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
           let lastVisitInfo;
+          let lastVisitInfoRight;
           let lastVisitLabelValue = '';
           let lastVisitPhoneValue = '';
+          let lastVisitDesignerValue = '';
 
         document.addEventListener('DOMContentLoaded', function () {
           const calendarEl = document.getElementById('calendar');
@@ -326,6 +329,7 @@
           amountInput = document.getElementById('amount_input');
           unsetPaidBtn = document.getElementById('unsetPaidBtn');
           lastVisitInfo = document.getElementById('last-visit-info');
+          lastVisitInfoRight = document.getElementById('last-visit-info-right');
           appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
           appointmentActions = document.querySelector('#appointmentForm .modal-actions');
           appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
@@ -608,18 +612,27 @@
             const normalized = String(rawStart || '').trim().replace(/\s+/g, 'T');
             const parsed = new Date(normalized);
             if (isNaN(parsed.getTime())) return String(rawStart).trim();
+            const adjusted = new Date(parsed.getTime() - 12 * 60 * 60 * 1000); // 顯示時扣掉 12 小時
             const pad = v => String(v).padStart(2, '0');
-            return `${parsed.getFullYear()}/${pad(parsed.getMonth() + 1)}/${pad(parsed.getDate())}`;
+            return `${adjusted.getFullYear()}/${pad(adjusted.getMonth() + 1)}/${pad(adjusted.getDate())}`;
           }
 
-          function updateLastVisitInfo(label) {
-            if (!lastVisitInfo) return;
-            if (label) {
-              lastVisitInfo.textContent = `上次消費：${label}`;
-              lastVisitInfo.hidden = false;
-            } else {
-              lastVisitInfo.textContent = '';
-              lastVisitInfo.hidden = true;
+          function getDesignerNameById(id) {
+            const rid = String(id || '').trim();
+            if (!rid) return '';
+            const res = Array.isArray(RESOURCE_LIST) ? RESOURCE_LIST.find(r => String(r.id) === rid) : null;
+            return res ? res.title : '';
+          }
+
+          function updateLastVisitInfo(label, designerName) {
+            const text = label ? `上次消費：${label}${designerName ? `（設計師：${designerName}）` : ''}` : '';
+            if (lastVisitInfo) {
+              lastVisitInfo.textContent = text;
+              lastVisitInfo.hidden = !label;
+            }
+            if (lastVisitInfoRight) {
+              lastVisitInfoRight.textContent = text;
+              lastVisitInfoRight.hidden = !label;
             }
           }
 
@@ -653,14 +666,22 @@
                     if (history.dye_color) {
                       const dyeInput = document.getElementById('dye_color_input');
                       const dyeWrap = document.getElementById('dye-color-wrap');
-                      if (dyeInput && !dyeInput.value.trim()) {
-                        dyeInput.value = history.dye_color;
-                        if (dyeWrap) dyeWrap.style.display = 'grid'; // 強制顯示區塊
-                      }
+                      if (dyeInput) dyeInput.value = history.dye_color;
+                      if (dyeWrap) dyeWrap.style.display = 'grid'; // 強制顯示區塊
                     }
-                    // 3. 嘗試匹配剪髮分類（依金額發亮提示，不自動勾選）
-                    if (history.amount) {
-                      const histAmt = parseInt(history.amount, 10);
+                    // 3. 嘗試匹配剪髮分類（依剪髮金額發亮提示，不自動勾選）
+                    const histCut = parseInt(history.cut_price, 10);
+                    const histAmt = parseInt(history.amount, 10);
+                    if (Number.isFinite(histCut) && histCut > 0) {
+                      const radios = document.querySelectorAll('input[name="cut_price"]');
+                      radios.forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
+                        if (parseInt(r.value, 10) === histCut) {
+                          if (item) item.classList.add('price-item--suggested');
+                        }
+                      });
+                    } else if (Number.isFinite(histAmt) && histAmt > 0) {
                       const radios = document.querySelectorAll('input[name="cut_price"]');
                       radios.forEach(r => {
                         const item = r.closest('.price-item');
@@ -674,7 +695,8 @@
                     if (lastVisitLabel) {
                       lastVisitLabelValue = lastVisitLabel;
                       lastVisitPhoneValue = normalizePhone(history.customer_phone || d);
-                      updateLastVisitInfo(lastVisitLabel);
+                      lastVisitDesignerValue = getDesignerNameById(history.employee_id);
+                      updateLastVisitInfo(lastVisitLabel, lastVisitDesignerValue);
                     }
                     showToast('已找到歷史紀錄並帶入', 'success', 2000);
                   }
@@ -729,6 +751,7 @@
                 customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
                 service_id: fd.get('service_id') || '',
                 assistant_id: fd.get('assistant_select') || '',
+                cut_price: (document.querySelector('input[name="cut_price"]:checked')?.value) || '',
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
                 notes: fd.get('notes') || '',
@@ -994,11 +1017,12 @@
             document.getElementById('perm_custom').value = '';
             document.getElementById('other_custom').value = '';
             document.getElementById('dye-color-wrap').style.display = 'none';
+            document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
             
             // [CRM功能] 清除上一次留下的建議發亮狀態
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
-            updateLastVisitInfo('');
+            updateLastVisitInfo('', '');
             
             updateCalculatedTotal();
 
@@ -1027,9 +1051,9 @@
             document.getElementById('customer_name').value = ep.customer_name || '';
             const normalizedEditPhone = normalizePhone(ep.customer_phone || '');
             if (normalizedEditPhone && normalizedEditPhone === lastVisitPhoneValue && lastVisitLabelValue) {
-              updateLastVisitInfo(lastVisitLabelValue);
+              updateLastVisitInfo(lastVisitLabelValue, lastVisitDesignerValue);
             } else {
-              updateLastVisitInfo('');
+              updateLastVisitInfo('', '');
             }
             const serviceSelect = document.getElementById('service_id');
             if(serviceSelect) serviceSelect.value = ep.service_id || '';
@@ -1063,6 +1087,12 @@
             document.getElementById('cut_custom').value = '';
             document.getElementById('perm_custom').value = '';
             document.getElementById('other_custom').value = '';
+
+            // 回填剪髮金額（舊資料沒有就保留預設 0）
+            if (ep.cut_price) {
+              const cutRadio = document.querySelector(`input[name="cut_price"][value="${ep.cut_price}"]`);
+              if (cutRadio) cutRadio.checked = true;
+            }
 
             updateCalculatedTotal();
             
