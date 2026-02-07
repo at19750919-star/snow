@@ -12,7 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css">
 
@@ -42,14 +44,14 @@
                   <label for="appointment-blocked" class="toggle-label right">不約時段</label>
                   <span class="sliding-glider"></span>
                 </div>
-                
+
                 <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px -2;">
-                
+
                 <div class="form-row">
                   <label for="minute_select">時間 (分)</label>
                   <select id="minute_select" name="minute_select"></select>
                 </div>
-                
+
                 <!-- [功能] 預約時長選擇：15分至3小時 -->
                 <div class="form-row">
                   <label for="duration_select">預約時長</label>
@@ -66,17 +68,18 @@
 
                 <div id="customer-fields-left">
                   <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
-                  
+
                   <div class="form-row">
                     <label for="customer_name">顧客姓名</label>
                     <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
                   </div>
-                  
+
                   <div class="form-row">
                     <label for="customer_phone">電話</label>
-                    <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+                    <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off"
+                      placeholder="09xx-xxx-xxx">
                   </div>
-                  
+
                   <div class="form-row">
                     <label for="service_id">項目 (選填)</label>
                     <select id="service_id" name="service_id">
@@ -89,9 +92,9 @@
                     </select>
                   </div>
                 </div>
-                
+
                 <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
-                
+
                 <label for="notes">備註</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
               </div>
@@ -100,113 +103,132 @@
             <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目與助理 -->
             <div class="modal-col settlement-col" id="settlement-col">
               <div class="modal-section settlement-section">
-                  <label>剪髮項目</label>
-                  <div class="price-group">
-                      <!-- 隱藏的 0 元選項，用於改回未結帳 -->
-                      <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
-                      
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450" data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400" data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350" data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
-                      
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900" data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
-                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span class="price-val">$600</span></label>
-                      
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000" data-cost="0"> 過年剪髮</span> <span class="price-val">$1000</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650" data-cost="0"> 過年剪髮</span> <span class="price-val">$600</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500" data-cost="0"> 過年剪髮</span> <span class="price-val">$500</span></label>
-                      
-                      <!-- 將「剪髮自訂」移動到此處 -->
-                      <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
-                        <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
-                        <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0" style="margin-top:0;">
-                      </div>
+                <label>剪髮項目</label>
+                <div class="price-group">
+                  <!-- 隱藏的 0 元選項，用於改回未結帳 -->
+                  <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
+
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
+                        data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
+                        data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
+                        data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
+                        data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
+                        data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
+                  <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
+                        type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
+                      class="price-val">$600</span></label>
+
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000"
+                        data-cost="0"> 過年剪髮</span> <span class="price-val">$1000</span></label>
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650"
+                        data-cost="0"> 過年剪髮</span> <span class="price-val">$600</span></label>
+                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500"
+                        data-cost="0"> 過年剪髮</span> <span class="price-val">$500</span></label>
+
+                  <!-- 將「剪髮自訂」移動到此處 -->
+                  <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
+                    <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0"
+                      style="margin-top:0;">
+                  </div>
+                </div>
+
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
+
+                <label>其他項目</label>
+                <div class="price-group">
+                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                        value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
+                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                        value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
+                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                        value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
+                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                        value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
+
+                  <!-- 移動「其他自訂」到此處 -->
+                  <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">其他自訂</label>
+                    <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0"
+                      style="margin-top:0;">
+                  </div>
+                </div>
+
+                <!-- [CRM功能] 染髮顏色紀錄區塊 (僅在 CRM 找到色號時顯示) -->
+                <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
+                  <label for="dye_color_input" style="color:#ffcc80;">染髮顏色紀錄</label>
+                  <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
+                </div>
+
+                <div id="material-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
+                  <label for="custom_material_cost" style="color:#ffcc80;">材料費 (自填)</label>
+                  <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric"
+                    placeholder="請輸入材料費...">
+                </div>
+
+                <div class="settlement-row settlement-row--inline" style="margin-top:10px;">
+                  <div class="settlement-inline-item">
+                    <label for="perm_select">燙髮</label>
+                    <select id="perm_select" name="perm_select">
+                      <option value="" data-cost="0">無</option>
+                      <option value="1200" data-cost="260">1200（材料260）</option>
+                      <option value="1500" data-cost="260">1500（材料260）</option>
+                      <option value="1800" data-cost="280">1800（材料280）</option>
+                      <option value="2000" data-cost="280">2000（材料280）</option>
+                      <option value="2400" data-cost="280">2400（材料280）</option>
+                      <option value="3600" data-cost="300">3600（材料300）</option>
+                    </select>
                   </div>
 
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
-                  
-                  <label>其他項目</label>
-                  <div class="price-group">
-                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
-                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
-                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
-                      <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item" value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
-                      
-                      <!-- 移動「其他自訂」到此處 -->
-                      <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
-                        <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">其他自訂</label>
-                        <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0" style="margin-top:0;">
-                      </div>
+                  <div class="settlement-inline-item">
+                    <label for="perm_custom">燙髮自訂</label>
+                    <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0">
                   </div>
+                </div>
 
-                  <!-- [CRM功能] 染髮顏色紀錄區塊 (僅在 CRM 找到色號時顯示) -->
-                  <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                    <label for="dye_color_input" style="color:#ffcc80;">染髮顏色紀錄</label>
-                    <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
-                  </div>
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
 
-                  <div id="material-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                    <label for="custom_material_cost" style="color:#ffcc80;">材料費 (自填)</label>
-                    <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric" placeholder="請輸入材料費...">
+                <div class="settlement-row settlement-row--title shop-sales-row">
+                  <label for="retail_item">店販</label>
+                  <div class="shop-sales-inputs">
+                    <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
+                    <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
                   </div>
+                </div>
 
-                  <div class="settlement-row settlement-row--inline" style="margin-top:10px;">
-                    <div class="settlement-inline-item">
-                      <label for="perm_select">燙髮</label>
-                      <select id="perm_select" name="perm_select">
-                        <option value="" data-cost="0">無</option>
-                        <option value="1200" data-cost="260">1200（材料260）</option>
-                        <option value="1500" data-cost="260">1500（材料260）</option>
-                        <option value="1800" data-cost="280">1800（材料280）</option>
-                        <option value="2000" data-cost="280">2000（材料280）</option>
-                        <option value="2400" data-cost="280">2400（材料280）</option>
-                        <option value="3600" data-cost="300">3600（材料300）</option>
-                      </select>
-                    </div>
-
-                    <div class="settlement-inline-item">
-                      <label for="perm_custom">燙髮自訂</label>
-                      <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0">
-                    </div>
-                  </div>
-                  
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
-                  
-                  <div class="settlement-row settlement-row--title shop-sales-row">
-                    <label for="retail_item">店販</label>
-                    <div class="shop-sales-inputs">
-                      <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
-                      <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
-                    </div>
-                  </div>
-                  
                 <div class="assistant-total-row">
                   <div class="assistant-field">
                     <label for="assistant_select">助理</label>
                     <select id="assistant_select" name="assistant_select">
                       <option value="">-- 無助理 --</option>
-                        <option value="陳翎">陳翎</option>
-                        <option value="洪苡芳">洪苡芳</option>
-                        <option value="曹家溱">曹家溱</option>
-                      </select>
-                    </div>
-
-                    <div class="total-display">
-                      <span style="font-size:0.5em; color:#aaa; font-weight:normal;">總金額: </span>
-                      <span id="display-total">$0</span>
-                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
-                      <div style="font-size:12px; color:#aaa; font-weight:normal; margin-top:4px;">(入帳金額: <span id="display-net">$0</span>)</div>
-                    </div>
+                      <option value="陳翎">陳翎</option>
+                      <option value="洪苡芳">洪苡芳</option>
+                      <option value="曹家溱">曹家溱</option>
+                    </select>
                   </div>
+
+                  <div class="total-display">
+                    <span style="font-size:0.5em; color:#aaa; font-weight:normal;">總金額: </span>
+                    <span id="display-total">$0</span>
+                    <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
+                    <div style="font-size:12px; color:#aaa; font-weight:normal; margin-top:4px;">(入帳金額: <span
+                        id="display-net">$0</span>)</div>
+                  </div>
+                </div>
               </div>
               <div id="last-visit-info-right" class="last-visit-info" hidden>上次消費：-</div>
             </div>
           </div>
-          
+
           <div id="appointment-actions-anchor"></div>
           <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 16px;">
-            <button type="button" id="deleteBtn" style="display:none; background-color:#d32f2f; color:white;">刪除預約</button>
+            <button type="button" id="deleteBtn"
+              style="display:none; background-color:#d32f2f; color:white;">刪除預約</button>
             <button type="submit" id="submit-btn" style="flex:1;">儲存</button>
           </div>
         </form>
@@ -238,6 +260,11 @@
         報表
       </button>
     </div>
+    <div id="lookup-trigger-placeholder" hidden>
+      <button id="open-lookup-btn" type="button" class="report-trigger-btn">
+        &#x9810;&#x7D04;&#x67E5;&#x8A62;
+      </button>
+    </div>
 
     <div id="reportModal" class="modal">
       <div class="modal-content" style="max-width: 700px;">
@@ -254,6 +281,27 @@
         <div id="report-result">
           <div style="text-align:center; color:#888; padding: 20px;">
             請選擇起訖日期，點擊「查詢」。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lookupModal" class="modal">
+      <div class="modal-content lookup-modal-content">
+        <span class="close-button lookup-close-button">&times;</span>
+        <h3 style="margin-top:0;">&#x9810;&#x7D04;&#x67E5;&#x8A62;</h3>
+        <div class="lookup-controls">
+          <label for="lookup-phone" class="lookup-label">&#x96FB;&#x8A71;</label>
+          <input type="tel" id="lookup-phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+          <label for="lookup-name" class="lookup-label">&#x59D3;&#x540D;</label>
+          <input type="text" id="lookup-name" autocomplete="off"
+            placeholder="&#x53EF;&#x8F38;&#x5165;&#x90E8;&#x5206;&#x59D3;&#x540D;">
+          <button id="fetch-lookup-btn" type="button">&#x67E5;&#x8A62;</button>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 8px 0;">
+        <div id="lookup-result" class="lookup-result">
+          <div style="text-align:center; color:#888; padding: 20px;">
+            &#x8ACB;&#x8F38;&#x5165;&#x96FB;&#x8A71;&#x5F8C;&#x67E5;&#x8A62;
           </div>
         </div>
       </div>
@@ -276,16 +324,28 @@
 
     <script>
       // 後端 Google Apps Script 網址
-      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwds2EP3YgVB8DK9ctuAtg--4JDt0jGaEbTvjm5l1t-2lSV08xkptRk2ozW2bxE8du29A/exec';
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz1HxrMMd1g8ou1q01xeKXiF_MQDyvfH2MGXVwgATJ0kdTL3lPPzXAXYiGVNdWnS_cL0A/exec';
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
         { id: '2', title: '雅婷' },
         { id: '3', title: '小白' }
       ];
+      const DESIGNER_NAME_BY_ID = {
+        '1': '店長',
+        '2': '雅婷',
+        '3': '小白'
+      };
       const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
       const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 1024px)';
 
       (function () {
+        function getDesignerNameById(id) {
+          const rid = String(id || '').trim();
+          if (!rid) return '';
+          if (DESIGNER_NAME_BY_ID[rid]) return DESIGNER_NAME_BY_ID[rid];
+          const res = Array.isArray(RESOURCE_LIST) ? RESOURCE_LIST.find(r => String(r.id) === rid) : null;
+          return res ? res.title : '';
+        }
         let employeeLeaveData = [];
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         let currentYmd = null;
@@ -295,16 +355,16 @@
         let mobileSelectedResourceId = null;
         let displayTotal = 0;  // 全域變數儲存總金額
 
-        let appointmentModal, leaveModal, reportModal;
-          let appointmentCloseButton, leaveCloseButton, reportCloseButton;
-          let form, leaveForm, notesTextarea, phoneEl, customerFields;
-          let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
-          let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
-          let lastVisitInfo;
-          let lastVisitInfoRight;
-          let lastVisitLabelValue = '';
-          let lastVisitPhoneValue = '';
-          let lastVisitDesignerValue = '';
+        let appointmentModal, leaveModal, reportModal, lookupModal;
+        let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton;
+        let form, leaveForm, notesTextarea, phoneEl, customerFields;
+        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
+        let lastVisitInfo;
+        let lastVisitInfoRight;
+        let lastVisitLabelValue = '';
+        let lastVisitPhoneValue = '';
+        let lastVisitDesignerValue = '';
 
         document.addEventListener('DOMContentLoaded', function () {
           const calendarEl = document.getElementById('calendar');
@@ -315,6 +375,7 @@
           appointmentModal = document.getElementById('appointmentModal');
           leaveModal = document.getElementById('leaveModal');
           reportModal = document.getElementById('reportModal');
+          lookupModal = document.getElementById('lookupModal');
 
           form = document.getElementById('appointmentForm');
           leaveForm = document.getElementById('leaveForm');
@@ -333,10 +394,11 @@
           appointmentActions = document.querySelector('#appointmentForm .modal-actions');
           appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
           appointmentInfoCard = document.getElementById('appointment-info-card');
-          
+
           appointmentCloseButton = appointmentModal ? appointmentModal.querySelector('.close-button') : null;
           leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
           reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
+          lookupCloseButton = lookupModal ? lookupModal.querySelector('.close-button') : null;
 
           deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
@@ -402,7 +464,7 @@
               businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
               resources: RESOURCE_LIST,
               events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
-                views: {
+              views: {
                 resourceTimeGridWeek: { hiddenDays: [1] },
                 dayGridMonth: { eventDisplay: 'auto', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false, dayMaxEventRows: 3 }
               },
@@ -417,7 +479,7 @@
                   openApptModalForCreate(info.date, info.resource);
                 }
               },
-              eventClick: function(info) {
+              eventClick: function (info) {
                 info.jsEvent.preventDefault();
                 info.jsEvent.stopPropagation();
                 openApptModalForEdit(info.event);
@@ -521,17 +583,17 @@
               select: function (info) { openApptModalForCreate(info.start, info.resource); },
               eventContent: function (arg) {
                 const ep = arg.event.extendedProps || {};
-                const svcMap = { 
-                  '剪髮': ['剪'], 
-                  '染': ['染'], 
-                  '燙': ['燙'], 
-                  '染+燙': ['燙', '染'], 
+                const svcMap = {
+                  '剪髮': ['剪'],
+                  '染': ['染'],
+                  '燙': ['燙'],
+                  '染+燙': ['燙', '染'],
                   '頭皮護理': ['護'],
                   // 保留相容性
-                  '剪+染': ['染'], 
-                  '剪+燙': ['燙'], 
-                  '剪+染+燙': ['染', '燙'], 
-                  '剪+頭皮護理': ['護'] 
+                  '剪+染': ['染'],
+                  '剪+燙': ['燙'],
+                  '剪+染+燙': ['染', '燙'],
+                  '剪+頭皮護理': ['護']
                 };
                 if (ep.appointment_type === 'blocked') {
                   return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>` };
@@ -544,12 +606,12 @@
                 const paidAmount = Number(ep.total_amount) || Number(ep.amount);  // 優先使用總金額，舊資料用入帳金額
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
                 const currencyFormatter = new Intl.NumberFormat('zh-TW');
-                
+
                 // [修改] 結帳後顯示: 助理名字 + 金額
                 let amountLabel = '';
-                if(isPaid) {
-                    const asst = ep.assistant_id || '';
-                    amountLabel = (asst ? asst + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
+                if (isPaid) {
+                  const asst = ep.assistant_id || '';
+                  amountLabel = (asst ? asst + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
                 }
 
                 const badgeText = svcList.join('');
@@ -589,7 +651,7 @@
                 const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
                 if (isFB) { btn.classList.add('fb-active'); btn.textContent = '已約滿'; } else { btn.classList.remove('fb-active'); btn.textContent = '約滿'; }
               });
-            } catch (e) {}
+            } catch (e) { }
           }
 
           function showToast(message, type = 'info', duration = 2000) {
@@ -616,12 +678,7 @@
             return `${adjusted.getFullYear()}/${pad(adjusted.getMonth() + 1)}/${pad(adjusted.getDate())}`;
           }
 
-          function getDesignerNameById(id) {
-            const rid = String(id || '').trim();
-            if (!rid) return '';
-            const res = Array.isArray(RESOURCE_LIST) ? RESOURCE_LIST.find(r => String(r.id) === rid) : null;
-            return res ? res.title : '';
-          }
+
 
           function updateLastVisitInfo(label, designerName) {
             const text = label ? `上次消費：${label}${designerName ? `（設計師：${designerName}）` : ''}` : '';
@@ -736,10 +793,10 @@
               const amountRaw = fd.get('amount_input');
               const parsedAmount = parseInt(amountRaw, 10);
               const amountValue = Number.isFinite(parsedAmount) ? String(Math.max(0, parsedAmount)) : '';
-              
+
               // 確保總金額計算最新
               updateCalculatedTotal();
-              
+
               const payload = {
                 action: isEditing ? 'edit' : 'create',
                 id: fd.get('event_id') || undefined,
@@ -783,10 +840,12 @@
             if (appointmentCloseButton) appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
             if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
             if (reportCloseButton) reportCloseButton.onclick = () => reportModal.style.display = 'none';
+            if (lookupCloseButton) lookupCloseButton.onclick = () => lookupModal.style.display = 'none';
             window.addEventListener('click', (e) => {
               if (e.target === appointmentModal) appointmentModal.style.display = 'none';
               if (e.target === leaveModal) leaveModal.style.display = 'none';
               if (e.target === reportModal) reportModal.style.display = 'none';
+              if (e.target === lookupModal) lookupModal.style.display = 'none';
             });
             window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
 
@@ -800,7 +859,7 @@
                 const content = document.querySelector('.modal-content');
                 if (!isBlocked && eventIdInput.value) { actions.style.gridColumn = '1 / -1'; content.style.maxWidth = '900px'; }
                 else { actions.style.gridColumn = '1 / 2'; content.style.maxWidth = '450px'; }
-                
+
                 if (isBlocked) {
                   assistantSelect.value = ''; amountInput.value = '';
                   document.getElementById('perm_select').value = '';
@@ -824,21 +883,21 @@
             // [新增] 監聽左右箭頭
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
-            if(prevBtn) prevBtn.addEventListener('click', () => {
+            if (prevBtn) prevBtn.addEventListener('click', () => {
               // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
               calendar.prev();
             });
-            if(nextBtn) nextBtn.addEventListener('click', () => {
+            if (nextBtn) nextBtn.addEventListener('click', () => {
               // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
               calendar.next();
             });
 
             // [新增] 監聽染髮選項，顯示顏色輸入框
             document.querySelectorAll('input[name="other_item"]').forEach(cb => {
-              cb.addEventListener('change', function() {
+              cb.addEventListener('change', function () {
                 const label = this.parentElement.textContent;
-                if(label.includes('染髮')) {
-                   document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
+                if (label.includes('染髮')) {
+                  document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
                 }
                 updateCalculatedTotal();
               });
@@ -846,8 +905,8 @@
 
             const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], #perm_select, #retail_price, #bleach4000_cost, #cut_custom, #perm_custom, #other_custom');
             priceInputs.forEach(input => {
-                input.addEventListener('change', updateCalculatedTotal);
-                if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
+              input.addEventListener('change', updateCalculatedTotal);
+              if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
             });
 
             const materialCostWrap = document.getElementById('material-cost-wrap');
@@ -857,7 +916,7 @@
               const isOtherCustom = (parseInt(document.getElementById('other_custom').value, 10) || 0) > 0;
               const isPermCustom = (parseInt(document.getElementById('perm_custom').value, 10) || 0) > 0;
               const hasTrigger = otherItems.some(label => label.includes('漂4000')) || isOtherCustom || isPermCustom;
-              
+
               if (materialCostWrap) materialCostWrap.style.display = hasTrigger ? 'grid' : 'none';
             };
             // 監聽所有可能觸發材料費顯示的欄位
@@ -887,76 +946,76 @@
           }
 
           function updateCalculatedTotal() {
-              let cutPrice = 0;
-              let chemTotal = 0;
-              let totalCost = 0;
+            let cutPrice = 0;
+            let chemTotal = 0;
+            let totalCost = 0;
 
-              let chemTriggerActive = false;
-              let defaultChemCost = 0;
+            let chemTriggerActive = false;
+            let defaultChemCost = 0;
 
-              const cut = document.querySelector('input[name="cut_price"]:checked');
-              if (cut) {
-                  cutPrice = parseInt(cut.value, 10) || 0;
-                  totalCost += parseInt(cut.dataset.cost || 0, 10);
+            const cut = document.querySelector('input[name="cut_price"]:checked');
+            if (cut) {
+              cutPrice = parseInt(cut.value, 10) || 0;
+              totalCost += parseInt(cut.dataset.cost || 0, 10);
+            }
+            // [新增] 剪髮自訂
+            cutPrice += (parseInt(document.getElementById('cut_custom').value, 10) || 0);
+
+            document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
+              const p = parseInt(item.value, 10) || 0;
+              let c = parseInt(item.dataset.cost || 0, 10) || 0;
+              const label = item.parentElement.textContent.trim();
+
+              if (label.includes('漂4000')) {
+                chemTriggerActive = true;
+                defaultChemCost += c; // 累計漂4000的預設成本
+              } else {
+                totalCost += c; // 染髮、洗髮或其他
               }
-              // [新增] 剪髮自訂
-              cutPrice += (parseInt(document.getElementById('cut_custom').value, 10) || 0);
+              chemTotal += p;
+            });
+            // [新增] 其他自訂
+            const oc = (parseInt(document.getElementById('other_custom').value, 10) || 0);
+            if (oc > 0) chemTriggerActive = true;
+            chemTotal += oc;
 
-              document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
-                  const p = parseInt(item.value, 10) || 0;
-                  let c = parseInt(item.dataset.cost || 0, 10) || 0;
-                  const label = item.parentElement.textContent.trim();
-                  
-                  if (label.includes('漂4000')) {
-                      chemTriggerActive = true;
-                      defaultChemCost += c; // 累計漂4000的預設成本
-                  } else {
-                      totalCost += c; // 染髮、洗髮或其他
-                  }
-                  chemTotal += p;
-              });
-              // [新增] 其他自訂
-              const oc = (parseInt(document.getElementById('other_custom').value, 10) || 0);
-              if (oc > 0) chemTriggerActive = true;
-              chemTotal += oc;
+            const permSelect = document.getElementById('perm_select');
+            let permPrice = 0;
+            if (permSelect) {
+              permPrice = parseInt(permSelect.value, 10) || 0;
+              const opt = permSelect.selectedOptions[0];
+              totalCost += opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
+            }
+            // [新增] 燙髮自訂
+            const pc = (parseInt(document.getElementById('perm_custom').value, 10) || 0);
+            if (pc > 0) chemTriggerActive = true;
+            permPrice += pc;
 
-              const permSelect = document.getElementById('perm_select');
-              let permPrice = 0;
-              if (permSelect) {
-                  permPrice = parseInt(permSelect.value, 10) || 0;
-                  const opt = permSelect.selectedOptions[0];
-                  totalCost += opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
-              }
-              // [新增] 燙髮自訂
-              const pc = (parseInt(document.getElementById('perm_custom').value, 10) || 0);
-              if (pc > 0) chemTriggerActive = true;
-              permPrice += pc;
+            // 處理統一材料費
+            const customMaterialVal = parseInt(document.getElementById('custom_material_cost').value, 10) || 0;
+            if (chemTriggerActive) {
+              if (customMaterialVal > 0) totalCost += customMaterialVal;
+              else totalCost += defaultChemCost;
+            }
 
-              // 處理統一材料費
-              const customMaterialVal = parseInt(document.getElementById('custom_material_cost').value, 10) || 0;
-              if (chemTriggerActive) {
-                  if (customMaterialVal > 0) totalCost += customMaterialVal;
-                  else totalCost += defaultChemCost;
-              }
+            const retailInput = document.getElementById('retail_price');
+            let retailVal = parseInt(retailInput?.value, 10) || 0;
 
-              const retailInput = document.getElementById('retail_price');
-              let retailVal = parseInt(retailInput?.value, 10) || 0;
+            const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
+            const netAmount = displayTotal - totalCost;
 
-              const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
-              const netAmount = displayTotal - totalCost;
+            document.getElementById('display-total').textContent = '$' + displayTotal;
+            document.getElementById('display-net').textContent = '$' + netAmount;
+            const finalAmount = netAmount > 0 ? netAmount : '';
+            document.getElementById('amount_input').value = finalAmount;
 
-              document.getElementById('display-total').textContent = '$' + displayTotal;
-              document.getElementById('display-net').textContent = '$' + netAmount;
-              const finalAmount = netAmount > 0 ? netAmount : '';
-              document.getElementById('amount_input').value = finalAmount;
-              
-              // 更新全域 displayTotal
-              window.displayTotal = displayTotal;
-              
-              if (unsetPaidBtn && eventIdInput.value) {
-                const show = !document.querySelector('input[name="appointment_type"][value="blocked"]').checked && Number.isFinite(netAmount) && netAmount > 0;
-                unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
-              }
+            // 更新全域 displayTotal
+            window.displayTotal = displayTotal;
+
+            if (unsetPaidBtn && eventIdInput.value) {
+              const show = !document.querySelector('input[name="appointment_type"][value="blocked"]').checked && Number.isFinite(netAmount) && netAmount > 0;
+              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+            }
           }
 
           function paintEmployeeLeave() {
@@ -1000,7 +1059,7 @@
             if (appointmentContent) appointmentContent.style.maxWidth = '450px';
             document.getElementById('notes').placeholder = '請輸入備註資訊.';
             document.getElementById('employee_id').value = resource.id;
-            
+
             const isXiaobai = String(resource.id) === '3';
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
@@ -1010,7 +1069,7 @@
             document.getElementById('perm_select').value = '';
             document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
             document.getElementById('material-cost-wrap').style.display = 'none';
-            
+
             // Clear new fields
             document.getElementById('cut_custom').value = '';
             document.getElementById('perm_custom').value = '';
@@ -1018,11 +1077,11 @@
             document.getElementById('dye-color-wrap').style.display = 'none';
             document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
-            
+
             // [CRM功能] 清除上一次留下的建議發亮狀態
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
             updateLastVisitInfo('', '');
-            
+
             updateCalculatedTotal();
 
             const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
@@ -1055,15 +1114,15 @@
               updateLastVisitInfo('', '');
             }
             const serviceSelect = document.getElementById('service_id');
-            if(serviceSelect) serviceSelect.value = ep.service_id || '';
+            if (serviceSelect) serviceSelect.value = ep.service_id || '';
             document.getElementById('notes').value = ep.notes || '';
             assistantSelect.value = ep.assistant_id || '';
             amountInput.value = ep.amount !== undefined ? ep.amount : '';
-            
+
             // [新增] 回填染髮顏色
             const dyeInput = document.getElementById('dye_color_input');
-            if(dyeInput) dyeInput.value = ep.dye_color || '';
-            if(ep.dye_color) document.getElementById('dye-color-wrap').style.display = 'grid';
+            if (dyeInput) dyeInput.value = ep.dye_color || '';
+            if (ep.dye_color) document.getElementById('dye-color-wrap').style.display = 'grid';
             else document.getElementById('dye-color-wrap').style.display = 'none';
 
             const isBlocked = ep.appointment_type === 'blocked';
@@ -1073,7 +1132,7 @@
             placeAppointmentActions('edit');
             document.querySelector('.modal-actions').style.gridColumn = isBlocked ? '1 / 2' : '1 / -1';
             if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '450px' : '900px';
-            
+
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
@@ -1094,17 +1153,17 @@
             }
 
             updateCalculatedTotal();
-            
+
             if (ep.amount || ep.total_amount) {
-                const totalAmt = ep.total_amount || ep.amount;
-                amountInput.value = ep.amount || '';
-                document.getElementById('display-net').textContent = '$' + (ep.amount || 0);
-                document.getElementById('display-total').textContent = '$' + totalAmt;
-                window.displayTotal = totalAmt;  // 設置全域總金額
+              const totalAmt = ep.total_amount || ep.amount;
+              amountInput.value = ep.amount || '';
+              document.getElementById('display-net').textContent = '$' + (ep.amount || 0);
+              document.getElementById('display-total').textContent = '$' + totalAmt;
+              window.displayTotal = totalAmt;  // 設置全域總金額
             }
             if (unsetPaidBtn && eventIdInput.value) {
-                const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
-                unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+              const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
+              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
             }
 
             // 計算並回填時長
@@ -1135,11 +1194,30 @@
             appointmentModal.style.display = 'block';
           }
 
+          function toTaipeiIsoForApi(dateObj) {
+            const dt = dateObj instanceof Date ? dateObj : new Date(dateObj);
+            if (isNaN(dt.getTime())) return '';
+            const parts = new Intl.DateTimeFormat('sv-SE', {
+              timeZone: 'Asia/Taipei',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            }).formatToParts(dt).reduce((acc, p) => {
+              acc[p.type] = p.value;
+              return acc;
+            }, {});
+            return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
+          }
+
           function updateHiddenStartTime(baseDate) {
             const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
             const dt = new Date(baseDate.getTime());
             dt.setMinutes(selectedMinute, 0, 0);
-            document.getElementById('start_time').value = dt.toISOString();
+            document.getElementById('start_time').value = toTaipeiIsoForApi(dt);
           }
 
           function schedulePerResourceTimeAxis(delayMs = 0) {
@@ -1159,9 +1237,9 @@
             const byTime = new Map();
             laneCells.forEach(cell => { const t = cell.getAttribute('data-time'); if (!byTime.has(t)) byTime.set(t, cell); });
             const labelInfos = Array.from(byTime.entries()).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([t, cell]) => {
-                const text = String(t).slice(0, 5); const rect = cell.getBoundingClientRect(); const minute = parseInt(String(t).slice(3, 5), 10);
-                return { text, rect, kind: (minute === 0 || minute === 30 ? 'major' : 'minor') };
-              });
+              const text = String(t).slice(0, 5); const rect = cell.getBoundingClientRect(); const minute = parseInt(String(t).slice(3, 5), 10);
+              return { text, rect, kind: (minute === 0 || minute === 30 ? 'major' : 'minor') };
+            });
             const frames = Array.from(document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id] .fc-timegrid-col-frame'));
             frames.forEach(frame => {
               const axis = document.createElement('div'); axis.className = 'per-resource-time-axis';
@@ -1204,6 +1282,8 @@
             else cal.prepend(scroller);
             const reportBtn = document.getElementById('open-report-btn');
             if (reportBtn) scroller.querySelector('.date-toggle').appendChild(reportBtn);
+            const lookupBtn = document.getElementById('open-lookup-btn');
+            if (lookupBtn) scroller.querySelector('.date-toggle').appendChild(lookupBtn);
             ensureMobileResourceToggle(scroller);
             return scroller;
           }
@@ -1239,7 +1319,7 @@
             else scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
 
             syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
-            
+
             const strip = scroller.querySelector('.date-strip');
             const dates = []; const activeBase = new Date(activeDate); activeBase.setHours(12, 0, 0, 0);
             if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1);
@@ -1249,7 +1329,7 @@
             cursor = new Date(activeBase);
             while (after.length < 10) { cursor.setDate(cursor.getDate() + 1); if (cursor.getDay() === 1) continue; after.push(new Date(cursor)); }
             dates.push(...before.reverse(), activeBase, ...after);
-            
+
             strip.innerHTML = '';
             const currentKey = ymd(activeDate); const todayKey = ymd(new Date());
             const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'narrow' });
@@ -1264,18 +1344,18 @@
               btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 // quick visual feedback for debugging
-                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
                 console.log('date-item clicked', btn.dataset.date);
                 selectDateFromItem(btn);
               });
               // pointer/touch 支援，部分裝置會觸發 pointerdown/touchstart 而非 click
               btn.addEventListener('pointerdown', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
                 console.log('date-item pointerdown', btn.dataset.date);
                 selectDateFromItem(btn);
               });
               btn.addEventListener('touchstart', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) {}
+                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
                 console.log('date-item touchstart', btn.dataset.date);
                 selectDateFromItem(btn);
               }, { passive: true });
@@ -1284,12 +1364,12 @@
             enableDragScroll(strip); applyDateStripCurve(strip);
             const active = strip.querySelector('.date-item.is-active');
             if (active) {
-                if(strip.dataset.centerOnNextUpdate === '1') {
-                    delete strip.dataset.centerOnNextUpdate;
-                    const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
-                    if(typeof strip.scrollTo === 'function') strip.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
-                    else strip.scrollLeft = Math.max(0, targetLeft);
-                } else active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+              if (strip.dataset.centerOnNextUpdate === '1') {
+                delete strip.dataset.centerOnNextUpdate;
+                const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
+                if (typeof strip.scrollTo === 'function') strip.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+                else strip.scrollLeft = Math.max(0, targetLeft);
+              } else active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
           }
 
@@ -1310,34 +1390,34 @@
             const viewType = info?.view?.type || calendar?.view?.type || '';
             const shouldShowSingle = (viewType === 'resourceTimeGridDay' && isMobileLayout());
             const scroller = cal.querySelector('.fc-date-scroller');
-            if(scroller) {
-                scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
-                scroller.querySelector('.mobile-resource-toggle').querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
+            if (scroller) {
+              scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
+              scroller.querySelector('.mobile-resource-toggle').querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
             }
-            if(!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
+            if (!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
             else cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
           }
           function applyDateStripCurve(strip) {
-             /* 簡化版曲線效果 */
-             const items = Array.from(strip.querySelectorAll('.date-item'));
-             const activeIndex = items.findIndex(i => i.classList.contains('is-active'));
-             if(activeIndex === -1) return;
-             items.forEach((item, idx) => {
-               const dist = Math.abs(idx - activeIndex);
-               item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
-               item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
-               item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
-               item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08)).toFixed(2));
-             });
+            /* 簡化版曲線效果 */
+            const items = Array.from(strip.querySelectorAll('.date-item'));
+            const activeIndex = items.findIndex(i => i.classList.contains('is-active'));
+            if (activeIndex === -1) return;
+            items.forEach((item, idx) => {
+              const dist = Math.abs(idx - activeIndex);
+              item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
+              item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
+              item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
+              item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08)).toFixed(2));
+            });
           }
           function selectDateFromItem(item) {
-            if(!item || !item.dataset.date) return;
+            if (!item || !item.dataset.date) return;
             const parts = item.dataset.date.split('-').map(Number);
-            selectedDate = new Date(parts[0], parts[1]-1, parts[2], 12, 0, 0, 0);
+            selectedDate = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
             calendar.changeView('resourceTimeGridDay', item.dataset.date);
             calendar.gotoDate(item.dataset.date);
             // debug feedback
-            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) {}
+            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) { }
             try {
               let dbg = document.getElementById('fc-debug-banner');
               if (!dbg) {
@@ -1346,68 +1426,68 @@
                 document.body.appendChild(dbg);
               }
               dbg.textContent = `Selected: ${item.dataset.date}`;
-              setTimeout(() => { try { dbg.textContent = ''; } catch (e) {} }, 2000);
-            } catch (e) {}
+              setTimeout(() => { try { dbg.textContent = ''; } catch (e) { } }, 2000);
+            } catch (e) { }
             // 立即更新 header 顯示，避免視圖切換滯後時無反應感
             try {
               const sc = document.querySelector('.fc-date-scroller');
-                if (sc) {
+              if (sc) {
                 const [y, m, d] = item.dataset.date.split('-').map(Number);
                 const monthRaw = `${m}`;
                 sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
                 if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') sc.querySelector('.date-header-day').textContent = '';
                 else sc.querySelector('.date-header-day').textContent = `${d}日`;
               }
-            } catch (e) {}
+            } catch (e) { }
             // 強制更新日期顯示
             updateDateScroller({ view: calendar.view });
           }
           function syncDateToggleState(scroller, viewType) {
             scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
-                const isActive = viewType === btn.dataset.view;
-                btn.classList.toggle('is-active', isActive);
+              const isActive = viewType === btn.dataset.view;
+              btn.classList.toggle('is-active', isActive);
             });
           }
           function bindDateToggleActions(scroller) {
-            if(!scroller || scroller.dataset.toggleBound === '1') return; scroller.dataset.toggleBound = '1';
+            if (!scroller || scroller.dataset.toggleBound === '1') return; scroller.dataset.toggleBound = '1';
             scroller.querySelectorAll('.date-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
-                const view = btn.dataset.view;
-                if(view === 'resourceTimeGridDay') {
-                    const today = new Date(); today.setHours(12,0,0,0); selectedDate = today;
-                    calendar.changeView(view, ymd(today)); calendar.gotoDate(today);
-                } else calendar.changeView(view, ymd(selectedDate));
+              const view = btn.dataset.view;
+              if (view === 'resourceTimeGridDay') {
+                const today = new Date(); today.setHours(12, 0, 0, 0); selectedDate = today;
+                calendar.changeView(view, ymd(today)); calendar.gotoDate(today);
+              } else calendar.changeView(view, ymd(selectedDate));
             }));
           }
           function enableDragScroll(strip) {
-             /* 簡化版拖曳邏輯 */
-             let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
-             strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
-             strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
-             strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if(!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate='1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
-             strip.addEventListener('mousemove', (e) => { if(!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
-             // touch support
-             strip.addEventListener('touchstart', (e) => { if(!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
-             strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if(!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate='1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
-             strip.addEventListener('touchmove', (e) => { if(!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
+            /* 簡化版拖曳邏輯 */
+            let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
+            strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
+            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
+            strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
+            strip.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
+            // touch support
+            strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
+            strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
+            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
           }
           function updateToolbarTitle(info) {
-             const el = document.querySelector('#calendar .fc-toolbar-title'); if(!el) return;
-             if(info.view.type === 'dayGridMonth') { el.classList.add('is-month-title'); el.textContent = info.view.title; }
-             else { el.classList.remove('is-month-title'); el.textContent = info.view.title; }
+            const el = document.querySelector('#calendar .fc-toolbar-title'); if (!el) return;
+            if (info.view.type === 'dayGridMonth') { el.classList.add('is-month-title'); el.textContent = info.view.title; }
+            else { el.classList.remove('is-month-title'); el.textContent = info.view.title; }
           }
           function paintMondayClosed(info) {
-             document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
-             const start = info.start, end = info.end;
-             for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-               if (d.getDay() !== 1) continue;
-               const dateStr = ymd(d);
-               document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
-                 const frame = col.querySelector('.fc-timegrid-col-frame') || col;
-                 const ov = document.createElement('div'); ov.className = 'closed-overlay';
-                 const label = document.createElement('span'); label.className = 'overlay-label'; label.textContent = '公休';
-                 ov.appendChild(label); frame.appendChild(ov);
-               });
-             }
+            document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
+            const start = info.start, end = info.end;
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+              if (d.getDay() !== 1) continue;
+              const dateStr = ymd(d);
+              document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                const frame = col.querySelector('.fc-timegrid-col-frame') || col;
+                const ov = document.createElement('div'); ov.className = 'closed-overlay';
+                const label = document.createElement('span'); label.className = 'overlay-label'; label.textContent = '公休';
+                ov.appendChild(label); frame.appendChild(ov);
+              });
+            }
           }
         });
 
@@ -1417,6 +1497,212 @@
         const reportResult = document.getElementById('report-result');
         const repStart = document.getElementById('report-start');
         const repEnd = document.getElementById('report-end');
+        const openLookupBtn = document.getElementById('open-lookup-btn');
+        const closeLookupBtn = document.querySelector('.lookup-close-button');
+        const fetchLookupBtn = document.getElementById('fetch-lookup-btn');
+        const lookupResult = document.getElementById('lookup-result');
+        const lookupPhone = document.getElementById('lookup-phone');
+        const lookupName = document.getElementById('lookup-name');
+
+        function escapeHtml(value) {
+          return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function formatLookupDate(dateLike) {
+          const raw = (dateLike instanceof Date) ? dateLike : String(dateLike || '').trim();
+          if (!raw) return '';
+          const parsed = new Date(raw);
+          if (isNaN(parsed.getTime())) return '';
+
+          // User-requested behavior: force minus 8 hours before showing lookup time.
+          const shifted = new Date(parsed.getTime() - 8 * 60 * 60 * 1000);
+          const datePart = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            weekday: 'short'
+          }).format(shifted);
+          const timePart = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }).format(shifted);
+          return `${datePart} ${timePart}`;
+        }
+
+        function formatLookupDateByEvent(ev) {
+          if (calendar && ev && ev.id != null) {
+            const fcEv = calendar.getEventById(String(ev.id));
+            if (fcEv && fcEv.start instanceof Date) {
+              return formatLookupDate(fcEv.start);
+            }
+          }
+          return formatLookupDate(ev ? ev.start : '');
+        }
+
+        function getLookupDesignerName(ev) {
+          const ep = (ev && ev.extendedProps) ? ev.extendedProps : {};
+          const rid = String((ev && ev.resourceId) || ep.employee_id || '').trim();
+          return getDesignerNameById(rid) || rid || '未指定';
+        }
+
+        function renderLookupResult(events, phoneQuery, nameQuery) {
+          if (!lookupResult) return;
+          if (!events.length) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u7121\u7B26\u5408\u7684\u9810\u7D04\u8CC7\u6599</div>';
+            return;
+          }
+
+          const now = Date.now();
+          const items = events.map(ev => {
+            const startTs = new Date(ev.start).getTime();
+            return { ev, startTs, isPast: Number.isFinite(startTs) && startTs < now };
+          });
+          // items.sort((a, b) => (a.startTs || 0) - (b.startTs || 0)); // Old sort: ascending
+          items.sort((a, b) => (b.startTs || 0) - (a.startTs || 0)); // New sort: descending (newest first)
+
+          const finalList = items; // Show all items
+          const headline = `\u5171 ${events.length} \u7B46\uFF0C\u986F\u793A ${finalList.length} \u7B46\uFF08\u6309\u6642\u9593\u5012\u5E8F\uFF09`;
+          const keywordText = `\u95DC\u9375\u5B57\uFF1A${phoneQuery ? `\u96FB\u8A71 ${phoneQuery}` : ''}${phoneQuery && nameQuery ? ' / ' : ''}${nameQuery ? `\u59D3\u540D ${nameQuery}` : ''}`;
+          const rows = finalList.map(({ ev, isPast }) => {
+            const ep = ev.extendedProps || {};
+            const designer = getLookupDesignerName(ev);
+            const service = ep.service_id || '\u672A\u586B\u5BEB\u670D\u52D9';
+            const customer = ep.customer_name || '\u672A\u586B\u5BEB\u59D3\u540D';
+            const phone = ep.customer_phone || '-';
+            const when = formatLookupDateByEvent(ev);
+            const status = isPast ? '\u904E\u53BB' : '\u9810\u7D04';
+            const price = Number(ep.total_amount || ep.amount || 0);
+            const priceHtml = price > 0 ? `&nbsp;<span class="lookup-price">$${price.toLocaleString()}</span>` : '';
+            return `
+              <button type="button" class="lookup-item${isPast ? ' is-past' : ''}" data-event-id="${escapeHtml(ev.id)}" data-start="${escapeHtml(ev.start)}">
+                <div class="lookup-item-top">
+                  <span class="lookup-time">${escapeHtml(when)}</span>
+                  <span class="lookup-status">${status}</span>
+                </div>
+                <div class="lookup-designer">\u8A2D\u8A08\u5E2B\uFF1A${escapeHtml(designer)}</div>
+                <div class="lookup-item-main">${escapeHtml(customer)} <span class="lookup-phone">${escapeHtml(phone)}</span></div>
+                <div class="lookup-item-sub">\u670D\u52D9\uFF1A${escapeHtml(service)}${priceHtml}</div>
+              </button>
+            `;
+          }).join('');
+
+          lookupResult.innerHTML = `
+            <div class="lookup-summary">${escapeHtml(headline)}<br>${escapeHtml(keywordText)}</div>
+            <div class="lookup-list">${rows}</div>
+          `;
+
+          lookupResult.querySelectorAll('.lookup-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const eventId = String(btn.dataset.eventId || '').trim();
+              const startIso = String(btn.dataset.start || '').trim();
+              if (startIso && calendar) {
+                const dt = new Date(startIso);
+                if (!isNaN(dt.getTime())) {
+                  selectedDate = new Date(dt.getTime());
+                  selectedDate.setHours(12, 0, 0, 0);
+                  calendar.changeView('resourceTimeGridDay', dt);
+                  calendar.gotoDate(dt);
+                }
+              }
+              if (lookupModal) lookupModal.style.display = 'none';
+              window.setTimeout(() => {
+                const ev = calendar && eventId ? calendar.getEventById(eventId) : null;
+                if (ev) openApptModalForEdit(ev);
+              }, 220);
+            });
+          });
+        }
+
+        function renderLookupResultPlain(events, phoneQuery) {
+          if (!lookupResult) return;
+          if (!Array.isArray(events) || !events.length) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u7121\u7B26\u5408\u7684\u9810\u7D04\u8CC7\u6599</div>';
+            return;
+          }
+          const rows = events.map(ev => {
+            const ep = ev.extendedProps || {};
+            const when = formatLookupDate(ev.start) || String(ev.start || '');
+            const designer = getLookupDesignerName(ev);
+            const price = Number(ep.total_amount || ep.amount || 0);
+            const priceHtml = price > 0 ? `&nbsp;<span class="lookup-price">$${price.toLocaleString()}</span>` : '';
+            return `
+              <div class="lookup-item is-past">
+                <div class="lookup-item-top">
+                  <span class="lookup-time">${escapeHtml(when)}</span>
+                  <span class="lookup-status">\u9810\u7D04</span>
+                </div>
+                <div class="lookup-designer">\u8A2D\u8A08\u5E2B\uFF1A${escapeHtml(designer)}</div>
+                <div class="lookup-item-main">${escapeHtml(ep.customer_name || '-')}&nbsp;<span class="lookup-phone">${escapeHtml(ep.customer_phone || '-')}</span></div>
+                <div class="lookup-item-sub">\u670D\u52D9\uFF1A${escapeHtml(ep.service_id || '-')}${priceHtml}</div>
+              </div>
+            `;
+          }).join('');
+          lookupResult.innerHTML = `
+            <div class="lookup-summary">\u5171 ${events.length} \u7B46 \uFF5C \u96FB\u8A71 ${escapeHtml(phoneQuery || '')}</div>
+            <div class="lookup-list">${rows}</div>
+          `;
+        }
+
+        function renderLookupResultSafely(events, phoneQuery, nameQuery) {
+          try {
+            renderLookupResult(events, phoneQuery, nameQuery);
+          } catch (err) {
+            console.error('renderLookupResult failed, fallback to plain renderer:', err);
+            renderLookupResultPlain(events, phoneQuery);
+          }
+        }
+
+        async function runLookupSearch() {
+          if (!lookupResult) return;
+          const phoneDigits = String(lookupPhone?.value || '').replace(/\D/g, '');
+          if (!phoneDigits) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u8ACB\u8F38\u5165\u96FB\u8A71</div>';
+            return;
+          }
+
+          lookupResult.innerHTML = '<div style="text-align:center; padding:16px;">\u8CC7\u6599\u67E5\u8A62\u4E2D...</div>';
+          const phoneMatch = (value) => {
+            const d = String(value || '').replace(/\D/g, '');
+            if (!d) return false;
+            return d.includes(phoneDigits) || phoneDigits.includes(d);
+          };
+          let searchErr = null;
+          try {
+            const params = new URLSearchParams({
+              action: 'searchAppointments',
+              includePast: '1',
+              limit: '120'
+            });
+            params.set('phone', phoneDigits);
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + '?' + params.toString(), { method: 'GET', mode: 'cors' });
+            const raw = await res.json();
+            if (!Array.isArray(raw) && raw && raw.status === 'error') {
+              throw new Error(raw.message || 'searchAppointments failed');
+            }
+            const events = Array.isArray(raw) ? raw : (Array.isArray(raw?.events) ? raw.events : []);
+            renderLookupResultSafely(events, phoneDigits, '');
+            return;
+          } catch (err) {
+            searchErr = err;
+            console.error('searchAppointments failed:', err);
+            try {
+              const r2 = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getEvents', { method: 'GET', mode: 'cors' });
+              const all = await r2.json();
+              const events = Array.isArray(all) ? all.filter(ev => {
+                const ep = ev.extendedProps || {};
+                if (String(ep.appointment_type || '').toLowerCase() === 'blocked') return false;
+                return phoneMatch(ep.customer_phone);
+              }) : [];
+              renderLookupResultSafely(events, phoneDigits, '');
+            } catch (err2) {
+              console.error('lookup fallback getEvents failed:', err2);
+              lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u8A62\u5931\u6557\uFF0C\u8ACB\u7A0D\u5F8C\u518D\u8A66</div>';
+            }
+          }
+        }
 
         function initReportDateRange() {
           const pad2 = (n) => String(n).padStart(2, '0');
@@ -1426,6 +1712,35 @@
         }
         if (openReportBtn) openReportBtn.addEventListener('click', () => { reportModal.style.display = 'block'; initReportDateRange(); });
         if (closeReportBtn) closeReportBtn.addEventListener('click', () => reportModal.style.display = 'none');
+        if (openLookupBtn) openLookupBtn.addEventListener('click', () => {
+          if (!lookupModal) lookupModal = document.getElementById('lookupModal');
+          if (lookupModal) lookupModal.style.display = 'block';
+          if (lookupResult) lookupResult.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">\u8ACB\u8F38\u5165\u96FB\u8A71\u5F8C\u67E5\u8A62</div>';
+          if (lookupName) lookupName.value = '';
+          if (lookupPhone) {
+            lookupPhone.value = '';
+            lookupPhone.focus();
+          }
+        });
+        if (closeLookupBtn) closeLookupBtn.addEventListener('click', () => { if (lookupModal) lookupModal.style.display = 'none'; });
+        if (fetchLookupBtn) fetchLookupBtn.addEventListener('click', runLookupSearch);
+        [lookupPhone, lookupName].forEach(el => {
+          if (!el) return;
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              runLookupSearch();
+            }
+          });
+        });
+        if (lookupPhone) {
+          lookupPhone.addEventListener('input', (e) => {
+            let d = String(e.target.value || '').replace(/\D/g, '').slice(0, 10);
+            if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
+            else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+            else e.target.value = d;
+          });
+        }
         if (fetchReportBtn) fetchReportBtn.addEventListener('click', async () => {
           const start = repStart.value; const end = repEnd.value;
           if (!start || !end) { reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center;">請選擇起訖日期</div>'; return; }
@@ -1462,4 +1777,5 @@
       })();
     </script>
 </body>
+
 </html>
