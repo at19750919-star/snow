@@ -15,7 +15,7 @@ const AUDIT_SHEET_NAME       = 'audit_log';
 const SCRIPT_PROPERTIES_KEY  = 'LAST_ID';
 const APPT_HEADERS_SNAPSHOT_KEY = 'APPT_HEADERS_SNAPSHOT_V1';
 
-const FIXED_DURATION_MIN     = 15;
+const DEFAULT_DURATION_MIN   = 15;
 
 const EVENTS_CACHE_KEY       = 'EVENTS_CACHE_V1';
 const EVENTS_CACHE_TTL_SEC   = 15; // 快取 15 秒
@@ -96,10 +96,17 @@ function parseIsoAsTaipeiLocal(iso) {
   return new Date(iso);
 }
 
-function computeEndTextFromIso(startIso) {
+function normalizeDurationMin(raw) {
+  const n = parseInt(raw, 10);
+  if (!isFinite(n) || n <= 0) return DEFAULT_DURATION_MIN;
+  return n;
+}
+
+function computeEndTextFromIso(startIso, durationMin) {
   const startDate = parseIsoAsTaipeiLocal(startIso);
   if (isNaN(startDate.getTime())) throw new Error('???????迎???? ' + startIso);
-  const endDate = new Date(startDate.getTime() + FIXED_DURATION_MIN * 60000);
+  const minutes = normalizeDurationMin(durationMin);
+  const endDate = new Date(startDate.getTime() + minutes * 60000);
   return Utilities.formatDate(endDate, spreadsheetTZ(), 'yyyy-MM-dd HH:mm');
 }
 
@@ -192,7 +199,7 @@ function toEventObject_(ev) {
   if (isNaN(startDate.getTime())) return null;
   let endDate = ev.end ? new Date(ev.end) : null;
   if (!endDate || isNaN(endDate.getTime())) {
-    endDate = new Date(startDate.getTime() + FIXED_DURATION_MIN * 60000);
+    endDate = new Date(startDate.getTime() + DEFAULT_DURATION_MIN * 60000);
   }
   return {
     id: String(ev.id),
@@ -482,7 +489,7 @@ function doGet(e) {
           if (isNaN(startDate.getTime())) return null;
           let endDate = ev.end ? new Date(ev.end) : null;
           if (!endDate || isNaN(endDate.getTime())) {
-            endDate = new Date(startDate.getTime() + FIXED_DURATION_MIN * 60000);
+            endDate = new Date(startDate.getTime() + DEFAULT_DURATION_MIN * 60000);
           }
           const titleText = ev.appointment_type === 'blocked'
             ? (ev.notes || '不約時段')
@@ -652,7 +659,7 @@ function doCreate(data, sheet) {
     String(startDateObj.getHours()).padStart(2, '0') + ':' +
     String(startDateObj.getMinutes()).padStart(2, '0');
 
-  const formattedEndDate = computeEndTextFromIso(data.start);
+  const formattedEndDate = computeEndTextFromIso(data.start, data.duration);
 
   const rowData = {
     id: lastId,
@@ -702,7 +709,7 @@ function doEdit(data, sheet) {
     String(startDateObj.getHours()).padStart(2, '0') + ':' +
     String(startDateObj.getMinutes()).padStart(2, '0');
 
-  const formattedEndDate = computeEndTextFromIso(data.start);
+  const formattedEndDate = computeEndTextFromIso(data.start, data.duration);
 
   const merged = Object.assign({}, found.rowData, {
     employee_id: empId,
