@@ -607,11 +607,12 @@
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
                 const currencyFormatter = new Intl.NumberFormat('zh-TW');
 
-                // [修改] 結帳後顯示: 助理名字 + 金額
+                // [修改] 結帳後顯示: 助理名字最後一字 + 金額
                 let amountLabel = '';
                 if (isPaid) {
                   const asst = ep.assistant_id || '';
-                  amountLabel = (asst ? asst + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
+                  const asstLast = safeTrim(asst).slice(-1);
+                  amountLabel = (asstLast ? asstLast + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
                 }
 
                 const badgeText = svcList.join('');
