@@ -440,7 +440,7 @@
             calendar = new FullCalendar.Calendar(calendarEl, {
               schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
               locale: 'zh-tw',
-              timeZone: 'Asia/Taipei',
+              timeZone: 'local',
               initialView: 'resourceTimeGridDay',
               headerToolbar: false,
               firstDay: 2,
@@ -674,9 +674,8 @@
             const normalized = String(rawStart || '').trim().replace(/\s+/g, 'T');
             const parsed = new Date(normalized);
             if (isNaN(parsed.getTime())) return String(rawStart).trim();
-            const adjusted = new Date(parsed.getTime() - 12 * 60 * 60 * 1000); // 顯示時扣掉 12 小時
             const pad = v => String(v).padStart(2, '0');
-            return `${adjusted.getFullYear()}/${pad(adjusted.getMonth() + 1)}/${pad(adjusted.getDate())}`;
+            return `${parsed.getFullYear()}/${pad(parsed.getMonth() + 1)}/${pad(parsed.getDate())}`;
           }
 
 
@@ -1515,21 +1514,19 @@
           const parsed = new Date(raw);
           if (isNaN(parsed.getTime())) return '';
 
-          // User-requested behavior: force minus 8 hours before showing lookup time.
-          const shifted = new Date(parsed.getTime() - 8 * 60 * 60 * 1000);
           const datePart = new Intl.DateTimeFormat('zh-TW', {
             timeZone: 'Asia/Taipei',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
             weekday: 'short'
-          }).format(shifted);
+          }).format(parsed);
           const timePart = new Intl.DateTimeFormat('zh-TW', {
             timeZone: 'Asia/Taipei',
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
-          }).format(shifted);
+          }).format(parsed);
           return `${datePart} ${timePart}`;
         }
 
