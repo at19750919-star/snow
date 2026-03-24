@@ -710,8 +710,17 @@
               // [CRM功能] 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄並追溯配方
               if (d.length === 10 && !eventIdInput.value) {
                 try {
-                  const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${d}`, { method: 'GET', mode: 'cors' });
-                  const history = await res.json();
+                  // 客戶端快取：同一電話在本次使用中只查一次 GAS
+                  if (!window._crmCache) window._crmCache = {};
+                  let history;
+                  if (window._crmCache[d]) {
+                    history = window._crmCache[d];
+                  } else {
+                    showToast('查詢歷史紀錄中...', 'loading', 5000);
+                    const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${d}`, { method: 'GET', mode: 'cors' });
+                    history = await res.json();
+                    window._crmCache[d] = history;
+                  }
                   if (history && history.customer_name) {
                     // 1. 自動填入姓名（若目前為空）
                     const nameInput = document.getElementById('customer_name');
@@ -747,6 +756,21 @@
                         }
                       });
                     }
+                    // 4. 自動填入上次消費資訊到備註（若備註為空）
+                    const notesInput = document.getElementById('notes');
+                    if (notesInput && !notesInput.value.trim()) {
+                      const lastDate = formatLastVisitLabel(history.start);
+                      const lastSvc = history.service_id || '';
+                      const lastDesigner = getDesignerNameById(history.employee_id);
+                      if (lastDate) {
+                        const parts = [`上次：${lastDate}`];
+                        if (lastDesigner) parts.push(lastDesigner);
+                        if (lastSvc) parts.push(lastSvc);
+                        if (history.dye_color) parts.push(`色號:${history.dye_color}`);
+                        notesInput.value = parts.join(' / ');
+                      }
+                    }
+
                     const lastVisitLabel = formatLastVisitLabel(history.start);
                     if (lastVisitLabel) {
                       lastVisitLabelValue = lastVisitLabel;
@@ -821,8 +845,37 @@
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
                 const data = await res.json();
                 if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
-                calendar.refetchEvents();
                 saveOk = true;
+
+                // 樂觀更新：立刻在行事曆上顯示，不等 refetch
+                const eventId = isEditing ? String(payload.id) : String(data.id || '_opt_' + Date.now());
+                const durationMin = parseInt(payload.duration, 10) || 15;
+                const startDt = new Date(payload.start);
+                const endDt = new Date(startDt.getTime() + durationMin * 60000);
+                if (isEditing) {
+                  const oldEv = calendar.getEventById(eventId);
+                  if (oldEv) oldEv.remove();
+                }
+                calendar.addEvent({
+                  id: eventId,
+                  resourceId: String(payload.employee_id),
+                  start: startDt,
+                  end: endDt,
+                  title: payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || ''),
+                  extendedProps: {
+                    customer_name: payload.customer_name,
+                    customer_phone: payload.customer_phone,
+                    service_id: payload.service_id,
+                    notes: payload.notes,
+                    appointment_type: payload.appointment_type,
+                    amount: payload.amount,
+                    cut_price: payload.cut_price,
+                    total_amount: payload.total_amount,
+                    assistant_id: payload.assistant_id,
+                    dye_color: payload.dye_color
+                  }
+                });
+
               } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
               finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
             });
