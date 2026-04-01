@@ -2919,6 +2919,154 @@ body {
   box-sizing: border-box;
 }
 
+/* ============================================================
+   Modal 優化樣式 (A-F)
+   ============================================================ */
+
+/* === A. 子卡片分組 === */
+.settlement-sub-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(129, 199, 132, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.settlement-sub-card:last-child {
+  margin-bottom: 0;
+}
+.settlement-sub-card .sub-card-title {
+  display: block;
+  color: #a5d6a7 !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(129, 199, 132, 0.15);
+}
+/* 底部店販+助理卡片用更淡的背景 */
+.settlement-sub-card--footer {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* === B. 折疊面板 (少用項目) === */
+.more-options-details {
+  margin-top: 8px;
+}
+.more-options-toggle {
+  cursor: pointer;
+  color: rgba(129, 199, 132, 0.7);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(129, 199, 132, 0.08);
+  border: 1px solid rgba(129, 199, 132, 0.15);
+  transition: all 0.2s ease;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.more-options-toggle::before {
+  content: "▸";
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 10px;
+}
+.more-options-details[open] > .more-options-toggle::before {
+  transform: rotate(90deg);
+}
+.more-options-toggle:hover {
+  background: rgba(129, 199, 132, 0.15);
+  color: #a5d6a7;
+}
+/* 隱藏 details 預設的三角 */
+.more-options-toggle::-webkit-details-marker {
+  display: none;
+}
+
+/* === D. 金額數字放大 + 粗體 === */
+.settlement-section .price-val {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #fff59d !important;
+  letter-spacing: 0.02em;
+}
+.settlement-section .price-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* 總金額放大強調 */
+.total-label-text {
+  font-size: 12px;
+  color: #aaa;
+  font-weight: normal;
+  white-space: nowrap;
+}
+.net-amount-text {
+  font-size: 12px;
+  color: #aaa;
+  font-weight: normal;
+  margin-top: 4px;
+}
+
+/* === E. 底部操作列優化 === */
+.modal-actions {
+  display: flex !important;
+  align-items: stretch;
+  gap: 10px;
+}
+#deleteBtn {
+  flex: 0 0 auto !important;
+  min-width: 90px;
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  background: rgba(255, 107, 107, 0.15) !important;
+  color: #ff8a8a !important;
+  border: 1px solid rgba(255, 107, 107, 0.25) !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+#deleteBtn:hover {
+  background: rgba(255, 107, 107, 0.3) !important;
+  border-color: rgba(255, 107, 107, 0.5) !important;
+}
+#submit-btn {
+  flex: 1 1 0 !important;
+  min-height: 48px;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+}
+
+/* === F. 右欄內建 scroll === */
+#settlement-col > .settlement-section {
+  max-height: calc(86vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 199, 132, 0.3) transparent;
+}
+#settlement-col > .settlement-section::-webkit-scrollbar {
+  width: 5px;
+}
+#settlement-col > .settlement-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+#settlement-col > .settlement-section::-webkit-scrollbar-thumb {
+  background: rgba(129, 199, 132, 0.25);
+  border-radius: 4px;
+}
+#settlement-col > .settlement-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 199, 132, 0.4);
+}
+
 /* 小螢幕調整 */
 @media (max-width: 700px) {
   .blue-card-section .form-row,
@@ -2927,5 +3075,8 @@ body {
   }
   .modal-layout-grid {
     grid-template-columns: 1fr !important;
+  }
+  #settlement-col > .settlement-section {
+    max-height: none;
   }
 }

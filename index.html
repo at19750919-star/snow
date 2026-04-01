@@ -103,56 +103,65 @@
             <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目與助理 -->
             <div class="modal-col settlement-col" id="settlement-col">
               <div class="modal-section settlement-section">
-                <label>剪髮項目</label>
-                <div class="price-group">
-                  <!-- 隱藏的 0 元選項，用於改回未結帳 -->
-                  <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
+                <!-- ====== A. 子卡片：剪髮項目 ====== -->
+                <div class="settlement-sub-card">
+                  <label class="sub-card-title">剪髮項目</label>
+                  <div class="price-group">
+                    <!-- 隱藏的 0 元選項，用於改回未結帳 -->
+                    <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
 
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
-                        data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
-                        data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
-                        data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+                    <!-- B. 常用項目置頂 -->
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
+                          data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
+                          data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
+                          data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+                  </div>
 
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
-                        data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
-                        data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
-                  <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
-                        type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
-                      class="price-val">$600</span></label>
+                  <!-- B. 少用項目折疊 -->
+                  <details class="more-options-details">
+                    <summary class="more-options-toggle">更多剪髮選項</summary>
+                    <div class="price-group" style="margin-top:8px;">
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
+                            data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
+                            data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
+                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
+                            type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
+                          class="price-val">$600</span></label>
 
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000"
-                        data-cost="0"> 過年剪髮</span> <span class="price-val">$1000</span></label>
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650"
-                        data-cost="0"> 過年剪髮</span> <span class="price-val">$600</span></label>
-                  <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500"
-                        data-cost="0"> 過年剪髮</span> <span class="price-val">$500</span></label>
+                      <!-- C. 過年剪髮標籤去重 -->
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000"
+                            data-cost="0"> 過年(成人)</span> <span class="price-val">$1000</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650"
+                            data-cost="0"> 過年(大學)</span> <span class="price-val">$600</span></label>
+                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500"
+                            data-cost="0"> 過年(高中)</span> <span class="price-val">$500</span></label>
+                    </div>
+                  </details>
 
-                  <!-- 將「剪髮自訂」移動到此處 -->
-                  <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
                     <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
                     <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0"
                       style="margin-top:0;">
                   </div>
                 </div>
 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
-
-                <label>其他項目</label>
-                <div class="price-group">
-                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                        value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
-                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                        value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
-                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                        value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
-                  <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                        value="4000" data-cost="270"> 漂4000</span> <span class="price-val">$4000</span></label>
-
-                  <!-- 移動「其他自訂」到此處 -->
-                  <div class="settlement-row" style="margin-top:0; display: flex; align-items: center; gap: 10px;">
+                <!-- ====== A. 子卡片：其他項目 ====== -->
+                <div class="settlement-sub-card">
+                  <label class="sub-card-title">其他項目</label>
+                  <div class="price-group">
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="4000" data-cost="270"> 漂髮</span> <span class="price-val">$4000</span></label>
+                  </div>
+                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
                     <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">其他自訂</label>
                     <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0"
                       style="margin-top:0;">
@@ -171,53 +180,58 @@
                     placeholder="請輸入材料費...">
                 </div>
 
-                <div class="settlement-row settlement-row--inline" style="margin-top:10px;">
-                  <div class="settlement-inline-item">
-                    <label for="perm_select">燙髮</label>
-                    <select id="perm_select" name="perm_select">
-                      <option value="" data-cost="0">無</option>
-                      <option value="1200" data-cost="260">1200（材料260）</option>
-                      <option value="1500" data-cost="260">1500（材料260）</option>
-                      <option value="1800" data-cost="280">1800（材料280）</option>
-                      <option value="2000" data-cost="280">2000（材料280）</option>
-                      <option value="2400" data-cost="280">2400（材料280）</option>
-                      <option value="3600" data-cost="300">3600（材料300）</option>
-                    </select>
+                <!-- ====== A. 子卡片：燙髮 ====== -->
+                <div class="settlement-sub-card">
+                  <label class="sub-card-title">燙髮</label>
+                  <div class="price-group">
+                    <input type="radio" name="perm_price" value="0" data-cost="0" style="display:none;" checked>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="700"
+                          data-cost="0"></span> <span class="price-val">$700</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1200"
+                          data-cost="250"></span> <span class="price-val" style="flex:1;text-align:center">$1200 <small style="opacity:.7;color:#fff;font-size:10px;font-weight:400">(材料250)</small></span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1600"
+                          data-cost="0"></span> <span class="price-val">$1600</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1800"
+                          data-cost="250"></span> <span class="price-val" style="flex:1;text-align:center">$1800 <small style="opacity:.7;color:#fff;font-size:10px;font-weight:400">(材料250)</small></span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="2600"
+                          data-cost="0"></span> <span class="price-val">$2600</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="3200"
+                          data-cost="0"></span> <span class="price-val">$3200</span></label>
                   </div>
-
-                  <div class="settlement-inline-item">
-                    <label for="perm_custom">燙髮自訂</label>
-                    <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0">
-                  </div>
-                </div>
-
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
-
-                <div class="settlement-row settlement-row--title shop-sales-row">
-                  <label for="retail_item">店販</label>
-                  <div class="shop-sales-inputs">
-                    <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
-                    <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
+                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
+                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">燙髮自訂</label>
+                    <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0"
+                      style="margin-top:0;">
                   </div>
                 </div>
 
-                <div class="assistant-total-row">
-                  <div class="assistant-field">
-                    <label for="assistant_select">助理</label>
-                    <select id="assistant_select" name="assistant_select">
-                      <option value="">-- 無助理 --</option>
-                      <option value="陳翎">陳翎</option>
-                      <option value="洪苡芳">洪苡芳</option>
-                      <option value="曹家溱">曹家溱</option>
-                    </select>
+                <!-- ====== A. 子卡片：店販 + 助理 + 總額 ====== -->
+                <div class="settlement-sub-card settlement-sub-card--footer">
+                  <div class="settlement-row settlement-row--title shop-sales-row">
+                    <label for="retail_item">店販</label>
+                    <div class="shop-sales-inputs">
+                      <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
+                      <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
+                    </div>
                   </div>
 
-                  <div class="total-display">
-                    <span style="font-size:0.5em; color:#aaa; font-weight:normal;">總金額: </span>
-                    <span id="display-total">$0</span>
-                    <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
-                    <div style="font-size:12px; color:#aaa; font-weight:normal; margin-top:4px;">(入帳金額: <span
-                        id="display-net">$0</span>)</div>
+                  <div class="assistant-total-row">
+                    <div class="assistant-field">
+                      <label for="assistant_select">助理</label>
+                      <select id="assistant_select" name="assistant_select">
+                        <option value="">-- 無助理 --</option>
+                        <option value="陳翎">陳翎</option>
+                        <option value="洪苡芳">洪苡芳</option>
+                        <option value="曹家溱">曹家溱</option>
+                      </select>
+                    </div>
+
+                    <div class="total-display">
+                      <span class="total-label-text">總金額</span>
+                      <span id="display-total">$0</span>
+                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
+                      <div class="net-amount-text">(入帳金額: <span id="display-net">$0</span>)</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -228,8 +242,8 @@
           <div id="appointment-actions-anchor"></div>
           <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 16px;">
             <button type="button" id="deleteBtn"
-              style="display:none; background-color:#d32f2f; color:white;">刪除預約</button>
-            <button type="submit" id="submit-btn" style="flex:1;">儲存</button>
+              style="display:none;">刪除預約</button>
+            <button type="submit" id="submit-btn">儲存</button>
           </div>
         </form>
       </div>
@@ -915,7 +929,7 @@
 
                 if (isBlocked) {
                   assistantSelect.value = ''; amountInput.value = '';
-                  document.getElementById('perm_select').value = '';
+                  document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                   document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
                   document.getElementById('material-cost-wrap').style.display = 'none';
                   document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
@@ -956,7 +970,7 @@
               });
             });
 
-            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], #perm_select, #retail_price, #bleach4000_cost, #cut_custom, #perm_custom, #other_custom');
+            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], input[name="perm_price"], #retail_price, #bleach4000_cost, #cut_custom, #perm_custom, #other_custom');
             priceInputs.forEach(input => {
               input.addEventListener('change', updateCalculatedTotal);
               if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
@@ -985,7 +999,7 @@
                 if (!confirm('要把這筆改回未結帳嗎？')) return;
                 document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
                 document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-                document.getElementById('perm_select').value = '';
+                document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                 document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
                 assistantSelect.value = ''; amountInput.value = '';
                 document.getElementById('cut_custom').value = '';
@@ -1032,12 +1046,11 @@
             if (oc > 0) chemTriggerActive = true;
             chemTotal += oc;
 
-            const permSelect = document.getElementById('perm_select');
+            const permRadio = document.querySelector('input[name="perm_price"]:checked');
             let permPrice = 0;
-            if (permSelect) {
-              permPrice = parseInt(permSelect.value, 10) || 0;
-              const opt = permSelect.selectedOptions[0];
-              totalCost += opt ? (parseInt(opt.dataset.cost || 0, 10) || 0) : 0;
+            if (permRadio) {
+              permPrice = parseInt(permRadio.value, 10) || 0;
+              totalCost += parseInt(permRadio.dataset.cost || 0, 10) || 0;
             }
             // [新增] 燙髮自訂
             const pc = (parseInt(document.getElementById('perm_custom').value, 10) || 0);
@@ -1119,7 +1132,7 @@
             assistantSelect.value = ''; amountInput.value = '';
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-            document.getElementById('perm_select').value = '';
+            document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
             document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
             document.getElementById('material-cost-wrap').style.display = 'none';
 
@@ -1192,7 +1205,7 @@
             // Reset billing default
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
-            document.getElementById('perm_select').value = '';
+            document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
             document.getElementById('material-cost-wrap').style.display = 'none';
             // Clear new custom fields
             document.getElementById('cut_custom').value = '';
@@ -1202,7 +1215,12 @@
             // 回填剪髮金額（舊資料沒有就保留預設 0）
             if (ep.cut_price) {
               const cutRadio = document.querySelector(`input[name="cut_price"][value="${ep.cut_price}"]`);
-              if (cutRadio) cutRadio.checked = true;
+              if (cutRadio) {
+                cutRadio.checked = true;
+                // 若選中的項目在折疊區內，自動展開
+                const detailsParent = cutRadio.closest('details.more-options-details');
+                if (detailsParent) detailsParent.open = true;
+              }
             }
 
             updateCalculatedTotal();
