@@ -1,0 +1,14 @@
+{
+  "name": "century-salon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "世紀髮廊景美店預約系統",
+  "scripts": {
+    "lint:css": "stylelint \"styles.css\"",
+    "lint": "stylelint \"styles.css\""
+  },
+  "devDependencies": {
+    "stylelint": "^17.6.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}

@@ -524,6 +524,36 @@ function doGet(e) {
     return response.setMimeType(ContentService.MimeType.JSON);
   }
 
+
+  // E) 警示名單：查詢單一電話
+  if (action === 'checkWarn') {
+    const phone = e.parameter.phone ? e.parameter.phone.replace(/\D/g, '') : '';
+    if (!phone) return ContentService.createTextOutput(JSON.stringify({found: false})).setMimeType(ContentService.MimeType.JSON);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ws = ss.getSheetByName('警示名單');
+    if (!ws || ws.getLastRow() < 2) return ContentService.createTextOutput(JSON.stringify({found: false})).setMimeType(ContentService.MimeType.JSON);
+    const data = ws.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const stored = String(data[i][0]).replace(/\D/g, '');
+      if (stored === phone || stored === phone.replace(/^0/, '') || ('0' + stored) === phone) {
+        return ContentService.createTextOutput(JSON.stringify({found: true, note: String(data[i][1] || '') })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({found: false})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // F) 警示名單：取得完整列表
+  if (action === 'getWarnList') {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ws = ss.getSheetByName('警示名單');
+    if (!ws || ws.getLastRow() < 2) return ContentService.createTextOutput(JSON.stringify({list: []})).setMimeType(ContentService.MimeType.JSON);
+    const data = ws.getDataRange().getValues();
+    const list = [];
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0]) { let p = String(data[i][0]).replace(/\D/g, ''); if (p.length === 9) p = '0' + p; list.push({phone: p, note: String(data[i][1] || '')}); }
+    }
+    return ContentService.createTextOutput(JSON.stringify({list: list})).setMimeType(ContentService.MimeType.JSON);
+  }
   return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: '??堊???action: ' + action }))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -549,6 +579,35 @@ function doPost(e) {
 
   try {
     // A) ????/??畸?
+    // G) 警示名單：新增
+    if (action === 'addWarn') {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      let ws = ss.getSheetByName('警示名單');
+      if (!ws) { ws = ss.insertSheet('警示名單'); ws.appendRow(['phone', 'note']); }
+      const phone = String(payload.phone || '').replace(/\D/g, '');
+      const row = ws.getLastRow() + 1;
+      ws.getRange(row, 1).setNumberFormat('@').setValue(phone);
+      ws.getRange(row, 2).setValue(payload.note || '');
+      return ContentService.createTextOutput(JSON.stringify({status: 'success'})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // H) 警示名單：刪除
+    if (action === 'deleteWarn') {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const ws = ss.getSheetByName('警示名單');
+      if (ws) {
+        const data = ws.getDataRange().getValues();
+        for (let i = data.length - 1; i >= 1; i--) {
+          const s = String(data[i][0]).replace(/\D/g, ''); const t = String(payload.phone).replace(/\D/g, '');
+          if (s === t || s === t.replace(/^0/, '') || ('0' + s) === t) {
+            ws.deleteRow(i + 1);
+            break;
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({status: 'success'})).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (action === 'saveLeave') {
       const sh = ensureSheet(LEAVE_SHEET_NAME, ['id', 'date', 'resourceId', 'reason']);
       const { date, resourceId, reason } = payload;
@@ -850,3 +909,5 @@ function getRangeReportData(startDate, endDate, debug) {
     _debug: debug ? { startYmd, endYmd, idx: { idxStart, idxType, idxEmp, idxAsst, idxSvc, idxAmt, idxTotal } } : undefined
   };
 }
+
+

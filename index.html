@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 
 </head>
 
@@ -117,29 +117,14 @@
                           data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
                           data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
+                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
+                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
+                    <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
+                          type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
+                        class="price-val">$600</span></label>
                   </div>
-
-                  <!-- B. 少用項目折疊 -->
-                  <details class="more-options-details">
-                    <summary class="more-options-toggle">更多剪髮選項</summary>
-                    <div class="price-group" style="margin-top:8px;">
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
-                            data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
-                            data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
-                      <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
-                            type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
-                          class="price-val">$600</span></label>
-
-                      <!-- C. 過年剪髮標籤去重 -->
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1000"
-                            data-cost="0"> 過年(成人)</span> <span class="price-val">$1000</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="650"
-                            data-cost="0"> 過年(大學)</span> <span class="price-val">$600</span></label>
-                      <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="500"
-                            data-cost="0"> 過年(高中)</span> <span class="price-val">$500</span></label>
-                    </div>
-                  </details>
 
                   <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
                     <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
@@ -188,11 +173,11 @@
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="700"
                           data-cost="0"></span> <span class="price-val">$700</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1200"
-                          data-cost="250"></span> <span class="price-val" style="flex:1;text-align:center">$1200 <small style="opacity:.7;color:#fff;font-size:10px;font-weight:400">(材料250)</small></span></label>
+                          data-cost="250"></span> <span class="price-val">$1200</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1600"
                           data-cost="0"></span> <span class="price-val">$1600</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1800"
-                          data-cost="250"></span> <span class="price-val" style="flex:1;text-align:center">$1800 <small style="opacity:.7;color:#fff;font-size:10px;font-weight:400">(材料250)</small></span></label>
+                          data-cost="250"></span> <span class="price-val">$1800</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="2600"
                           data-cost="0"></span> <span class="price-val">$2600</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="3200"
@@ -279,6 +264,25 @@
         &#x9810;&#x7D04;&#x67E5;&#x8A62;
       </button>
     </div>
+    <div id="warnlist-trigger-placeholder" hidden>
+      <button id="open-warnlist-btn" type="button" class="report-trigger-btn">
+        警示名單
+      </button>
+    </div>
+
+    <!-- ====== 警告名單 Modal ====== -->
+    <div id="warnlistModal" class="modal">
+      <div class="modal-content" style="max-width: 520px;">
+        <span class="close-button warnlist-close-button">&times;</span>
+        <h3 style="margin-top:0; color:#ff9800;">⚠ 警示名單</h3>
+        <div class="warnlist-add-row">
+          <input type="tel" id="warn-phone" inputmode="numeric" autocomplete="off" placeholder="電話 09xx-xxx-xxx">
+          <input type="text" id="warn-note" placeholder="備註（如：請先付款）" style="flex:1;">
+          <button id="warn-add-btn" type="button">新增</button>
+        </div>
+        <div id="warnlist-items" style="margin-top: 12px; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
 
     <div id="reportModal" class="modal">
       <div class="modal-content" style="max-width: 700px;">
@@ -338,7 +342,22 @@
 
     <script>
       // 後端 Google Apps Script 網址
-      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzq7LseiWGgeb9783iHl0wsUI0rNsofaMQXjnGSZscWZ8lYSnc124d78NzCH6vpMgBoqw/exec';
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q/exec';
+
+      // 全域 escapeHtml（防 XSS）
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+      // 全域 showToast（跨 IIFE 共用）
+      function showToast(message, type = 'info', duration = 2000) {
+        let container = document.getElementById('toast-container');
+        if (!container) { container = document.createElement('div'); container.id = 'toast-container'; document.body.appendChild(container); }
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${type}`; toast.textContent = message;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
+      }
       const RESOURCE_LIST = [
         { id: '1', title: '店長' },
         { id: '2', title: '雅婷' },
@@ -369,8 +388,8 @@
         let mobileSelectedResourceId = null;
         let displayTotal = 0;  // 全域變數儲存總金額
 
-        let appointmentModal, leaveModal, reportModal, lookupModal;
-        let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton;
+        let appointmentModal, leaveModal, reportModal, lookupModal, warnlistModal;
+        let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton, warnlistCloseButton;
         let form, leaveForm, notesTextarea, phoneEl, customerFields;
         let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
         let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
@@ -390,6 +409,7 @@
           leaveModal = document.getElementById('leaveModal');
           reportModal = document.getElementById('reportModal');
           lookupModal = document.getElementById('lookupModal');
+          warnlistModal = document.getElementById('warnlistModal');
 
           form = document.getElementById('appointmentForm');
           leaveForm = document.getElementById('leaveForm');
@@ -413,6 +433,7 @@
           leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
           reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
           lookupCloseButton = lookupModal ? lookupModal.querySelector('.close-button') : null;
+          warnlistCloseButton = warnlistModal ? warnlistModal.querySelector('.close-button') : null;
 
           deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
@@ -721,6 +742,33 @@
               else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
               else e.target.value = d;
 
+              // [警示名單] 當輸入滿 10 碼，檢查是否在警示名單中
+              if (d.length === 10) {
+                try {
+                  const warnRes = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=checkWarn&phone=${d}`, { method: 'GET', mode: 'cors' });
+                  const warnData = await warnRes.json();
+                  if (warnData && warnData.found) {
+                    // 顯示警示橫幅
+                    let banner = document.getElementById('warn-banner');
+                    if (!banner) {
+                      banner = document.createElement('div');
+                      banner.id = 'warn-banner';
+                      banner.className = 'warn-banner';
+                      const phoneRow = phoneEl.closest('.form-row');
+                      phoneRow.insertAdjacentElement('afterend', banner);
+                    }
+                    banner.innerHTML = `⚠ <strong>警示：</strong>${escapeHtml(warnData.note || '此客人列入警示名單')}`;
+                    banner.style.display = 'block';
+                  } else {
+                    const banner = document.getElementById('warn-banner');
+                    if (banner) banner.style.display = 'none';
+                  }
+                } catch (err) { console.error('警示名單查詢失敗:', err); }
+              } else {
+                const banner = document.getElementById('warn-banner');
+                if (banner) banner.style.display = 'none';
+              }
+
               // [CRM功能] 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄並追溯配方
               if (d.length === 10 && !eventIdInput.value) {
                 try {
@@ -908,11 +956,13 @@
             if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
             if (reportCloseButton) reportCloseButton.onclick = () => reportModal.style.display = 'none';
             if (lookupCloseButton) lookupCloseButton.onclick = () => lookupModal.style.display = 'none';
+            if (warnlistCloseButton) warnlistCloseButton.onclick = () => warnlistModal.style.display = 'none';
             window.addEventListener('click', (e) => {
               if (e.target === appointmentModal) appointmentModal.style.display = 'none';
               if (e.target === leaveModal) leaveModal.style.display = 'none';
               if (e.target === reportModal) reportModal.style.display = 'none';
               if (e.target === lookupModal) lookupModal.style.display = 'none';
+              if (e.target === warnlistModal) warnlistModal.style.display = 'none';
             });
             window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
 
@@ -1143,6 +1193,8 @@
             document.getElementById('dye-color-wrap').style.display = 'none';
             document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
+            const warnBanner = document.getElementById('warn-banner');
+            if (warnBanner) warnBanner.style.display = 'none';
 
             // [CRM功能] 清除上一次留下的建議發亮狀態
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
@@ -1355,6 +1407,8 @@
             if (reportBtn) scroller.querySelector('.date-toggle').appendChild(reportBtn);
             const lookupBtn = document.getElementById('open-lookup-btn');
             if (lookupBtn) scroller.querySelector('.date-toggle').appendChild(lookupBtn);
+            const warnlistBtn = document.getElementById('open-warnlist-btn');
+            if (warnlistBtn) scroller.querySelector('.date-toggle').appendChild(warnlistBtn);
             ensureMobileResourceToggle(scroller);
             return scroller;
           }
@@ -1843,6 +1897,84 @@
           html += `</tbody></table>`;
           reportResult.innerHTML = html;
         }
+      })();
+
+      // ====== 警示名單管理 ======
+      (function () {
+        const openBtn = document.getElementById('open-warnlist-btn');
+        const modal = document.getElementById('warnlistModal');
+        const closeBtn = document.querySelector('.warnlist-close-button');
+        const addBtn = document.getElementById('warn-add-btn');
+        const phoneInput = document.getElementById('warn-phone');
+        const noteInput = document.getElementById('warn-note');
+        const listContainer = document.getElementById('warnlist-items');
+
+        async function loadWarnList() {
+          listContainer.innerHTML = '<div style="text-align:center; color:#888; padding:12px;">載入中...</div>';
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getWarnList', { method: 'GET', mode: 'cors' });
+            const data = await res.json();
+            if (!data || !data.list || data.list.length === 0) {
+              listContainer.innerHTML = '<div style="text-align:center; color:#888; padding:12px;">目前沒有警示名單</div>';
+              return;
+            }
+            listContainer.innerHTML = data.list.map(item => `
+              <div class="warnlist-item">
+                <div class="warnlist-item-info">
+                  <span class="warnlist-phone">${escapeHtml(item.phone)}</span>
+                  <span class="warnlist-note">${escapeHtml(item.note || '')}</span>
+                </div>
+                <button type="button" class="warnlist-delete-btn" data-phone="${escapeHtml(item.phone)}">刪除</button>
+              </div>
+            `).join('');
+            listContainer.querySelectorAll('.warnlist-delete-btn').forEach(btn => {
+              btn.addEventListener('click', async function () {
+                const phone = this.dataset.phone;
+                if (!confirm(`確定要從警示名單移除 ${phone} 嗎？`)) return;
+                try {
+                  await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteWarn', phone }) });
+                  loadWarnList();
+                } catch (err) { alert('刪除失敗: ' + err.message); }
+              });
+            });
+          } catch (err) {
+            listContainer.innerHTML = '<div style="text-align:center; color:#ff5252; padding:12px;">載入失敗</div>';
+          }
+        }
+
+        if (openBtn) openBtn.addEventListener('click', () => {
+          modal.style.display = 'block';
+          loadWarnList();
+        });
+
+        if (addBtn) addBtn.addEventListener('click', async () => {
+          const phone = (phoneInput.value || '').replace(/\D/g, '');
+          const note = noteInput.value.trim();
+          if (!phone || phone.length < 9) { alert('請輸入正確的電話號碼'); return; }
+          if (!note) { alert('請輸入備註'); return; }
+          try {
+            addBtn.disabled = true;
+            addBtn.textContent = '儲存中...';
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'addWarn', phone, note }) });
+            const result = await res.json();
+            if (result.status === 'success') {
+              phoneInput.value = ''; noteInput.value = '';
+              showToast('已新增至警示名單', 'success', 2000);
+              loadWarnList();
+            } else {
+              alert('新增失敗: ' + (result.message || '未知錯誤'));
+            }
+          } catch (err) { alert('新增失敗: ' + err.message); }
+          finally { addBtn.disabled = false; addBtn.textContent = '新增'; }
+        });
+
+        // 電話輸入格式化
+        if (phoneInput) phoneInput.addEventListener('input', (e) => {
+          let d = String(e.target.value || '').replace(/\D/g, '').slice(0, 10);
+          if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
+          else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+          else e.target.value = d;
+        });
       })();
     </script>
 </body>
