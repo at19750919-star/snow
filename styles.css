@@ -65,6 +65,37 @@
   --modal-bg: var(--bg-card);
   --modal-border: var(--calendar-border);
 
+  /* ===== Material You (MD3) Modal Tokens ===== */
+  --md3-surface: #FFFBFE;
+  --md3-on-surface: #1C1B1F;
+  --md3-on-surface-variant: #49454F;
+  --md3-primary: #6750A4;
+  --md3-on-primary: #FFFFFF;
+  --md3-primary-container: #EADDFF;
+  --md3-on-primary-container: #21005D;
+  --md3-secondary: #625B71;
+  --md3-secondary-container: #E8DEF8;
+  --md3-on-secondary-container: #1D192B;
+  --md3-tertiary: #7D5260;
+  --md3-tertiary-container: #FFD8E4;
+  --md3-on-tertiary-container: #31111D;
+  --md3-surface-container-lowest: #FFFFFF;
+  --md3-surface-container-low: #F7F2FA;
+  --md3-surface-container: #F3EDF7;
+  --md3-surface-container-high: #ECE6F0;
+  --md3-surface-container-highest: #E6E0E9;
+  --md3-outline: #79747E;
+  --md3-outline-variant: #CAC4D0;
+  --md3-scrim: rgba(0, 0, 0, 0.32);
+  --md3-error: #B3261E;
+  --md3-error-container: #F9DEDC;
+  --md3-easing: cubic-bezier(0.2, 0, 0, 1);
+  --md3-radius-xl: 28px;
+  --md3-radius-lg: 16px;
+  --md3-radius-md: 12px;
+  --md3-radius-sm: 8px;
+  --md3-radius-pill: 999px;
+
   /* 危險/警示色 */
   --danger: #d84b40;
 
@@ -1515,6 +1546,7 @@ body {
 }
 
 /* ==================== 14) Modal ==================== */
+/* [MD3] 遮罩層：Material You scrim */
 .modal {
   display: none;
   position: fixed;
@@ -1522,157 +1554,178 @@ body {
   inset: 0;
   overflow: auto;
   overflow-x: hidden;
-  background: rgba(8, 8, 8, 0.6);
-  backdrop-filter: blur(8px);
+  background: var(--md3-scrim);
 }
+/* [MD3] 背景裝飾（保留但改為極淡紫色暈染） */
+.modal::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 600px 400px at 30% 20%, rgba(103, 80, 164, 0.08), transparent 70%),
+    radial-gradient(ellipse 400px 350px at 70% 70%, rgba(125, 82, 96, 0.06), transparent 70%);
+}
+/* [MD3] 主容器：亮色 surface + tonal elevation */
 .modal-content {
   position: relative;
-  background: linear-gradient(180deg, #303030 0%, #262626 100%);
-  margin: 2.5% auto;
-  padding: 16px;
+  background: var(--md3-surface);
+  margin: 2% auto;
+  padding: 24px;
   border: none;
   width: 95%;
-  max-width: 900px;
-  border-radius: 16px;
-  max-height: 88vh;
+  max-width: 920px;
+  border-radius: var(--md3-radius-xl);
+  max-height: 92vh;
   overflow-y: auto;
   overflow-x: hidden;
-  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.45);
-  transform: translateY(-20px);
-  animation: modalSlideIn 0.3s ease-out forwards;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.14);
+  transform: translateY(-16px);
+  opacity: 0;
+  animation: modalSlideIn 0.4s var(--md3-easing) forwards;
 }
 @keyframes modalSlideIn {
   to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
+/* [MD3] 關閉鈕：圓形 state layer */
 .close-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  color: var(--md3-on-surface-variant);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease;
+  transition: background 0.2s var(--md3-easing);
   line-height: 1;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   border: none;
 }
 .close-button:hover,
 .close-button:focus {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-1px);
+  color: var(--md3-on-surface);
+  background: rgba(28, 27, 31, 0.08);
+  transform: none;
 }
 
 .modal-content h3 {
-  color: #ededed;
-  font-weight: 600;
+  color: var(--md3-on-surface);
+  font-weight: 500;
   font-family: var(--font-display);
-  margin: 2px 0 10px;
-  font-size: 24px;
-  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+  font-size: 22px;
+  letter-spacing: 0;
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   border: none;
 }
 .modal-content p {
-  margin: 0 0 10px;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 28px;
+  margin: 0 0 8px;
+  color: var(--md3-on-surface-variant);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .modal-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
+  gap: 12px 16px;
 }
+/* [MD3] 表單 label */
 .modal-form label:not(.radio-pill) {
   margin: 0;
   display: block;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.78);
-  margin-bottom: 6px;
-  font-size: 22px;
+  font-weight: 500;
+  color: var(--md3-on-surface-variant);
+  margin-bottom: 4px;
+  font-size: 12px;
   letter-spacing: 0.04em;
 }
+/* [MD3] 表單輸入框：MD3 filled style */
 .modal-form input,
 .modal-form select,
 .modal-form textarea {
   width: 100%;
-  padding: 14px 12px;
-  margin-top: 4px;
+  padding: 12px 14px;
+  margin-top: 2px;
   border: none;
+  border-bottom: 1px solid var(--md3-outline);
   box-sizing: border-box;
   font-family: inherit;
-  font-size: 24px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #f3f3f3;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  font-size: 15px;
+  background: var(--md3-surface-container-highest);
+  color: var(--md3-on-surface);
+  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0;
   transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
+    border-color 0.2s var(--md3-easing),
+    background 0.2s var(--md3-easing);
 }
 .modal-content
   input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
 .modal-content select,
 .modal-content textarea {
-  border-radius: var(--border-radius-small);
+  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0;
 }
+/* [MD3] 輸入框 focus：底線變色 */
 .modal-form input:focus,
 .modal-form select:focus,
 .modal-form textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(83, 164, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: var(--md3-primary);
+  border-bottom-width: 2px;
+  background: var(--md3-surface-container-high);
 }
 .modal-form select option {
-  color: #1c1c1c;
+  color: var(--md3-on-surface);
+  background: var(--md3-surface);
 }
 
+/* [MD3] 區塊卡片：tonal surface container */
 .modal-section {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--md3-surface-container-low);
   border: none;
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+  border-radius: var(--md3-radius-lg);
+  padding: 16px;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
 }
+/* [MD3] 上次消費 */
 .last-visit-info {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f6f2e9;
-  margin-top: 10px;
-  letter-spacing: 0.01em;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md3-on-surface-variant);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
   min-height: 18px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px 12px;
+  border-radius: var(--md3-radius-sm);
+  background: var(--md3-surface-container);
+  border: none;
 }
 .form-span-2 {
   grid-column: 1 / -1;
 }
 .modal-layout-grid {
   display: grid;
-  grid-template-columns: 280px 1fr !important;
-  gap: 14px;
+  grid-template-columns: 300px 1fr !important;
+  gap: 20px;
   align-items: stretch;
 }
 @media (max-width: 600px) {
@@ -1691,65 +1744,70 @@ body {
   flex: 1 1 auto;
 }
 
-/* 藍卡 (左欄) */
+/* [MD3] 左欄卡片：Primary Container 色調 */
 .blue-card-section {
-  background: rgba(33, 150, 243, 0.12);
-  border: 1px solid rgba(33, 150, 243, 0.28);
-  border-radius: 12px;
-  padding: 12px 8px; /* reduce right padding to shift inputs left */
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-soft);
+  background: var(--md3-primary-container);
+  border: none;
+  border-radius: var(--md3-radius-lg);
+  padding: 20px 16px;
+  margin-bottom: 0;
+  box-shadow: none;
 }
 .blue-card-section label {
-  color: #1976d2 !important;
-  font-weight: 700;
-  margin-bottom: 8px;
+  color: var(--md3-on-primary-container) !important;
+  font-weight: 500;
+  margin-bottom: 6px;
   display: block;
-  font-size: 14px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 .blue-card-section .form-row {
   display: flex !important;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 .blue-card-section .form-row > label {
-  width: 90px;
-  flex: 0 0 auto;
+  width: 68px;
+  flex: 0 0 68px;
   margin: 0;
   white-space: nowrap;
-  font-size: 14px;
-  text-align: left; /* 改為左對齊 */
+  font-size: 13px;
+  text-align: left;
+  font-weight: 500;
 }
-/* [樣式] 藍色卡片輸入區域：統一寬度為 160-180px 確保整齊 */
+/* [MD3] 左欄輸入框 */
 .blue-card-section input,
 .blue-card-section select {
-  width: 180px; /* 統一縮小為 180px，與其他選單整齊對齊 */
-  flex: 0 1 auto;
+  flex: 1;
+  width: auto;
+  min-width: 0;
 }
 .blue-card-section textarea {
   width: 100%;
 }
 
-/* 綠卡 (右欄 - 結帳) */
+/* [MD3] 右欄結帳區：Surface Container */
 .settlement-section {
-  background: rgba(76, 175, 80, 0.12);
-  border: 1px solid #81c784;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-soft);
+  background: var(--md3-surface-container-low);
+  border: none;
+  border-radius: var(--md3-radius-lg);
+  padding: 14px;
+  margin-bottom: 0;
+  box-shadow: none;
 }
 .settlement-section label[for] {
-  color: #81c784;
-  font-weight: 700;
-  margin-bottom: 6px;
+  color: var(--md3-on-surface-variant);
+  font-weight: 500;
+  margin-bottom: 4px;
   display: block;
-  font-size: 14px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 .settlement-section .settlement-row {
   display: grid;
-  grid-template-columns: 80px 1fr; /* label column narrowed to 80px for specific fields */
+  grid-template-columns: 80px 1fr;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
@@ -1767,13 +1825,13 @@ body {
 .settlement-section .settlement-row > label {
   margin: 0;
   white-space: nowrap;
-  font-size: 14px;
-  color: #81c784; /* 其他自訂 / 燙髮自訂 等欄位標籤使用淺綠色 */
+  font-size: 12px;
+  color: var(--md3-on-surface-variant);
 }
 .settlement-section .settlement-row--title > label {
-  color: #81c784 !important;
-  font-weight: 700;
-  font-size: 14px;
+  color: var(--md3-primary) !important;
+  font-weight: 500;
+  font-size: 12px;
 }
 .settlement-row.settlement-row--inline {
   display: flex !important;
@@ -1789,8 +1847,8 @@ body {
 .settlement-row.settlement-row--inline .settlement-inline-item label {
   margin: 0;
   white-space: nowrap;
-  font-size: 14px;
-  color: #81c784;
+  font-size: 12px;
+  color: var(--md3-on-surface-variant);
 }
 .settlement-row.settlement-row--inline select,
 .settlement-row.settlement-row--inline .custom-price-input {
@@ -1813,11 +1871,12 @@ body {
   width: 100px;
 }
 .settlement-section > label {
-  color: #81c784 !important; /* 剪髮項目、其他項目 使用淺綠 */
-  font-weight: 700;
-  margin-bottom: 8px;
+  color: var(--md3-primary) !important;
+  font-weight: 500;
+  margin-bottom: 4px;
   display: block;
-  font-size: 14px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 /* 類型切換 */
@@ -1829,17 +1888,18 @@ body {
   font-weight: 700;
   color: var(--text-primary);
 }
+/* [MD3] 類型切換容器：Segmented Button */
 .type-toggle-container {
   position: relative;
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 0px;
-  height: 40px;
-  width: 230px;
+  background: transparent;
+  border-radius: var(--md3-radius-pill);
+  padding: 0;
+  height: 44px;
+  width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 0px;
+  border: 1px solid var(--md3-outline);
+  margin-top: 0;
 }
 .type-toggle-container input[type="radio"] {
   display: none !important;
@@ -1852,106 +1912,113 @@ body {
   z-index: 2 !important;
   cursor: pointer !important;
   font-weight: 500 !important;
-  font-size: 15px !important;
-  color: rgba(255, 255, 255, 0.45) !important;
-  transition: color 0.3s ease !important;
+  font-size: 14px !important;
+  color: var(--md3-on-surface) !important;
+  transition: all 0.3s var(--md3-easing) !important;
   position: relative !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 .sliding-glider {
   position: absolute !important;
-  top: 3px !important;
-  left: 3px !important;
-  height: calc(100% - 6px) !important;
-  width: calc(50% - 3px) !important;
-  background: rgba(83, 164, 255, 0.22) !important;
-  border: 1px solid rgba(83, 164, 255, 0.45) !important;
-  border-radius: 8px !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100% !important;
+  width: 50% !important;
+  background: var(--md3-primary) !important;
+  border: none !important;
+  border-radius: var(--md3-radius-pill) !important;
   z-index: 1 !important;
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.3s ease,
-    border-color 0.3s ease !important;
+  transition: transform 0.3s var(--md3-easing) !important;
 }
 #appointment-normal:checked ~ .sliding-glider {
   transform: translateX(0);
 }
 #appointment-blocked:checked ~ .sliding-glider {
   transform: translateX(100%);
-  background: rgba(158, 158, 158, 0.15);
-  border-color: rgba(158, 158, 158, 0.35);
+  background: var(--md3-on-surface-variant) !important;
 }
 #appointment-normal:checked ~ .toggle-label.left,
 #appointment-blocked:checked ~ .toggle-label.right {
-  color: #fff;
+  color: var(--md3-on-primary) !important;
+  font-weight: 600 !important;
 }
 
-/* 按鈕區 */
+/* [MD3] 按鈕區：Pill-shaped filled / outlined */
 #submit-btn,
 #deleteBtn,
 #submitLeaveBtn,
 #deleteLeaveBtn {
-  color: #ededed;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 12px;
+  border-radius: var(--md3-radius-pill);
   cursor: pointer;
-  font-weight: 600;
-  font-size: 18px;
-  transition: all 0.25s ease;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
-  background: rgba(255, 255, 255, 0.06);
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.2s var(--md3-easing);
+  min-height: 48px;
+  letter-spacing: 0.02em;
 }
 #submit-btn,
 #submitLeaveBtn {
-  background: rgba(83, 164, 255, 0.2);
-  color: #e8f2ff;
+  background: var(--md3-primary);
+  border: none;
+  color: var(--md3-on-primary);
+  padding: 0 32px;
+  font-size: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 #deleteBtn,
 #deleteLeaveBtn {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ffecec;
+  background: transparent;
+  border: 1px solid var(--md3-outline);
+  color: var(--md3-error);
+  padding: 0 24px;
 }
 #submit-btn:hover,
+#submitLeaveBtn:hover {
+  background: #7965b3;
+  box-shadow: 0 2px 6px rgba(103, 80, 164, 0.3);
+  transform: none;
+}
 #deleteBtn:hover,
-#submitLeaveBtn:hover,
 #deleteLeaveBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45);
+  background: rgba(179, 38, 30, 0.08);
+  border-color: var(--md3-error);
+  box-shadow: none;
+  transform: none;
 }
 #submit-btn:active,
 #deleteBtn:active,
 #submitLeaveBtn:active,
 #deleteLeaveBtn:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
+/* [MD3] 底部操作列 */
 .modal-actions {
-  margin-top: 2px;
-  text-align: right;
+  margin-top: 8px;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  gap: 12px;
+  padding: 0;
+  background: transparent;
   border: none;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  box-shadow: none;
+  border-radius: 0;
   grid-column: 1 / -1;
 }
-#appointmentModal.is-create #appointment-info-card .modal-actions {
-  margin-top: 14px;
-  padding: 14px 0 0;
+#appointmentModal #appointment-info-card .modal-actions {
+  margin-top: 16px;
+  padding: 16px 0 0;
   background: transparent;
   box-shadow: none;
   border-radius: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
+  border-top: 1px solid var(--md3-outline-variant);
 }
+/* [MD3] iPad 響應式 */
 @media (max-width: 1024px) {
   .modal-content {
-    width: 95%;
-    margin: 2% auto;
-    padding: 20px;
+    width: 96%;
+    margin: 1.5% auto;
+    padding: 16px;
   }
   .modal-form {
     grid-template-columns: 1fr;
@@ -2367,7 +2434,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--md3-surface-container-low);
   padding: 10px;
   border-radius: 8px;
 }
@@ -2375,25 +2442,25 @@ body {
 .report-controls input[type="date"] {
   padding: 6px 10px;
   border-radius: 6px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
+  background: var(--md3-surface-container-highest);
+  color: var(--md3-on-surface);
+  border: 1px solid var(--md3-outline-variant);
 }
 .report-controls .report-label {
-  color: #aaa;
+  color: var(--md3-on-surface-variant);
   font-size: 13px;
 }
 .report-controls button {
-  background: #3a6c74;
-  color: #fff;
+  background: var(--md3-primary);
+  color: var(--md3-on-primary);
   border: none;
   padding: 6px 16px;
-  border-radius: 6px;
+  border-radius: var(--md3-radius-pill);
   cursor: pointer;
   margin-left: auto;
 }
 .report-controls button:hover {
-  background: #4a858f;
+  opacity: 0.88;
 }
 
 .lookup-modal-content {
@@ -2407,12 +2474,12 @@ body {
   grid-template-columns: auto minmax(150px, 1fr) auto minmax(150px, 1fr) auto;
   gap: 10px;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--md3-surface-container-low);
   padding: 10px;
   border-radius: 8px;
 }
 .lookup-controls .lookup-label {
-  color: #aaa;
+  color: var(--md3-on-surface-variant);
   font-size: 13px;
   white-space: nowrap;
 }
@@ -2420,22 +2487,22 @@ body {
 .lookup-controls input[type="text"] {
   padding: 6px 10px;
   border-radius: 6px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
+  background: var(--md3-surface-container-highest);
+  color: var(--md3-on-surface);
+  border: 1px solid var(--md3-outline-variant);
   min-width: 0;
 }
 .lookup-controls button {
-  background: #3a6c74;
-  color: #fff;
+  background: var(--md3-primary);
+  color: var(--md3-on-primary);
   border: none;
   padding: 6px 16px;
-  border-radius: 6px;
+  border-radius: var(--md3-radius-pill);
   cursor: pointer;
   white-space: nowrap;
 }
 .lookup-controls button:hover {
-  background: #4a858f;
+  opacity: 0.88;
 }
 .lookup-result {
   min-height: 260px;
@@ -2445,7 +2512,7 @@ body {
   padding-right: 4px;
 }
 .lookup-summary {
-  color: #b0bec5;
+  color: var(--md3-on-surface-variant);
   font-size: 13px;
   line-height: 1.5;
   margin-bottom: 10px;
@@ -2459,17 +2526,17 @@ body {
   width: 100%;
   box-sizing: border-box;
   text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--md3-outline-variant);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #e0e0e0;
+  background: var(--md3-surface-container-low);
+  color: var(--md3-on-surface);
   padding: 10px 12px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .lookup-item:hover {
-  background: rgba(74, 133, 143, 0.22);
-  border-color: rgba(116, 197, 211, 0.6);
+  background: var(--md3-primary-container);
+  border-color: var(--md3-primary);
   transform: translateY(-1px);
 }
 .lookup-item.is-past {
@@ -2483,11 +2550,11 @@ body {
 }
 .lookup-time {
   font-weight: 700;
-  color: #f5f5f5;
+  color: var(--md3-on-surface);
 }
 .lookup-status {
   font-size: 12px;
-  color: #ffcc80;
+  color: var(--md3-primary);
 }
 .lookup-item-main {
   margin-top: 6px;
@@ -2495,22 +2562,22 @@ body {
 }
 .lookup-designer {
   margin-top: 5px;
-  color: #c7d8de;
+  color: var(--md3-on-surface-variant);
   font-size: 13px;
   font-weight: 600;
 }
 .lookup-phone {
   margin-left: 8px;
-  color: #b0bec5;
+  color: var(--md3-on-surface-variant);
   font-size: 13px;
 }
 .lookup-item-sub {
   margin-top: 5px;
-  color: #90a4ae;
+  color: var(--md3-outline);
   font-size: 12px;
 }
 .lookup-empty {
-  color: #b0bec5;
+  color: var(--md3-on-surface-variant);
   text-align: center;
   padding: 18px;
 }
@@ -2532,25 +2599,26 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  color: #e0e0e0;
+  color: var(--md3-on-surface);
   font-size: 14px;
 }
 .report-table th {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--md3-surface-container-high);
   padding: 10px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--md3-outline-variant);
+  color: var(--md3-on-surface);
 }
 .report-table td {
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--md3-outline-variant);
   vertical-align: top;
 }
 .report-table td.num-cell {
   text-align: center;
   font-size: 1.2em;
   font-weight: bold;
-  color: #fff;
+  color: var(--md3-on-surface);
 }
 .service-tag {
   display: inline-block;
@@ -2558,127 +2626,165 @@ body {
   padding: 2px 6px;
   margin: 2px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ccc;
+  background: var(--md3-surface-container-high);
+  color: var(--md3-on-surface-variant);
 }
 
-/* Modal Inputs Enhancement */
+/* [MD3] Modal Inputs Enhancement */
 .modal-content select option {
-  background-color: #2c2c2c !important;
-  color: #ffffff !important;
+  background-color: var(--md3-surface) !important;
+  color: var(--md3-on-surface) !important;
 }
 .modal-col:first-child select option,
 #minute_select option,
 #duration_select option {
-  background-color: #1a237e !important;
-  color: #ffffff !important;
+  background-color: var(--md3-surface) !important;
+  color: var(--md3-on-surface) !important;
 }
 #assistant_select option {
-  background-color: #1b5e20 !important;
-  color: #ffffff !important;
+  background-color: var(--md3-surface) !important;
+  color: var(--md3-on-surface) !important;
 }
 .modal-content select option:hover,
 .modal-content select option:checked {
-  background-color: #0d47a1 !important;
-  color: #ffffff !important;
+  background-color: var(--md3-primary-container) !important;
+  color: var(--md3-on-primary-container) !important;
 }
 
+/* [MD3] 左欄輸入框：filled style on primary container */
 .modal-col:first-child input[type="text"],
 .modal-col:first-child input[type="tel"],
 .modal-col:first-child input[type="number"],
 .modal-col:first-child select,
 .modal-col:first-child textarea {
-  background-color: rgba(33, 150, 243, 0.15) !important;
-  color: #e3f2fd !important;
-  border: 1px solid rgba(33, 150, 243, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  color: var(--md3-on-surface) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--md3-outline) !important;
+  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0 !important;
 }
 #minute_select,
 #duration_select,
 #customer_name,
 #customer_phone,
 #service_id {
-  min-height: 44px;
-  padding: 10px 12px;
+  min-height: 46px;
+  padding: 12px 14px;
   box-sizing: border-box;
   width: 160px;
   max-width: 180px;
-  border-radius: 12px !important;
+  font-size: 15px;
 }
 #notes {
   flex: 0 0 auto;
-  min-height: 50px;
-  max-height: 80px;
-  padding: 8px 10px;
+  min-height: 56px;
+  max-height: 90px;
+  padding: 10px 14px;
   box-sizing: border-box;
   resize: vertical;
+  font-size: 14px;
 }
 .modal-col:first-child input:focus,
 .modal-col:first-child select:focus,
 .modal-col:first-child textarea:focus {
-  border-color: #42a5f5 !important;
+  border-bottom-color: var(--md3-primary) !important;
+  border-bottom-width: 2px !important;
   outline: none;
-  background-color: rgba(33, 150, 243, 0.22) !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.settlement-col input[type="text"],
-.settlement-col input[type="tel"],
-.settlement-col input[type="number"],
-.settlement-col select,
+/* [MD3] 右欄輸入框：filled style（排除自訂金額、店販、助理） */
+.settlement-col input[type="text"]:not(.custom-price-input):not(#retail_item),
+.settlement-col input[type="tel"]:not(.custom-price-input),
+.settlement-col input[type="number"]:not(.custom-price-input):not(#retail_price),
+.settlement-col select:not(#assistant_select),
 .settlement-col textarea {
-  background-color: rgba(76, 175, 80, 0.15) !important;
-  color: #e8f5e9 !important;
-  border: 1px solid rgba(76, 175, 80, 0.5) !important;
+  background-color: var(--md3-surface-container-highest) !important;
+  color: var(--md3-on-surface) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--md3-outline) !important;
+  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0 !important;
 }
-.settlement-col input:focus,
-.settlement-col select:focus,
+.settlement-col input:not(.custom-price-input):not(#retail_item):not(#retail_price):focus,
+.settlement-col select:not(#assistant_select):focus,
 .settlement-col textarea:focus {
-  border-color: #66bb6a !important;
+  border-bottom-color: var(--md3-primary) !important;
+  border-bottom-width: 2px !important;
   outline: none;
-  background-color: rgba(76, 175, 80, 0.22) !important;
+  background-color: var(--md3-surface-container-high) !important;
 }
 .modal-col:first-child input::placeholder,
 .modal-col:first-child textarea::placeholder {
-  color: rgba(227, 242, 253, 0.32) !important;
+  color: var(--md3-outline) !important;
   font-weight: 400 !important;
 }
 .settlement-col input::placeholder,
 .settlement-col textarea::placeholder {
-  color: rgba(232, 245, 233, 0.32) !important;
+  color: var(--md3-outline) !important;
   font-weight: 400 !important;
 }
+/* 助理 select：空值淺色，有值深色 */
+#settlement-col #assistant_select {
+  color: var(--md3-outline);
+}
+#settlement-col #assistant_select.has-value {
+  color: var(--md3-on-surface);
+}
+#settlement-col #assistant_select option {
+  color: var(--md3-on-surface);
+}
 
+/* [MD3] 價目按鈕群組 */
 .settlement-section .price-group {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px 8px !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px !important;
   align-items: stretch;
 }
+/* [MD3] 價目膠囊：MD3 filter chip style */
 .settlement-section .price-item {
   display: flex !important;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 4px;
   margin: 0 !important;
-  padding: 2px 6px;
-  min-height: 38px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease;
+  padding: 0 10px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: var(--md3-radius-sm);
+  background: var(--md3-surface-container);
+  font-size: 13px;
+  border: 1px solid var(--md3-outline-variant);
+  transition: all 0.2s var(--md3-easing);
   cursor: pointer;
+  overflow: hidden;
 }
 /* 隱藏 radio/checkbox 圓圈 */
 .settlement-section .price-item input[type="radio"],
 .settlement-section .price-item input[type="checkbox"] {
   display: none !important;
 }
-/* 選取狀態高亮 */
+/* [MD3] 選取狀態：深底淺字（與儲存按鈕同色系） */
 .settlement-section .price-item:has(input[type="radio"]:checked),
 .settlement-section .price-item:has(input[type="checkbox"]:checked) {
-  background: rgba(129, 199, 132, 0.25) !important;
-  border-color: #81c784 !important;
-  box-shadow: 0 0 8px rgba(129, 199, 132, 0.3);
+  background: var(--md3-primary) !important;
+  border-color: var(--md3-primary) !important;
+  box-shadow: 0 1px 3px rgba(103, 80, 164, 0.3);
+  transform: none;
+}
+.settlement-section .price-item:has(input[type="radio"]:checked) .price-label,
+.settlement-section .price-item:has(input[type="checkbox"]:checked) .price-label,
+.settlement-section .price-item:has(input[type="radio"]:checked) .price-val,
+.settlement-section .price-item:has(input[type="checkbox"]:checked) .price-val {
+  color: var(--md3-on-primary) !important;
+}
+/* [MD3] 價目膠囊 hover：state layer */
+.settlement-section .price-item:hover {
+  background: var(--md3-surface-container-high);
+  border-color: var(--md3-outline);
+  transform: none;
+  box-shadow: none;
 }
 /* [CRM功能] 建議項目發亮特效：霓虹燈呼吸閃爍動畫 */
 .settlement-section .price-item--suggested {
@@ -2713,54 +2819,76 @@ body {
     border-color: rgba(255, 171, 64, 0.6) !important;
   }
 }
+/* [MD3] 膠囊品名 */
 .settlement-section .price-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
-  font-size: 14px;
-  margin-right: 6px; /* reduce distance to price */
+  font-size: 13px;
+  color: var(--md3-on-surface);
+  margin-right: 0;
+  line-height: 1.2;
 }
+/* [MD3] 膠囊金額：$ 與數字分離對齊 */
 .settlement-section .price-val {
   white-space: nowrap;
-  color: #fff59d; /* 淺黃色 */
+  color: var(--md3-primary);
   font-weight: 700;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  min-width: 52px;
+  text-align: right;
+  display: inline-flex;
+  justify-content: flex-end;
+  letter-spacing: 0.02em;
 }
 
+/* [MD3] 店販/助理欄位：透明融入卡片，僅底線 */
 #settlement-col #retail_item,
 #settlement-col #retail_price,
 #settlement-col #perm_select,
 #settlement-col #bleach4000_cost,
 #settlement-col #assistant_select {
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 36px;
+  padding: 6px 0;
   box-sizing: border-box;
   width: auto;
   max-width: 100%;
   font-size: 14px;
-  border-radius: 8px;
-  border: 1px solid var(--modal-border);
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--md3-outline-variant);
   background: transparent;
-  color: var(--text-primary);
+  color: var(--md3-on-surface);
+  transition: border-color 0.2s;
+}
+#settlement-col #retail_item:focus,
+#settlement-col #retail_price:focus,
+#settlement-col #assistant_select:focus {
+  border-bottom-color: var(--md3-primary);
+  border-bottom-width: 2px;
+  outline: none;
+  background: transparent;
 }
 
-/* 設定操作助理下拉固定寬高 150x40 */
+/* [MD3] 助理下拉 */
 #settlement-col #assistant_select {
-  width: 150px !important;
-  min-width: 150px;
-  max-width: 150px;
-  height: 40px;
-  padding: 8px 10px;
+  width: 140px !important;
+  min-width: 140px;
+  max-width: 140px;
+  height: 36px;
+  padding: 6px 0;
   box-sizing: border-box;
 }
-
-/* 設定燙髮下拉固定寬高 150x40 並靠左 */
+/* [MD3] 燙髮下拉 */
 #settlement-col #perm_select {
-  width: 145px !important;
-  min-width: 145px;
-  max-width: 145px;
-  height: 40px;
-  padding: 8px 10px;
+  width: 140px !important;
+  min-width: 140px;
+  max-width: 140px;
+  height: 38px;
+  padding: 8px 12px;
   box-sizing: border-box;
   justify-self: start;
 }
@@ -2781,15 +2909,15 @@ body {
 #settlement-col .assistant-total-row .assistant-field > label {
   margin: 0;
   white-space: nowrap;
-  color: #81c784 !important; /* 操作助理 使用淺綠 */
-  font-weight: 600;
-  font-size: 14px;
+  color: var(--md3-primary) !important;
+  font-weight: 500;
+  font-size: 13px;
 }
 
-/* 價目文字（例如：「高中剪髮」）顯示為白色 */
+/* [MD3] 價目文字 */
 .settlement-section .price-item,
 .settlement-section .price-item .price-label {
-  color: #ffffff;
+  color: var(--md3-on-surface);
 }
 #settlement-col .assistant-field {
   flex: 1 1 auto;
@@ -2806,21 +2934,22 @@ body {
 #settlement-col .unset-paid-btn {
   display: none;
   margin-top: 6px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 235, 59, 0.55);
-  background: rgba(0, 0, 0, 0.18);
-  color: #ffeb3b;
+  padding: 6px 12px;
+  border-radius: var(--md3-radius-pill);
+  border: 1px solid var(--md3-outline);
+  background: transparent;
+  color: var(--md3-tertiary);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s var(--md3-easing);
 }
 #settlement-col .unset-paid-btn:hover {
-  background: rgba(255, 235, 59, 0.92);
-  color: #1c1c1c;
+  background: rgba(125, 82, 96, 0.08);
+  border-color: var(--md3-tertiary);
 }
 #settlement-col .unset-paid-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.38;
   cursor: not-allowed;
 }
 
@@ -2836,12 +2965,12 @@ body {
   min-width: fit-content;
 }
 
-/* Final Layout Grid */
+/* [MD3] Layout Grid */
 .modal-layout-grid {
   display: grid;
-  grid-template-columns: 280px auto !important;
+  grid-template-columns: minmax(260px, 300px) 1fr !important;
   gap: 20px;
-  align-items: stretch;
+  align-items: start;
 }
 #appointmentModal .modal-col {
   height: 100%;
@@ -2856,16 +2985,49 @@ body {
 
 .modal-content {
   width: auto !important;
-  max-width: 900px;
+  max-width: 920px;
   min-width: 350px !important;
 }
-@media (max-width: 600px) {
+/* [MD3] iPad mini 以下改單欄 */
+@media (max-width: 820px) {
   .modal-layout-grid {
     grid-template-columns: 1fr !important;
   }
   .modal-content {
+    padding: 20px;
+    max-height: 94vh;
+  }
+  .card-green,
+  #settlement-col > .settlement-section {
+    max-height: none;
+  }
+}
+/* [MD3] 手機 */
+@media (max-width: 600px) {
+  .modal-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  .modal-content {
     min-width: auto !important;
-    max-width: 95vw !important;
+    max-width: 98vw !important;
+    padding: 16px;
+    border-radius: 20px;
+    max-height: 96vh;
+    margin: 0.5% auto;
+  }
+  .settlement-section .price-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .settlement-section .price-item {
+    min-height: 42px;
+  }
+  #submit-btn {
+    min-height: 52px !important;
+    font-size: 16px !important;
+  }
+  .type-toggle-container {
+    width: 100%;
   }
 }
 @media (pointer: coarse) {
@@ -2877,21 +3039,72 @@ body {
   }
 }
 
-/* [新增] 自訂金額輸入框微調 */
+/* [MD3] 自訂金額輸入框：融入 price-val 內 */
 .custom-price-input {
-  width: 120px !important;
-  min-width: 120px;
-  height: 40px !important;
-  margin-top: 4px;
-  border-radius: 8px !important; /* 強制 8px，覆蓋 var(--border-radius-small) */
+  width: 40px !important;
+  min-width: 32px;
+  max-width: 52px;
+  height: auto !important;
+  margin: 0;
+  padding: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  color: inherit !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  outline: none;
+  -moz-appearance: textfield;
+  transition: border-color 0.2s;
+}
+.custom-price-input:focus {
+  border-bottom-color: var(--md3-primary) !important;
+}
+/* 隱藏 number input 的上下箭頭 */
+.custom-price-input::-webkit-inner-spin-button,
+.custom-price-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* 自訂欄位在 price-group 內：外觀與其他按鈕一致 */
+.price-item--custom {
+  gap: 4px !important;
+}
+/* 自訂金額 $+input 包裝：對齊其他 price-val */
+.custom-val-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.custom-val-wrap .custom-price-input {
+  text-align: center;
+  width: 36px !important;
+  min-width: 28px;
+}
+/* [MD3] 自訂金額行壓縮 */
+.settlement-sub-card .settlement-row[style*="margin-top"] {
+  margin-top: 4px !important;
+}
+.settlement-sub-card .settlement-row label[style*="font-size: 14px"] {
+  font-size: 12px !important;
 }
 
-/* 結帳總額樣式整理 */
+/* [MD3] 結帳總額：光暈特效 */
 #settlement-col .total-display #display-total {
   display: inline-block;
-  font-size: 24px; /* enlarged */
-  font-weight: 900;
-  color: #fff59d; /* light yellow */
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--md3-primary);
+  text-shadow:
+    0 0 8px rgba(103, 80, 164, 0.3),
+    0 0 20px rgba(103, 80, 164, 0.15);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 /* 讓總金額、按鈕與入帳金額水平並排 */
 .total-display {
@@ -2901,35 +3114,36 @@ body {
 }
 .total-display .total-label {
   font-size: 12px;
-  color: #aaa;
+  color: var(--md3-on-surface-variant);
   font-weight: normal;
 }
 .total-display .net-display {
   font-size: 12px;
-  color: #aaa;
+  color: var(--md3-on-surface-variant);
   font-weight: normal;
 }
 .unset-paid-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #fff59d;
-  padding: 4px 8px;
-  border-radius: 6px;
+  border: 1px solid var(--md3-outline-variant);
+  color: var(--md3-tertiary);
+  padding: 4px 10px;
+  border-radius: var(--md3-radius-pill);
   font-size: 12px;
 }
 
-/* 統一 settlement 欄位內的輸入/選單外觀 */
-.settlement-col input[type="text"],
-.settlement-col input[type="tel"],
-.settlement-col input[type="number"],
-.settlement-col select,
+/* [MD3] 統一 settlement 欄位（排除自訂金額、店販、助理） */
+.settlement-col input[type="text"]:not(.custom-price-input):not(#retail_item),
+.settlement-col input[type="tel"]:not(.custom-price-input),
+.settlement-col input[type="number"]:not(.custom-price-input):not(#retail_price),
+.settlement-col select:not(#assistant_select),
 .settlement-col textarea {
   font-size: 14px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--modal-border);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0;
+  border: none;
+  border-bottom: 1px solid var(--md3-outline-variant);
+  background: var(--md3-surface-container-highest);
+  color: var(--md3-on-surface);
   box-sizing: border-box;
 }
 
@@ -2937,32 +3151,48 @@ body {
    Modal 優化樣式 (A-F)
    ============================================================ */
 
-/* === A. 子卡片分組 === */
+/* [MD3] 子卡片分組 */
 .settlement-sub-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(129, 199, 132, 0.18);
-  border-radius: 10px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
+  background: var(--md3-surface-container);
+  border: none;
+  border-radius: var(--md3-radius-md);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+/* 消除 sub-card 內最後一個 settlement-row 的多餘底部間距 */
+.settlement-sub-card .settlement-row:last-child {
+  margin-bottom: 0;
 }
 .settlement-sub-card:last-child {
   margin-bottom: 0;
 }
+/* [MD3] 子卡片標題 */
 .settlement-sub-card .sub-card-title {
-  display: block;
-  color: #a5d6a7 !important;
-  font-weight: 800 !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md3-primary) !important;
+  font-weight: 500 !important;
   font-size: 13px !important;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 6px !important;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(129, 199, 132, 0.15);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--md3-outline-variant);
 }
-/* 底部店販+助理卡片用更淡的背景 */
+.settlement-sub-card .sub-card-title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--md3-primary);
+  border-radius: 50%;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+/* [MD3] 底部店販+助理 */
 .settlement-sub-card--footer {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--md3-surface-container-low);
+  border: none;
 }
 
 /* === B. 折疊面板 (少用項目) === */
@@ -2971,15 +3201,15 @@ body {
 }
 .more-options-toggle {
   cursor: pointer;
-  color: rgba(129, 199, 132, 0.7);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: rgba(129, 199, 132, 0.08);
-  border: 1px solid rgba(129, 199, 132, 0.15);
-  transition: all 0.2s ease;
+  color: var(--md3-primary);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 6px 12px;
+  border-radius: var(--md3-radius-pill);
+  background: transparent;
+  border: 1px solid var(--md3-outline-variant);
+  transition: all 0.2s var(--md3-easing);
   list-style: none;
   display: inline-flex;
   align-items: center;
@@ -2995,93 +3225,98 @@ body {
   transform: rotate(90deg);
 }
 .more-options-toggle:hover {
-  background: rgba(129, 199, 132, 0.15);
-  color: #a5d6a7;
+  background: rgba(103, 80, 164, 0.08);
+  color: var(--md3-primary);
 }
 /* 隱藏 details 預設的三角 */
 .more-options-toggle::-webkit-details-marker {
   display: none;
 }
 
-/* === D. 金額數字放大 + 粗體 === */
+/* [MD3] D. 膠囊金額/品名最終覆蓋 */
 .settlement-section .price-val {
-  font-size: 16px !important;
-  font-weight: 800 !important;
-  color: #fff59d !important;
-  letter-spacing: 0.02em;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--md3-primary) !important;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 .settlement-section .price-label {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--md3-on-surface);
+  line-height: 1.2;
 }
 
-/* 總金額放大強調 */
+/* [MD3] 總金額放大強調 */
 .total-label-text {
-  font-size: 12px;
-  color: #aaa;
-  font-weight: normal;
+  font-size: 14px;
+  color: var(--md3-on-surface-variant);
+  font-weight: 500;
   white-space: nowrap;
 }
 .net-amount-text {
   font-size: 12px;
-  color: #aaa;
+  color: var(--md3-outline);
   font-weight: normal;
   margin-top: 4px;
 }
 
-/* === E. 底部操作列優化 === */
+/* [MD3] E. 底部操作列 — 按鈕等寬並排 */
 .modal-actions {
   display: flex !important;
   align-items: stretch;
-  gap: 10px;
+  gap: 12px;
 }
 #deleteBtn {
-  flex: 0 0 auto !important;
-  min-width: 90px;
-  padding: 10px 14px !important;
-  font-size: 14px !important;
-  background: rgba(255, 107, 107, 0.15) !important;
-  color: #ff8a8a !important;
-  border: 1px solid rgba(255, 107, 107, 0.25) !important;
-  border-radius: 10px !important;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  flex: 1 1 0 !important;
+  min-height: 48px;
+  padding: 12px 16px !important;
+  font-size: 15px !important;
+  background: transparent !important;
+  color: var(--md3-error) !important;
+  border: 1px solid var(--md3-outline) !important;
+  border-radius: var(--md3-radius-pill) !important;
+  font-weight: 500;
+  transition: all 0.2s var(--md3-easing);
 }
 #deleteBtn:hover {
-  background: rgba(255, 107, 107, 0.3) !important;
-  border-color: rgba(255, 107, 107, 0.5) !important;
+  background: rgba(179, 38, 30, 0.08) !important;
+  border-color: var(--md3-error) !important;
+  box-shadow: none;
 }
 #submit-btn {
   flex: 1 1 0 !important;
   min-height: 48px;
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.04em;
+  padding: 12px 16px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em;
 }
 
-/* === F. 右欄內建 scroll === */
+/* [MD3] F. 右欄內建 scroll */
 #settlement-col > .settlement-section {
-  max-height: calc(88vh - 110px);
+  max-height: calc(92vh - 100px);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(129, 199, 132, 0.3) transparent;
+  scrollbar-color: var(--md3-outline-variant) transparent;
 }
 #settlement-col > .settlement-section::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 #settlement-col > .settlement-section::-webkit-scrollbar-track {
   background: transparent;
 }
 #settlement-col > .settlement-section::-webkit-scrollbar-thumb {
-  background: rgba(129, 199, 132, 0.25);
+  background: var(--md3-outline-variant);
   border-radius: 4px;
 }
 #settlement-col > .settlement-section::-webkit-scrollbar-thumb:hover {
-  background: rgba(129, 199, 132, 0.4);
+  background: var(--md3-outline);
 }
 
-/* 小螢幕調整 */
+/* [MD3] 小螢幕調整 */
 @media (max-width: 700px) {
   .blue-card-section .form-row,
   .settlement-section .settlement-row {
@@ -3093,6 +3328,9 @@ body {
   #settlement-col > .settlement-section {
     max-height: none;
   }
+  .type-toggle-container {
+    width: 100%;
+  }
 }
 
 /* === G. 左欄底部：助理 + 總金額 === */
@@ -3101,8 +3339,8 @@ body {
   align-items: center;
   gap: 10px;
   margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 10px;
+  border-top: 1px solid var(--md3-outline-variant);
 }
 .left-col-footer .assistant-field {
   display: flex;
@@ -3113,8 +3351,8 @@ body {
 .left-col-footer .assistant-field > label {
   margin: 0;
   white-space: nowrap;
-  color: #1976d2 !important;
-  font-weight: 600;
+  color: var(--md3-primary) !important;
+  font-weight: 500;
   font-size: 13px;
 }
 .left-col-footer .assistant-field select {
@@ -3132,14 +3370,17 @@ body {
 }
 .total-display-main .total-label-text {
   font-size: 12px;
-  color: rgba(255,255,255,0.5);
+  color: var(--md3-on-surface-variant);
   font-weight: normal;
 }
 .total-display-main #display-total {
-  font-size: 26px;
-  font-weight: 900;
-  color: #fff59d;
-  text-shadow: 0 0 12px rgba(255, 245, 157, 0.4);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--md3-primary);
+  text-shadow:
+    0 0 8px rgba(103, 80, 164, 0.3),
+    0 0 20px rgba(103, 80, 164, 0.15);
+  letter-spacing: -0.02em;
 }
 .total-display-sub {
   display: flex;
@@ -3150,23 +3391,23 @@ body {
 }
 .total-display-sub .net-amount-text {
   font-size: 11px;
-  color: rgba(255,255,255,0.45);
+  color: var(--md3-outline);
   margin: 0;
 }
 .total-display-sub .unset-paid-btn {
   display: none;
-  padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 235, 59, 0.4);
-  background: rgba(0, 0, 0, 0.15);
-  color: #ffeb3b;
+  padding: 4px 10px;
+  border-radius: var(--md3-radius-pill);
+  border: 1px solid var(--md3-outline-variant);
+  background: transparent;
+  color: var(--md3-tertiary);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--md3-easing);
 }
 .total-display-sub .unset-paid-btn:hover {
-  background: rgba(255, 235, 59, 0.85);
-  color: #1c1c1c;
+  background: rgba(125, 82, 96, 0.08);
+  color: var(--md3-tertiary);
 }
 
 /* ====== 14. 警示名單 ====== */
@@ -3200,9 +3441,9 @@ body {
 .warnlist-add-row input[type="text"] {
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 1px solid var(--md3-outline-variant);
+  background: var(--md3-surface-container-highest);
+  color: var(--md3-on-surface);
   font-size: 14px;
 }
 .warnlist-add-row input[type="tel"] {
@@ -3210,17 +3451,17 @@ body {
 }
 .warnlist-add-row button {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--md3-radius-pill);
   border: none;
-  background: #ff9800;
-  color: #1c1c1c;
+  background: #e65100;
+  color: #fff;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
 }
 .warnlist-add-row button:hover {
-  background: #ffb74d;
+  background: #f57c00;
 }
 
 .warnlist-item {
@@ -3229,9 +3470,9 @@ body {
   align-items: center;
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--md3-surface-container-low);
   margin-bottom: 6px;
-  border-left: 3px solid #ff9800;
+  border-left: 3px solid #e65100;
 }
 .warnlist-item-info {
   display: flex;
@@ -3240,22 +3481,519 @@ body {
 }
 .warnlist-phone {
   font-weight: 700;
-  color: #fff;
+  color: var(--md3-on-surface);
   font-size: 15px;
 }
 .warnlist-note {
   font-size: 13px;
-  color: #ffcc80;
+  color: #bf360c;
 }
 .warnlist-delete-btn {
   padding: 4px 12px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 82, 82, 0.5);
+  border-radius: var(--md3-radius-pill);
+  border: 1px solid var(--md3-error);
   background: transparent;
-  color: #ff5252;
+  color: var(--md3-error);
   font-size: 12px;
   cursor: pointer;
 }
 .warnlist-delete-btn:hover {
+  background: var(--md3-error-container);
+}
+
+/* ============================================================
+   主題切換：Glassmorphism 暗色覆蓋
+   body.theme-glass 時覆蓋 MD3 亮色，回到原本暗色玻璃風格
+   ============================================================ */
+
+/* 主題切換按鈕 */
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background: var(--md3-primary);
+  color: var(--md3-on-primary);
+}
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+.theme-toggle-btn .toggle-icon-light,
+.theme-toggle-btn .toggle-icon-dark {
+  position: absolute;
+  transition: opacity 0.3s, transform 0.3s;
+}
+/* MD3 模式：顯示月亮（可切到暗色） */
+.theme-toggle-btn .toggle-icon-dark { opacity: 1; transform: rotate(0); }
+.theme-toggle-btn .toggle-icon-light { opacity: 0; transform: rotate(-90deg); }
+/* Glass 模式：顯示太陽（可切到亮色） */
+body.theme-glass .theme-toggle-btn {
+  background: rgba(255,255,255,0.1);
+  color: #e0e0e0;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+}
+body.theme-glass .theme-toggle-btn .toggle-icon-dark { opacity: 0; transform: rotate(90deg); }
+body.theme-glass .theme-toggle-btn .toggle-icon-light { opacity: 1; transform: rotate(0); }
+
+/* --- 變數覆蓋 --- */
+body.theme-glass {
+  --md3-surface: rgba(15, 15, 25, 0.55);
+  --md3-on-surface: #f3f3f3;
+  --md3-on-surface-variant: rgba(255, 255, 255, 0.6);
+  --md3-primary: #5b9aff;
+  --md3-on-primary: #FFFFFF;
+  --md3-primary-container: transparent;
+  --md3-on-primary-container: #7cb8ff;
+  --md3-secondary: #81c784;
+  --md3-secondary-container: rgba(83, 164, 255, 0.22);
+  --md3-on-secondary-container: #fff;
+  --md3-tertiary: #ffcc80;
+  --md3-tertiary-container: rgba(255, 183, 77, 0.15);
+  --md3-on-tertiary-container: #ffcc80;
+  --md3-surface-container-lowest: rgba(255, 255, 255, 0.02);
+  --md3-surface-container-low: rgba(255, 255, 255, 0.03);
+  --md3-surface-container: rgba(255, 255, 255, 0.04);
+  --md3-surface-container-high: rgba(255, 255, 255, 0.06);
+  --md3-surface-container-highest: rgba(255, 255, 255, 0.08);
+  --md3-outline: rgba(255, 255, 255, 0.15);
+  --md3-outline-variant: rgba(255, 255, 255, 0.1);
+  --md3-scrim: rgba(5, 5, 15, 0.7);
+  --md3-error: #ff9a9a;
+  --md3-error-container: rgba(255, 107, 107, 0.15);
+  --md3-radius-xl: 20px;
+  --md3-radius-lg: 14px;
+  --md3-radius-md: 10px;
+  --md3-radius-sm: 8px;
+  --md3-radius-pill: 999px;
+}
+
+/* --- 結構覆蓋：Glassmorphism 特有效果 --- */
+body.theme-glass .modal {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.theme-glass .modal::before {
+  background:
+    radial-gradient(ellipse 600px 500px at 20% 20%, rgba(56, 140, 255, 0.35), transparent 70%),
+    radial-gradient(ellipse 500px 400px at 80% 30%, rgba(168, 85, 247, 0.3), transparent 70%),
+    radial-gradient(ellipse 400px 350px at 50% 80%, rgba(16, 185, 129, 0.25), transparent 70%),
+    radial-gradient(ellipse 300px 300px at 70% 70%, rgba(251, 146, 60, 0.15), transparent 70%);
+  animation: glassBlobs 12s ease-in-out infinite alternate;
+}
+@keyframes glassBlobs {
+  0%   { transform: scale(1)    translate(0, 0); }
+  50%  { transform: scale(1.05) translate(-20px, 10px); }
+  100% { transform: scale(1)    translate(10px, -15px); }
+}
+body.theme-glass .modal-content {
+  background: rgba(15, 15, 25, 0.55);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.18);
+  border-left-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(56, 140, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Glass: 關閉鈕 */
+body.theme-glass .close-button {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.theme-glass .close-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Glass: 左欄藍卡 */
+body.theme-glass .blue-card-section {
+  background:
+    linear-gradient(135deg, rgba(56, 140, 255, 0.08), transparent 80%),
+    rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(56, 140, 255, 0.22);
+  border-top-color: rgba(56, 140, 255, 0.3);
+  box-shadow:
+    0 4px 24px rgba(56, 140, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Glass: 右欄結帳區 */
+body.theme-glass .settlement-section {
+  background:
+    linear-gradient(135deg, rgba(76, 200, 120, 0.06), transparent 80%),
+    rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(76, 200, 120, 0.18);
+  border-top-color: rgba(76, 200, 120, 0.28);
+  box-shadow:
+    0 4px 24px rgba(76, 200, 120, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Glass: 輸入框 */
+body.theme-glass .modal-col:first-child input[type="text"],
+body.theme-glass .modal-col:first-child input[type="tel"],
+body.theme-glass .modal-col:first-child input[type="number"],
+body.theme-glass .modal-col:first-child select,
+body.theme-glass .modal-col:first-child textarea {
+  background-color: rgba(33, 150, 243, 0.15) !important;
+  color: #e3f2fd !important;
+  border: 1px solid rgba(33, 150, 243, 0.5) !important;
+  border-radius: 12px !important;
+}
+body.theme-glass .modal-col:first-child input:focus,
+body.theme-glass .modal-col:first-child select:focus,
+body.theme-glass .modal-col:first-child textarea:focus {
+  border-color: #42a5f5 !important;
+  background-color: rgba(33, 150, 243, 0.22) !important;
+}
+body.theme-glass .settlement-col input[type="text"]:not(.custom-price-input):not(#retail_item),
+body.theme-glass .settlement-col input[type="tel"]:not(.custom-price-input),
+body.theme-glass .settlement-col input[type="number"]:not(.custom-price-input):not(#retail_price),
+body.theme-glass .settlement-col select:not(#assistant_select),
+body.theme-glass .settlement-col textarea {
+  background-color: rgba(76, 175, 80, 0.15) !important;
+  color: #e8f5e9 !important;
+  border: 1px solid rgba(76, 175, 80, 0.5) !important;
+  border-radius: 8px !important;
+}
+body.theme-glass .settlement-col input:not(.custom-price-input):not(#retail_item):not(#retail_price):focus,
+body.theme-glass .settlement-col select:not(#assistant_select):focus,
+body.theme-glass .settlement-col textarea:focus {
+  border-color: #66bb6a !important;
+  background-color: rgba(76, 175, 80, 0.22) !important;
+}
+/* Glass: 店販/助理透明底線 */
+body.theme-glass #settlement-col #retail_item,
+body.theme-glass #settlement-col #retail_price,
+body.theme-glass #settlement-col #assistant_select {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 0 !important;
+  color: #e8f5e9 !important;
+}
+body.theme-glass #settlement-col #retail_item:focus,
+body.theme-glass #settlement-col #retail_price:focus,
+body.theme-glass #settlement-col #assistant_select:focus {
+  border-bottom-color: #66bb6a !important;
+  background: transparent !important;
+}
+body.theme-glass .modal-col:first-child input::placeholder,
+body.theme-glass .modal-col:first-child textarea::placeholder {
+  color: rgba(227, 242, 253, 0.32) !important;
+}
+body.theme-glass .settlement-col input::placeholder,
+body.theme-glass .settlement-col textarea::placeholder {
+  color: rgba(232, 245, 233, 0.32) !important;
+}
+
+/* Glass: 類型切換 */
+body.theme-glass .type-toggle-container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+body.theme-glass .toggle-label {
+  color: rgba(255, 255, 255, 0.38) !important;
+}
+body.theme-glass .sliding-glider {
+  background: rgba(83, 164, 255, 0.22) !important;
+  border: 1px solid rgba(83, 164, 255, 0.45) !important;
+  border-radius: 8px !important;
+  top: 3px !important;
+  left: 3px !important;
+  height: calc(100% - 6px) !important;
+  width: calc(50% - 3px) !important;
+}
+body.theme-glass #appointment-blocked:checked ~ .sliding-glider {
+  background: rgba(158, 158, 158, 0.15) !important;
+  border-color: rgba(158, 158, 158, 0.35) !important;
+}
+body.theme-glass #appointment-normal:checked ~ .toggle-label.left,
+body.theme-glass #appointment-blocked:checked ~ .toggle-label.right {
+  color: #fff !important;
+}
+
+/* Glass: 按鈕 */
+body.theme-glass #submit-btn,
+body.theme-glass #submitLeaveBtn {
+  background: linear-gradient(135deg, rgba(56, 140, 255, 0.25), rgba(56, 140, 255, 0.15));
+  border: 1px solid rgba(56, 140, 255, 0.3);
+  color: #e0edff;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(56, 140, 255, 0.1);
+  border-radius: 10px;
+}
+body.theme-glass #deleteBtn,
+body.theme-glass #deleteLeaveBtn {
+  background: rgba(255, 107, 107, 0.1) !important;
+  border: 1px solid rgba(255, 107, 107, 0.25) !important;
+  color: #ff9a9a !important;
+  backdrop-filter: blur(8px);
+  border-radius: 10px !important;
+}
+body.theme-glass #submit-btn:hover {
+  background: linear-gradient(135deg, rgba(56, 140, 255, 0.35), rgba(56, 140, 255, 0.2));
+  border-color: rgba(56, 140, 255, 0.5);
+  box-shadow: 0 6px 28px rgba(56, 140, 255, 0.2);
+  transform: translateY(-1px);
+}
+body.theme-glass #deleteBtn:hover {
+  background: rgba(255, 107, 107, 0.22) !important;
+  border-color: rgba(255, 107, 107, 0.45) !important;
+}
+
+/* Glass: 價目膠囊 */
+body.theme-glass .settlement-section .price-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+body.theme-glass .settlement-section .price-item:has(input:checked) {
+  background: rgba(76, 200, 120, 0.12) !important;
+  border-color: rgba(76, 200, 120, 0.4) !important;
+  box-shadow:
+    0 0 16px rgba(76, 200, 120, 0.15),
+    inset 0 0 12px rgba(76, 200, 120, 0.06) !important;
+  transform: translateY(-1px);
+}
+body.theme-glass .settlement-section .price-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+body.theme-glass .settlement-section .price-val {
+  color: #ffd54f !important;
+  font-weight: 800 !important;
+}
+body.theme-glass .settlement-section .price-label {
+  color: rgba(255, 255, 255, 0.78);
+}
+body.theme-glass .settlement-section .price-item,
+body.theme-glass .settlement-section .price-item .price-label {
+  color: #ffffff;
+}
+
+/* Glass: 子卡片 */
+body.theme-glass .settlement-sub-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 183, 77, 0.12);
+}
+body.theme-glass .settlement-sub-card .sub-card-title {
+  color: #ffcc80 !important;
+  border-bottom-color: rgba(255, 183, 77, 0.12);
+}
+body.theme-glass .settlement-sub-card .sub-card-title::before {
+  background: #ffcc80;
+  box-shadow: 0 0 6px rgba(255, 183, 77, 0.5);
+}
+body.theme-glass .settlement-sub-card--footer {
+  background: rgba(255, 255, 255, 0.015);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Glass: 總額 */
+body.theme-glass #settlement-col .total-display #display-total {
+  color: #ffe082;
+  text-shadow: 0 0 12px rgba(255, 224, 130, 0.25);
+}
+body.theme-glass .total-display-main #display-total {
+  color: #fff59d;
+  text-shadow: 0 0 12px rgba(255, 245, 157, 0.4);
+}
+
+/* Glass: 自訂金額 */
+body.theme-glass .custom-price-input {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+}
+body.theme-glass .custom-price-input:focus {
+  border-bottom-color: #5b9aff !important;
+}
+
+/* Glass: 滾動條 */
+body.theme-glass #settlement-col > .settlement-section {
+  scrollbar-color: rgba(129, 199, 132, 0.3) transparent;
+}
+body.theme-glass #settlement-col > .settlement-section::-webkit-scrollbar-thumb {
+  background: rgba(129, 199, 132, 0.25);
+}
+
+/* Glass: 更多選項 */
+body.theme-glass .more-options-toggle {
+  color: rgba(255, 183, 77, 0.7);
+  background: rgba(255, 183, 77, 0.08);
+  border-color: rgba(255, 183, 77, 0.15);
+}
+body.theme-glass .more-options-toggle:hover {
+  background: rgba(255, 183, 77, 0.15);
+  color: #ffcc80;
+}
+
+/* Glass: modal-actions 分隔線 */
+body.theme-glass #appointmentModal #appointment-info-card .modal-actions {
+  border-top-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Glass: select option 下拉 */
+body.theme-glass .modal-content select option {
+  background-color: #2c2c2c !important;
+  color: #ffffff !important;
+}
+body.theme-glass .modal-col:first-child select option {
+  background-color: #1a237e !important;
+}
+body.theme-glass #assistant_select option {
+  background-color: #1b5e20 !important;
+}
+
+/* Glass: inline styles 中的自訂標籤顏色 */
+body.theme-glass .price-item--custom .price-label {
+  color: #ffb74d !important;
+}
+
+/* Glass: 助理 label */
+body.theme-glass #settlement-col .assistant-total-row .assistant-field > label {
+  color: #81c784 !important;
+}
+body.theme-glass .left-col-footer .assistant-field > label {
+  color: #5b9aff !important;
+}
+
+/* Glass: 報表 / 預約查詢 / 警示名單 Modal */
+body.theme-glass .report-controls,
+body.theme-glass .lookup-controls {
+  background: rgba(255, 255, 255, 0.03);
+}
+body.theme-glass .report-controls select,
+body.theme-glass .report-controls input[type="date"],
+body.theme-glass .lookup-controls input[type="tel"],
+body.theme-glass .lookup-controls input[type="text"] {
+  background: #222;
+  color: #fff;
+  border-color: #444;
+}
+body.theme-glass .report-controls .report-label,
+body.theme-glass .lookup-controls .lookup-label {
+  color: #aaa;
+}
+body.theme-glass .report-controls button,
+body.theme-glass .lookup-controls button {
+  background: #3a6c74;
+  color: #fff;
+  border-radius: 6px;
+}
+body.theme-glass .report-controls button:hover,
+body.theme-glass .lookup-controls button:hover {
+  background: #4a858f;
+  opacity: 1;
+}
+body.theme-glass .report-table {
+  color: #e0e0e0;
+}
+body.theme-glass .report-table th {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+body.theme-glass .report-table td {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+body.theme-glass .report-table td.num-cell {
+  color: #fff;
+}
+body.theme-glass .lookup-summary {
+  color: #b0bec5;
+}
+body.theme-glass .lookup-item {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e0e0e0;
+}
+body.theme-glass .lookup-item:hover {
+  background: rgba(74, 133, 143, 0.22);
+  border-color: rgba(116, 197, 211, 0.6);
+}
+body.theme-glass .lookup-time {
+  color: #f5f5f5;
+}
+body.theme-glass .lookup-status {
+  color: #ffcc80;
+}
+body.theme-glass .lookup-designer {
+  color: #c7d8de;
+}
+body.theme-glass .lookup-phone {
+  color: #b0bec5;
+}
+body.theme-glass .lookup-item-sub {
+  color: #90a4ae;
+}
+body.theme-glass .lookup-empty {
+  color: #b0bec5;
+}
+body.theme-glass .warnlist-add-row input[type="tel"],
+body.theme-glass .warnlist-add-row input[type="text"] {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+body.theme-glass .warnlist-add-row button {
+  background: #ff9800;
+  color: #1c1c1c;
+  border-radius: 6px;
+}
+body.theme-glass .warnlist-add-row button:hover {
+  background: #ffb74d;
+}
+body.theme-glass .warnlist-item {
+  background: rgba(255, 255, 255, 0.06);
+  border-left-color: #ff9800;
+}
+body.theme-glass .warnlist-phone {
+  color: #fff;
+}
+body.theme-glass .warnlist-note {
+  color: #ffcc80;
+}
+body.theme-glass .warnlist-delete-btn {
+  border-color: rgba(255, 82, 82, 0.5);
+  color: #ff5252;
+  border-radius: 4px;
+}
+body.theme-glass .warnlist-delete-btn:hover {
   background: rgba(255, 82, 82, 0.15);
+}
+
+/* Glass: unset-paid button */
+body.theme-glass #settlement-col .unset-paid-btn {
+  border-color: rgba(255, 235, 59, 0.55);
+  color: #ffeb3b;
+  background: rgba(0, 0, 0, 0.18);
+}
+body.theme-glass #settlement-col .unset-paid-btn:hover {
+  background: rgba(255, 235, 59, 0.92);
+  color: #1c1c1c;
 }

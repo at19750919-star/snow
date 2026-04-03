@@ -16,11 +16,16 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=23">
 
 </head>
 
 <body>
+  <!-- 主題切換按鈕 -->
+  <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="切換彈窗主題">
+    <span class="toggle-icon-dark material-symbols-outlined">dark_mode</span>
+    <span class="toggle-icon-light material-symbols-outlined">light_mode</span>
+  </button>
   <div id="calendar-container">
     <div id="calendar"></div>
     <div id="appointmentModal" class="modal">
@@ -45,7 +50,7 @@
                   <span class="sliding-glider"></span>
                 </div>
 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px -2;">
+                <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px -2;">
 
                 <div class="form-row">
                   <label for="minute_select">時間 (分)</label>
@@ -67,7 +72,7 @@
                 </div>
 
                 <div id="customer-fields-left">
-                  <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
+                  <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px 0;">
 
                   <div class="form-row">
                     <label for="customer_name">顧客姓名</label>
@@ -93,7 +98,7 @@
                   </div>
                 </div>
 
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
+                <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px 0;">
 
                 <label for="notes">備註</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
@@ -112,24 +117,22 @@
 
                     <!-- B. 常用項目置頂 -->
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
-                          data-cost="0"> 成人剪髮</span> <span class="price-val">$450</span></label>
+                          data-cost="0"> 成人剪髮</span> <span class="price-val">$ 450</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
-                          data-cost="0"> 大學剪髮</span> <span class="price-val">$400</span></label>
+                          data-cost="0"> 大學剪髮</span> <span class="price-val">$ 400</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
-                          data-cost="0"> 高中剪髮</span> <span class="price-val">$350</span></label>
+                          data-cost="0"> 高中剪髮</span> <span class="price-val">$ 350</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
                           data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
-                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$900</span></label>
+                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$ 900</span></label>
                     <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
                           type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
-                        class="price-val">$600</span></label>
-                  </div>
-
-                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
-                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">剪髮自訂</label>
-                    <input type="number" id="cut_custom" class="custom-price-input" placeholder="0" min="0"
-                      style="margin-top:0;">
+                        class="price-val">$ 600</span></label>
+                    <label class="price-item price-item--custom">
+                      <span class="price-label">剪髮自訂</span>
+                      <span class="price-val custom-val-wrap">$<input type="number" id="cut_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
                   </div>
                 </div>
 
@@ -138,29 +141,28 @@
                   <label class="sub-card-title">其他項目</label>
                   <div class="price-group">
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                          value="150" data-cost="0"> 洗髮</span> <span class="price-val">$150</span></label>
+                          value="150" data-cost="0"> 洗髮</span> <span class="price-val">$ 150</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="4000" data-cost="270"> 漂髮</span> <span class="price-val">$4000</span></label>
-                  </div>
-                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
-                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">其他自訂</label>
-                    <input type="number" id="other_custom" class="custom-price-input" placeholder="0" min="0"
-                      style="margin-top:0;">
+                    <label class="price-item price-item--custom">
+                      <span class="price-label">其他自訂</span>
+                      <span class="price-val custom-val-wrap">$ <input type="number" id="other_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
                   </div>
                 </div>
 
                 <!-- [CRM功能] 染髮顏色紀錄區塊 (僅在 CRM 找到色號時顯示) -->
                 <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                  <label for="dye_color_input" style="color:#ffcc80;">染髮顏色紀錄</label>
+                  <label for="dye_color_input" style="color:#6750A4;">染髮顏色紀錄</label>
                   <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
                 </div>
 
                 <div id="material-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                  <label for="custom_material_cost" style="color:#ffcc80;">材料費 (自填)</label>
+                  <label for="custom_material_cost" style="color:#6750A4;">材料費 (自填)</label>
                   <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric"
                     placeholder="請輸入材料費...">
                 </div>
@@ -171,7 +173,7 @@
                   <div class="price-group">
                     <input type="radio" name="perm_price" value="0" data-cost="0" style="display:none;" checked>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="700"
-                          data-cost="0"></span> <span class="price-val">$700</span></label>
+                          data-cost="0"></span> <span class="price-val">$ 700</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1200"
                           data-cost="250"></span> <span class="price-val">$1200</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1600"
@@ -182,11 +184,10 @@
                           data-cost="0"></span> <span class="price-val">$2600</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="3200"
                           data-cost="0"></span> <span class="price-val">$3200</span></label>
-                  </div>
-                  <div class="settlement-row" style="margin-top:6px; display: flex; align-items: center; gap: 10px;">
-                    <label style="color: #81c784; font-weight: 700; font-size: 14px; white-space: nowrap;">燙髮自訂</label>
-                    <input type="number" id="perm_custom" class="custom-price-input" placeholder="0" min="0"
-                      style="margin-top:0;">
+                    <label class="price-item price-item--custom">
+                      <span class="price-label">燙髮自訂</span>
+                      <span class="price-val custom-val-wrap">$ <input type="number" id="perm_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
                   </div>
                 </div>
 
@@ -225,7 +226,7 @@
           </div>
 
           <div id="appointment-actions-anchor"></div>
-          <div class="modal-actions" style="grid-column: 1 / -1; margin-top: 16px;">
+          <div class="modal-actions" style="margin-top: 14px;">
             <button type="button" id="deleteBtn"
               style="display:none;">刪除預約</button>
             <button type="submit" id="submit-btn">儲存</button>
@@ -274,7 +275,7 @@
     <div id="warnlistModal" class="modal">
       <div class="modal-content" style="max-width: 520px;">
         <span class="close-button warnlist-close-button">&times;</span>
-        <h3 style="margin-top:0; color:#ff9800;">⚠ 警示名單</h3>
+        <h3 style="margin-top:0; color:#e65100;">⚠ 警示名單</h3>
         <div class="warnlist-add-row">
           <input type="tel" id="warn-phone" inputmode="numeric" autocomplete="off" placeholder="電話 09xx-xxx-xxx">
           <input type="text" id="warn-note" placeholder="備註（如：請先付款）" style="flex:1;">
@@ -295,9 +296,9 @@
           <input type="date" id="report-end">
           <button id="fetch-report-btn" type="button">查詢</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 4px 0;">
+        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 4px 0;">
         <div id="report-result">
-          <div style="text-align:center; color:#888; padding: 20px;">
+          <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
             請選擇起訖日期，點擊「查詢」。
           </div>
         </div>
@@ -316,9 +317,9 @@
             placeholder="&#x53EF;&#x8F38;&#x5165;&#x90E8;&#x5206;&#x59D3;&#x540D;">
           <button id="fetch-lookup-btn" type="button">&#x67E5;&#x8A62;</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 8px 0;">
+        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 8px 0;">
         <div id="lookup-result" class="lookup-result">
-          <div style="text-align:center; color:#888; padding: 20px;">
+          <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
             &#x8ACB;&#x8F38;&#x5165;&#x96FB;&#x8A71;&#x5F8C;&#x67E5;&#x8A62;
           </div>
         </div>
@@ -399,6 +400,66 @@
         let lastVisitPhoneValue = '';
         let lastVisitDesignerValue = '';
 
+        /* ====== API 請求優化：debounce + cache ====== */
+        function debounce(fn, ms) {
+          let timer;
+          return function (...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), ms); };
+        }
+
+        /* 簡易快取：key → { data, ts }，預設 5 分鐘 */
+        const _apiCache = {};
+        const API_CACHE_TTL = 5 * 60 * 1000;
+        function cachedFetch(url, ttl = API_CACHE_TTL) {
+          const now = Date.now();
+          const cached = _apiCache[url];
+          if (cached && (now - cached.ts) < ttl) return Promise.resolve(cached.data);
+          return fetch(url, { method: 'GET', mode: 'cors' }).then(r => r.json()).then(data => {
+            _apiCache[url] = { data, ts: Date.now() };
+            return data;
+          });
+        }
+        /* 寫入操作後，清除相關快取 */
+        function invalidateCache(keyword) {
+          Object.keys(_apiCache).forEach(k => { if (k.includes(keyword)) delete _apiCache[k]; });
+        }
+
+        /* 防止同一個 action 重複併發：回傳進行中的 Promise */
+        const _inflightRequests = {};
+        function deduplicatedFetch(url) {
+          if (_inflightRequests[url]) return _inflightRequests[url];
+          _inflightRequests[url] = cachedFetch(url).finally(() => { delete _inflightRequests[url]; });
+          return _inflightRequests[url];
+        }
+
+        /* ===== 主題切換：MD3 亮色 ↔ Glassmorphism 暗色 ===== */
+        (function initThemeToggle() {
+          const saved = localStorage.getItem('modal-theme');
+          if (saved === 'glass') document.body.classList.add('theme-glass');
+          document.addEventListener('click', function (e) {
+            const btn = e.target.closest('#themeToggleBtn');
+            if (!btn) return;
+            document.body.classList.toggle('theme-glass');
+            const isGlass = document.body.classList.contains('theme-glass');
+            localStorage.setItem('modal-theme', isGlass ? 'glass' : 'md3');
+          });
+        })();
+
+        /* 自訂金額 focus 時全選，方便直接覆蓋輸入 */
+        document.addEventListener('focusin', function (e) {
+          if (e.target.classList.contains('custom-price-input')) e.target.select();
+        });
+        /* 自訂金額 blur 時，空值歸零 */
+        document.addEventListener('focusout', function (e) {
+          if (e.target.classList.contains('custom-price-input') && !e.target.value) e.target.value = '0';
+        });
+        /* 助理 select：有值時文字變深色，空值時保持淺色 */
+        document.addEventListener('change', function (e) {
+          if (e.target.id === 'assistant_select') {
+            e.target.style.color = e.target.value ? '' : '';
+            e.target.classList.toggle('has-value', !!e.target.value);
+          }
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
           const calendarEl = document.getElementById('calendar');
           if (calendarEl && isMobileLayout()) {
@@ -438,19 +499,12 @@
           deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
           function placeAppointmentActions(mode) {
-            if (!appointmentActions || !appointmentActionsAnchor) return;
-            if (mode === 'create' && appointmentInfoCard && appointmentModal) {
-              appointmentModal.classList.add('is-create');
-              appointmentInfoCard.appendChild(appointmentActions);
-              return;
-            }
-            if (appointmentModal) appointmentModal.classList.remove('is-create');
-            appointmentActionsAnchor.after(appointmentActions);
+            if (!appointmentActions || !appointmentInfoCard) return;
+            /* 不論 create/edit，按鈕一律放在左欄藍卡內底部 */
+            if (mode === 'create' && appointmentModal) appointmentModal.classList.add('is-create');
+            else if (appointmentModal) appointmentModal.classList.remove('is-create');
+            appointmentInfoCard.appendChild(appointmentActions);
           }
-
-          initializeCalendar();
-          fetchAllCloudData();
-          bindEventListeners();
 
           async function fetchDailyNote(dStr) {
             const meta = document.querySelector('.notes-meta span');
@@ -459,8 +513,8 @@
             notesTextarea.placeholder = '留言載入中...';
             meta.textContent = '載入中...';
             try {
-              const r = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr));
-              const j = await r.json();
+              const url = APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr);
+              const j = await deduplicatedFetch(url);
               notesTextarea.value = j.content || '';
               meta.textContent = '已載入';
             } catch (e) {
@@ -470,6 +524,11 @@
               notesTextarea.placeholder = '請輸入備註資訊...';
             }
           }
+          const _debouncedFetchNote = debounce(fetchDailyNote, 300);
+
+          initializeCalendar();
+          fetchAllCloudData();
+          bindEventListeners();
 
           function initializeCalendar() {
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -498,7 +557,14 @@
               handleWindowResize: true,
               businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
               resources: RESOURCE_LIST,
-              events: APPS_SCRIPT_WEB_APP_URL + '?action=getEvents',
+              events: function (info, successCallback, failureCallback) {
+                const start = ymd(info.start);
+                const end = ymd(info.end);
+                const url = APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + start + '&end=' + end;
+                deduplicatedFetch(url).then(data => {
+                  successCallback(Array.isArray(data) ? data : []);
+                }).catch(failureCallback);
+              },
               views: {
                 resourceTimeGridWeek: { hiddenDays: [1] },
                 dayGridMonth: { eventDisplay: 'auto', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false, dayMaxEventRows: 3 }
@@ -547,7 +613,7 @@
                   selectedDate.setHours(12, 0, 0, 0);
                 }
 
-                fetchDailyNote(currentYmd);
+                _debouncedFetchNote(currentYmd);
               },
               resourceLabelDidMount: function (arg) {
                 const viewType = arg.view?.type || calendar?.view?.type;
@@ -611,6 +677,7 @@
                       if (Array.isArray(employeeLeaveData)) employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
                       fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
                     }
+                    invalidateCache('getLeave');
                     paintEmployeeLeave(); syncFullyBookedButtons();
                   } catch (err) { alert('切換約滿失敗：' + err.message); }
                 });
@@ -671,9 +738,8 @@
 
           async function fetchAllCloudData() {
             try {
-              const leaveRes = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getLeave');
-              if (!leaveRes.ok) throw new Error('無法從後端獲取排休資料');
-              employeeLeaveData = await leaveRes.json();
+              const url = APPS_SCRIPT_WEB_APP_URL + '?action=getLeave';
+              employeeLeaveData = await deduplicatedFetch(url);
               paintEmployeeLeave(); syncFullyBookedButtons();
             } catch (error) { console.error('讀取雲端資料失敗:', error); }
           }
@@ -851,7 +917,7 @@
               const meta = document.querySelector('.notes-meta span'); meta.textContent = '儲存中...';
               try {
                 await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveNotes', date: currentYmd || ymd(new Date()), content: notesTextarea.value }) });
-                meta.textContent = '已儲存 ✓';
+                invalidateCache('getNotes'); meta.textContent = '已儲存 ✓';
               } catch (e) { meta.textContent = '儲存失敗 ❌'; }
             });
 
@@ -860,7 +926,8 @@
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'saveLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value, reason: document.getElementById('leaveReason').value.trim() || '排休' }), mode: 'cors' });
                 const r = await res.json(); if (r.status !== 'success') throw new Error(r.message);
-                calendar.refetchEvents(); leaveModal.style.display = 'none';
+                invalidateCache('getLeave'); invalidateCache('getEvents');
+                calendar.refetchEvents(); leaveModal.style.display = 'none'; fetchAllCloudData();
               } catch (err) { alert('儲存排休失敗: ' + err.message); }
             });
 
@@ -868,7 +935,8 @@
               if (!confirm('確定要取消這筆排休嗎？')) return;
               try {
                 await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value }), mode: 'cors' });
-                calendar.refetchEvents(); leaveModal.style.display = 'none';
+                invalidateCache('getLeave'); invalidateCache('getEvents');
+                calendar.refetchEvents(); leaveModal.style.display = 'none'; fetchAllCloudData();
               } catch (err) { alert('刪除排休失敗: ' + err.message); }
             });
 
@@ -901,7 +969,7 @@
                 // [新增] 染髮顏色傳送給後端
                 dye_color: document.getElementById('dye_color_input').value
               };
-              submitBtn.disabled = true; appointmentModal.style.display = 'none'; showToast('儲存中...', 'loading', 3000);
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
@@ -947,6 +1015,7 @@
               if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+                invalidateCache('getEvents');
                 if (removeEventOptimistically(eventId)) showToast('已刪除', 'success'); else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
               } catch (err) { alert('❌ 刪除失敗'); }
@@ -972,10 +1041,9 @@
                 document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
                 document.getElementById('settlement-col').style.display = (!!eventIdInput.value && !isBlocked) ? 'block' : 'none';
                 document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
-                const actions = document.querySelector('.modal-actions');
                 const content = document.querySelector('.modal-content');
-                if (!isBlocked && eventIdInput.value) { actions.style.gridColumn = '1 / -1'; content.style.maxWidth = '900px'; }
-                else { actions.style.gridColumn = '1 / 2'; content.style.maxWidth = '450px'; }
+                if (!isBlocked && eventIdInput.value) { content.style.maxWidth = '960px'; }
+                else { content.style.maxWidth = '480px'; }
 
                 if (isBlocked) {
                   assistantSelect.value = ''; amountInput.value = '';
@@ -985,9 +1053,9 @@
                   document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
                   document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
                   // Clear new fields
-                  document.getElementById('cut_custom').value = '';
-                  document.getElementById('perm_custom').value = '';
-                  document.getElementById('other_custom').value = '';
+                  document.getElementById('cut_custom').value = '0';
+                  document.getElementById('perm_custom').value = '0';
+                  document.getElementById('other_custom').value = '0';
                   document.getElementById('dye-color-wrap').style.display = 'none';
                   updateCalculatedTotal();
                   submitBtn.textContent = '設定不約時段';
@@ -1052,9 +1120,9 @@
                 document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                 document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
                 assistantSelect.value = ''; amountInput.value = '';
-                document.getElementById('cut_custom').value = '';
-                document.getElementById('perm_custom').value = '';
-                document.getElementById('other_custom').value = '';
+                document.getElementById('cut_custom').value = '0';
+                document.getElementById('perm_custom').value = '0';
+                document.getElementById('other_custom').value = '0';
                 document.getElementById('dye-color-wrap').style.display = 'none';
                 updateCalculatedTotal();
                 submitBtn.click();
@@ -1167,11 +1235,12 @@
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
+            if (assistantSelect) assistantSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
             document.getElementById('customer-fields-left').style.display = 'block';
             document.getElementById('settlement-col').style.display = 'none';
             placeAppointmentActions('create');
-            document.querySelector('.modal-actions').style.gridColumn = '1 / 2';
+            /* 按鈕已固定在左欄內，不需設定 gridColumn */
             if (appointmentContent) appointmentContent.style.maxWidth = '450px';
             document.getElementById('notes').placeholder = '請輸入備註資訊.';
             document.getElementById('employee_id').value = resource.id;
@@ -1187,9 +1256,9 @@
             document.getElementById('material-cost-wrap').style.display = 'none';
 
             // Clear new fields
-            document.getElementById('cut_custom').value = '';
-            document.getElementById('perm_custom').value = '';
-            document.getElementById('other_custom').value = '';
+            document.getElementById('cut_custom').value = '0';
+            document.getElementById('perm_custom').value = '0';
+            document.getElementById('other_custom').value = '0';
             document.getElementById('dye-color-wrap').style.display = 'none';
             document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
@@ -1235,6 +1304,7 @@
             if (serviceSelect) serviceSelect.value = ep.service_id || '';
             document.getElementById('notes').value = ep.notes || '';
             assistantSelect.value = ep.assistant_id || '';
+            assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
             amountInput.value = ep.amount !== undefined ? ep.amount : '';
 
             // [新增] 回填染髮顏色
@@ -1248,8 +1318,7 @@
             document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
             document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
             placeAppointmentActions('edit');
-            document.querySelector('.modal-actions').style.gridColumn = isBlocked ? '1 / 2' : '1 / -1';
-            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '450px' : '900px';
+            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '480px' : '960px';
 
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
@@ -1260,9 +1329,9 @@
             document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
             document.getElementById('material-cost-wrap').style.display = 'none';
             // Clear new custom fields
-            document.getElementById('cut_custom').value = '';
-            document.getElementById('perm_custom').value = '';
-            document.getElementById('other_custom').value = '';
+            document.getElementById('cut_custom').value = '0';
+            document.getElementById('perm_custom').value = '0';
+            document.getElementById('other_custom').value = '0';
 
             // 回填剪髮金額（舊資料沒有就保留預設 0）
             if (ep.cut_price) {
@@ -1838,7 +1907,7 @@
         if (openLookupBtn) openLookupBtn.addEventListener('click', () => {
           if (!lookupModal) lookupModal = document.getElementById('lookupModal');
           if (lookupModal) lookupModal.style.display = 'block';
-          if (lookupResult) lookupResult.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">\u8ACB\u8F38\u5165\u96FB\u8A71\u5F8C\u67E5\u8A62</div>';
+          if (lookupResult) lookupResult.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:20px;">\u8ACB\u8F38\u5165\u96FB\u8A71\u5F8C\u67E5\u8A62</div>';
           if (lookupName) lookupName.value = '';
           if (lookupPhone) {
             lookupPhone.value = '';
@@ -1866,33 +1935,33 @@
         }
         if (fetchReportBtn) fetchReportBtn.addEventListener('click', async () => {
           const start = repStart.value; const end = repEnd.value;
-          if (!start || !end) { reportResult.innerHTML = '<div style="color:#ffb74d; text-align:center;">請選擇起訖日期</div>'; return; }
+          if (!start || !end) { reportResult.innerHTML = '<div style="color:var(--md3-error); text-align:center;">請選擇起訖日期</div>'; return; }
           reportResult.innerHTML = '<div style="text-align:center;">⏳ 資料計算中...</div>';
           try {
             const res = await fetch(APPS_SCRIPT_WEB_APP_URL + `?action=getReport&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`);
             renderReport(await res.json());
-          } catch (e) { reportResult.innerHTML = '<div style="color:#ff6b6b; text-align:center;">❌ 讀取失敗</div>'; }
+          } catch (e) { reportResult.innerHTML = '<div style="color:var(--md3-error); text-align:center;">❌ 讀取失敗</div>'; }
         });
 
         function renderReport(data) {
           if (!data || (!Object.keys(data.designers).length && !Object.keys(data.assistants).length)) {
-            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:#ccc;">該區間尚無預約資料</div>'; return;
+            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:var(--md3-on-surface-variant);">該區間尚無預約資料</div>'; return;
           }
           let html = '';
-          html += `<h4 style="margin-top:0; border-left:4px solid var(--accent-color); padding-left:10px;">設計師業績 (40%)</h4>`;
+          html += `<h4 style="margin-top:0; border-left:4px solid var(--md3-primary); padding-left:10px;">設計師業績 (40%)</h4>`;
           html += `<table class="report-table" style="margin-bottom:20px;"><thead><tr><th width="18%">設計師</th><th width="10%">客數</th><th width="9%">剪</th><th width="9%">燙</th><th width="9%">染</th><th width="22%">總金額</th><th width="23%">業績抽成</th></tr></thead><tbody>`;
           const designerMap = { '1': '店長', '2': '雅婷', '3': '小白' };
           for (const [id, info] of Object.entries(data.designers)) {
             const commission = Math.round((info.totalAmount || 0) * 0.4);
-            html += `<tr><td style="text-align:center; font-weight:bold; color:#fff;">${designerMap[id] || id}</td><td class="num-cell">${info.count || 0}</td><td class="num-cell">${info.cutCount || info.count || 0}</td><td class="num-cell">${info.permCount || 0}</td><td class="num-cell">${info.dyeCount || 0}</td><td class="num-cell">$${(info.totalAmount || 0).toLocaleString()}</td><td class="num-cell" style="color:#ffeb3b; font-weight:bold;">$${commission.toLocaleString()}</td></tr>`;
+            html += `<tr><td style="text-align:center; font-weight:bold;">${designerMap[id] || id}</td><td class="num-cell">${info.count || 0}</td><td class="num-cell">${info.cutCount || info.count || 0}</td><td class="num-cell">${info.permCount || 0}</td><td class="num-cell">${info.dyeCount || 0}</td><td class="num-cell">$${(info.totalAmount || 0).toLocaleString()}</td><td class="num-cell" style="color:var(--md3-primary); font-weight:bold;">$${commission.toLocaleString()}</td></tr>`;
           }
           html += `</tbody></table>`;
-          html += `<h4 style="margin-top:0; border-left:4px solid #ff9800; padding-left:10px;">助理洗頭業績 (超過300顆, 每顆$20)</h4>`;
+          html += `<h4 style="margin-top:0; border-left:4px solid #e65100; padding-left:10px;">助理洗頭業績 (超過300顆, 每顆$20)</h4>`;
           html += `<table class="report-table"><thead><tr><th width="30%">助理姓名</th><th width="30%">洗頭數</th><th width="40%">業績獎金</th></tr></thead><tbody>`;
           for (const [name, info] of Object.entries(data.assistants)) {
             if (!name || name === 'undefined') continue;
             const excess = Math.max(0, (info.washCount || 0) - 300);
-            html += `<tr><td style="text-align:center; font-weight:bold;">${name}</td><td class="num-cell">${info.washCount || 0} <span style="font-size:0.8em; color:#aaa;">(超額 ${excess})</span></td><td class="num-cell" style="color:#ff9800; font-weight:bold;">$${(excess * 20).toLocaleString()}</td></tr>`;
+            html += `<tr><td style="text-align:center; font-weight:bold;">${name}</td><td class="num-cell">${info.washCount || 0} <span style="font-size:0.8em; color:var(--md3-on-surface-variant);">(超額 ${excess})</span></td><td class="num-cell" style="color:#e65100; font-weight:bold;">$${(excess * 20).toLocaleString()}</td></tr>`;
           }
           html += `</tbody></table>`;
           reportResult.innerHTML = html;
@@ -1910,12 +1979,12 @@
         const listContainer = document.getElementById('warnlist-items');
 
         async function loadWarnList() {
-          listContainer.innerHTML = '<div style="text-align:center; color:#888; padding:12px;">載入中...</div>';
+          listContainer.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:12px;">載入中...</div>';
           try {
             const res = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getWarnList', { method: 'GET', mode: 'cors' });
             const data = await res.json();
             if (!data || !data.list || data.list.length === 0) {
-              listContainer.innerHTML = '<div style="text-align:center; color:#888; padding:12px;">目前沒有警示名單</div>';
+              listContainer.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:12px;">目前沒有警示名單</div>';
               return;
             }
             listContainer.innerHTML = data.list.map(item => `
