@@ -11,12 +11,12 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=53">
 
 </head>
 
@@ -262,12 +262,12 @@
     </div>
     <div id="lookup-trigger-placeholder" hidden>
       <button id="open-lookup-btn" type="button" class="report-trigger-btn">
-        &#x9810;&#x7D04;&#x67E5;&#x8A62;
+        預約
       </button>
     </div>
     <div id="warnlist-trigger-placeholder" hidden>
       <button id="open-warnlist-btn" type="button" class="report-trigger-btn">
-        警示名單
+        警示
       </button>
     </div>
 
@@ -1456,7 +1456,7 @@
               <div class="date-row">
                 <div class="date-left-col">
                   <div class="date-label">
-                    <span class="date-header-month"></span><span class="date-header-day"></span>
+                    <span class="date-header-month"></span>
                     <div class="nav-arrows">
                       <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
                       <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
@@ -1510,9 +1510,11 @@
             const monthRaw = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' }).format(activeDate);
 
             // 更新顯示（月視圖僅顯示 年/月，不顯示日）
-            scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}`;
-            if (info.view && info.view.type === 'dayGridMonth') scroller.querySelector('.date-header-day').textContent = '';
-            else scroller.querySelector('.date-header-day').textContent = `${activeDate.getDate()}日`;
+            if (info.view && info.view.type === 'dayGridMonth') {
+              scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}`;
+            } else {
+              scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}${activeDate.getDate()}日`;
+            }
 
             syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
 
@@ -1630,9 +1632,11 @@
               if (sc) {
                 const [y, m, d] = item.dataset.date.split('-').map(Number);
                 const monthRaw = `${m}`;
-                sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
-                if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') sc.querySelector('.date-header-day').textContent = '';
-                else sc.querySelector('.date-header-day').textContent = `${d}日`;
+                if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') {
+                  sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
+                } else {
+                  sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月${d}日`;
+                }
               }
             } catch (e) { }
             // 強制更新日期顯示
