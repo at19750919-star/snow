@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=23">
+  <link rel="stylesheet" href="styles.css?v=26">
 
 </head>
 
@@ -1455,11 +1455,13 @@
             scroller.innerHTML = `
               <div class="date-row">
                 <div class="date-left-col">
-                  <div class="nav-arrows">
-                    <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                    <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                  <div class="date-label">
+                    <span class="date-header-month"></span><span class="date-header-day"></span>
+                    <div class="nav-arrows">
+                      <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                      <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                    </div>
                   </div>
-                  <div class="date-label"><span class="date-header-month"></span><span class="date-header-day"></span></div>
                   <div class="date-toggle">
                     <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
                     <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>

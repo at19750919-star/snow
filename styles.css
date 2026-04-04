@@ -104,21 +104,17 @@
   --month-label-bg-strong: rgba(43, 56, 64, 0.28);
 
   /* 日期滑動卡片 */
-  --date-card-bg: linear-gradient(180deg, #e8e8e8 0%, #dcdcdc 100%);
-  --date-card-text: #6b6b6b;
-  --date-card-muted: rgba(107, 107, 107, 0.55);
+  --date-card-bg: linear-gradient(180deg, #F3EDF7 0%, #E8DEF8 100%);
+  --date-card-text: #1C1B1F;
+  --date-card-muted: #49454F;
 
   /* 日期列「選取中」 */
-  --date-item-active-bg: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(255, 255, 255, 0.06) 100%
-  );
-  --date-item-active-border: rgba(255, 255, 255, 0.22);
-  --date-item-active-text: #ffffff;
+  --date-item-active-bg: #6750A4;
+  --date-item-active-border: #6750A4;
+  --date-item-active-text: #FFFFFF;
   --date-item-shadow:
-    0 6px 12px rgba(24, 34, 46, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.1);
+    0 4px 12px rgba(103, 80, 164, 0.3),
+    0 1px 3px rgba(103, 80, 164, 0.2);
 
   /* Toolbar */
   --calendar-header-bg: var(--bg-card);
@@ -305,16 +301,16 @@ body {
   display: none;
 }
 #calendar .fc-date-scroller {
-  margin: 5px 5px 10px;
-  padding: 5px 5px 10px;
+  margin: 8px 10px 12px;
+  padding: 16px 20px 14px;
   background: var(--date-card-bg);
   border-radius: 22px;
   box-shadow: var(--shadow-soft);
   color: var(--date-card-text);
   position: relative;
   overflow: visible;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  height: auto; /* 改為 auto 以容納箭頭 */
+  border: 1px solid #CAC4D0;
+  height: auto;
   min-height: 145px;
   box-sizing: border-box;
 }
@@ -322,27 +318,28 @@ body {
 /* [新增] 第 6 點：左右箭頭導航樣式 */
 .nav-arrows {
   display: flex;
-  gap: 12px;
-  margin-bottom: 8px; /* 與日期內容的間距 */
+  gap: 6px;
+  margin-bottom: 0;
   justify-content: center;
   align-items: center;
 }
 .nav-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff; /* 箭頭顏色 */
+  background: #FFFFFF;
+  border: 1px solid #CAC4D0;
+  color: #6750A4;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 .nav-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: #EADDFF;
+  border-color: #6750A4;
   transform: scale(1.1);
 }
 .nav-btn:active {
@@ -350,13 +347,13 @@ body {
 }
 /* Material Symbols adjustment */
 .nav-btn .material-symbols-outlined {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 #calendar .fc-date-scroller .date-row {
   display: flex;
   align-items: stretch;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: nowrap;
   height: 100%;
 }
@@ -365,9 +362,10 @@ body {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 0px;
+  gap: 4px;
   flex: 0 0 auto;
   min-width: 56px;
+  padding-left: 4px;
 }
 #calendar .fc-date-scroller .date-label {
   display: flex;
@@ -387,19 +385,19 @@ body {
   gap: 4px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  background: rgba(103, 80, 164, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(103, 80, 164, 0.12);
   flex: 0 0 auto;
 }
 #calendar .fc-date-scroller .date-toggle {
-  /* 還原為一般文檔流位置，保持垂直排列於日期下方 */
   position: static;
   left: auto;
   bottom: auto;
   top: auto;
   transform: none;
-  margin: 12px 0 0 0;
+  margin: 10px 0 0 0;
   z-index: auto;
+  align-self: stretch;
 }
 #calendar .fc-date-scroller .mobile-resource-toggle {
   display: none; /* 手機版才顯示 */
@@ -427,34 +425,35 @@ body {
 }
 #calendar .fc-date-scroller .date-toggle-btn.is-active,
 #calendar .fc-date-scroller .resource-toggle-btn.is-active {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--kikyo-dark);
-  box-shadow: 0 6px 16px rgba(33, 44, 54, 0.18);
+  background: #6750A4;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
 }
 
 #calendar .fc-date-scroller #open-report-btn {
-  border: none;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--kikyo-dark);
+  border: 1px solid #CAC4D0;
+  background: #FFFFFF;
+  color: #6750A4;
   padding: 8px 12px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(33, 44, 54, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
 }
 #calendar .fc-date-scroller #open-report-btn:hover {
-  background: #fff;
-  box-shadow: 0 6px 16px rgba(33, 44, 54, 0.18);
+  background: #EADDFF;
+  border-color: #6750A4;
+  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
 }
 
 #calendar .fc-date-scroller .date-header-month,
 #calendar .fc-date-scroller .date-header-day {
   font-family: var(--font-display);
-  font-size: clamp(24px, 2vw, 28px);
-  font-weight: 500;
+  font-size: clamp(26px, 2.2vw, 30px);
+  font-weight: 600;
 }
 #calendar .fc-date-scroller .date-header-month {
   letter-spacing: 0.2em;
@@ -484,20 +483,20 @@ body {
   min-width: 0;
 }
 
-/* 將左右箭頭放到日期右側 */
+/* 日期標籤＋箭頭同行排列 */
 #calendar .fc-date-scroller .date-left-col {
   position: relative;
 }
 #calendar .fc-date-scroller .nav-arrows {
-  position: absolute;
-  right: -40px;
-  top: 30%;
-  transform: translateY(-50%);
-  margin-bottom: 0;
-  z-index: 10;
+  position: static;
+  transform: none;
+  margin: 0 0 0 auto;
 }
 #calendar .fc-date-scroller .date-label {
-  padding-right: 72px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-right: 0;
 }
 #calendar .fc-date-scroller .date-strip::-webkit-scrollbar {
   display: none;
@@ -511,7 +510,7 @@ body {
   pointer-events: none;
 }
 #calendar .fc-date-scroller .date-strip::before {
-  content: "";
+  content: none;
   position: absolute;
   left: 12px;
   right: 12px;
@@ -554,11 +553,11 @@ body {
 #calendar .fc-date-scroller .date-item:hover {
   transform: translateY(calc(var(--arc-offset, 0) - 2px))
     scale(var(--arc-scale, 1));
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(103, 80, 164, 0.08);
 }
 #calendar .fc-date-scroller .date-item:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.25);
 }
 #calendar .fc-date-scroller .date-item-weekday {
   font-size: 13px;
@@ -582,8 +581,6 @@ body {
   border-radius: 16px;
   justify-content: flex-start;
   gap: 8px;
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
   transform: translateY(-3px) !important;
   opacity: 1 !important;
   margin-bottom: 8px;
@@ -595,20 +592,20 @@ body {
   line-height: 1;
 }
 #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.14em;
   line-height: 1;
 }
 #calendar .fc-date-scroller .date-item.is-today {
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: #6750A4;
 }
 
 .fc-button {
-  background-color: rgba(75, 104, 114, 0.12) !important;
-  border: 1px solid rgba(75, 104, 114, 0.28) !important;
-  color: var(--kikyo-primary) !important;
+  background-color: rgba(103, 80, 164, 0.08) !important;
+  border: 1px solid rgba(103, 80, 164, 0.2) !important;
+  color: #6750A4 !important;
   height: 30px;
   width: 30px;
   border-radius: var(--border-radius-small) !important;
@@ -621,11 +618,11 @@ body {
   margin-left: 6px !important;
 }
 .fc-button:hover {
-  background-color: rgba(75, 104, 114, 0.2) !important;
+  background-color: rgba(103, 80, 164, 0.16) !important;
   transform: translateY(-1px);
 }
 .fc-button:focus {
-  box-shadow: 0 0 0 2px rgba(75, 104, 114, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2) !important;
 }
 
 /* ==================== 6) Header / Resource Cards ==================== */
@@ -1258,11 +1255,11 @@ body {
   }
   #calendar .fc-date-scroller {
     margin: 8px 10px 12px;
-    padding: 12px 12px 14px;
+    padding: 14px 16px 14px;
   }
   #calendar .fc-date-scroller .date-header-month,
   #calendar .fc-date-scroller .date-header-day {
-    font-size: 22px;
+    font-size: 24px;
   }
   #calendar .fc-date-scroller .resource-toggle-btn {
     padding: 8px 12px;
@@ -2410,16 +2407,16 @@ body {
 }
 
 .report-trigger-btn {
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--date-card-text);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: #FFFFFF;
+  color: #6750A4;
+  border: 1px solid #CAC4D0;
   padding: 6px 14px;
   border-radius: 999px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -2427,7 +2424,8 @@ body {
     transform 0.2s ease;
 }
 .report-trigger-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: #EADDFF;
+  border-color: #6750A4;
   transform: translateY(-1px);
 }
 .report-controls {
