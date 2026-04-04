@@ -17,11 +17,10 @@
 */
 
 :root {
-  /* ✅ 字型統一 */
+  /* ✅ 字型分層 */
   --font-sans: "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  --font-display:
-    "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  --font-mono: "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", monospace;
+  --font-display: "Inter", "Noto Sans JP", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-mono: "JetBrains Mono", "Noto Sans JP", monospace;
 
   /* 品牌主色系 */
   --kikyo-primary: #4b6872;
@@ -159,7 +158,7 @@
 
   /* 日視圖時間軸 */
   --per-resource-time-axis-width: 90px;
-  --per-resource-time-item-offset: -6px;
+  --per-resource-time-item-offset: -9px;
 }
 
 /* color-mix 支援 */
@@ -218,13 +217,14 @@ body {
   overflow: visible;
   border: 1px solid var(--calendar-border);
   position: relative;
+  touch-action: manipulation;
 }
 
 /* [樣式] 右上角背景裝飾圖 (呆.png)：可調整 top/right 控制位置，opacity 控制透明度 */
 #calendar::after {
   content: "";
   position: absolute;
-  top: 12px;
+  top: 6px;
   right: 50px;
   width: 150px;
   height: 150px;
@@ -366,6 +366,7 @@ body {
   flex: 0 0 auto;
   min-width: 56px;
   padding-left: 4px;
+  position: relative;
 }
 #calendar .fc-date-scroller .date-label {
   display: flex;
@@ -376,6 +377,8 @@ body {
   letter-spacing: 0.06em;
   flex: 0 0 auto;
   padding: 0;
+  width: 100%;
+  padding-right: 0;
 }
 #calendar .fc-date-scroller .date-toggle,
 #calendar .fc-date-scroller .mobile-resource-toggle {
@@ -395,14 +398,13 @@ body {
   bottom: auto;
   top: auto;
   transform: none;
-  margin: 10px 0 0 0;
+  margin: 0 0 0 0;
   z-index: auto;
   align-self: stretch;
 }
 #calendar .fc-date-scroller .mobile-resource-toggle {
-  display: none; /* 手機版才顯示 */
+  display: none; /* 桌面版隱藏，手機版才顯示 */
 }
-
 #calendar .fc-date-scroller .date-toggle-btn,
 #calendar .fc-date-scroller .resource-toggle-btn {
   border: none;
@@ -430,36 +432,10 @@ body {
   box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
 }
 
-#calendar .fc-date-scroller #open-report-btn {
-  border: 1px solid #CAC4D0;
-  background: #FFFFFF;
-  color: #6750A4;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
-}
-#calendar .fc-date-scroller #open-report-btn:hover {
-  background: #EADDFF;
-  border-color: #6750A4;
-  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
-}
-
-#calendar .fc-date-scroller .date-header-month,
-#calendar .fc-date-scroller .date-header-day {
+#calendar .fc-date-scroller .date-header-month {
   font-family: var(--font-display);
   font-size: clamp(26px, 2.2vw, 30px);
   font-weight: 600;
-}
-#calendar .fc-date-scroller .date-header-month {
-  letter-spacing: 0.2em;
-}
-#calendar .fc-date-scroller .date-header-day {
-  line-height: 1;
 }
 
 #calendar .fc-date-scroller .date-strip {
@@ -484,19 +460,10 @@ body {
 }
 
 /* 日期標籤＋箭頭同行排列 */
-#calendar .fc-date-scroller .date-left-col {
-  position: relative;
-}
 #calendar .fc-date-scroller .nav-arrows {
   position: static;
   transform: none;
   margin: 0 0 0 auto;
-}
-#calendar .fc-date-scroller .date-label {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding-right: 0;
 }
 #calendar .fc-date-scroller .date-strip::-webkit-scrollbar {
   display: none;
@@ -637,9 +604,6 @@ body {
   background: transparent !important;
   border: none !important;
 }
-#calendar .fc-timegrid .fc-col-header-cell {
-  padding: 0 7px 12px !important;
-}
 #calendar .fc-col-header-cell .fc-scrollgrid-sync-inner {
   height: 100%;
 }
@@ -777,6 +741,7 @@ body {
 /* ==================== 8) Timegrid + Gridlines (時間軸樣式) ==================== */
 #calendar .fc-timegrid-slot {
   height: 2.7em !important; /* 控制每一格 15 分鐘的高度 */
+  border-bottom: none !important;
 }
 #calendar .fc-timegrid-slot-lane {
   background-color: transparent !important;
@@ -896,8 +861,11 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-align: left;
   padding: 0 6px;
+}
+.evt-col-svc,
+.evt-col-name {
+  text-align: left;
 }
 .evt-col-svc {
   text-align: left;
@@ -977,12 +945,13 @@ body {
 }
 .evt-col-phone {
   color: rgba(255, 255, 255, 0.88);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   font-size: 18px;
   opacity: 0.9;
   text-align: center;
+  padding: 0 6px;
 }
 
 /* Blocked time styles */
@@ -1257,8 +1226,7 @@ body {
     margin: 8px 10px 12px;
     padding: 14px 16px 14px;
   }
-  #calendar .fc-date-scroller .date-header-month,
-  #calendar .fc-date-scroller .date-header-day {
+  #calendar .fc-date-scroller .date-header-month {
     font-size: 24px;
   }
   #calendar .fc-date-scroller .resource-toggle-btn {
@@ -1267,7 +1235,8 @@ body {
   }
   #calendar .fc-date-scroller .date-strip {
     gap: 8px;
-    min-height: 66px;
+    min-height: 90px;
+    padding-top: 8px;
   }
   #calendar .fc-date-scroller .date-item {
     width: 58px;
@@ -1364,11 +1333,15 @@ body {
     display: none !important;
   }
 
-  /* [手機版] 設計師表頭對齊：靠左對齊解決偏右問題 */
+  /* [手機版] 設計師表頭對齊 */
   #calendar .resource-cushion {
-    justify-content: flex-start;
-    padding-left: 4px !important;
+    justify-content: center;
     padding-right: 0 !important;
+  }
+  #calendar .resource-name {
+    font-size: 26px;
+    font-weight: 900;
+    color: #6750A4;
   }
 
   #calendar .fc-resourceTimeGridWeek-view .closed-overlay.leave-overlay {
@@ -1446,6 +1419,49 @@ body {
   }
   #calendar .fc-col-header-cell-cushion {
     padding: 12px 12px !important;
+  }
+}
+
+/* 手機直立：日期滾動列換行到第二行 */
+@media (max-width: 480px) and (orientation: portrait) {
+  #calendar .fc-date-scroller .date-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #calendar .fc-date-scroller .date-left-col {
+    width: 100%;
+  }
+  #calendar .fc-date-scroller .date-strip {
+    width: 100%;
+    min-height: 72px;
+    gap: 2px;
+    justify-content: center;
+    padding-top: 6px;
+  }
+  #calendar .fc-date-scroller .date-item {
+    min-width: 44px;
+    width: 44px;
+    padding: 4px 0;
+    gap: 2px;
+  }
+  #calendar .fc-date-scroller .date-item-weekday {
+    font-size: 11px;
+  }
+  #calendar .fc-date-scroller .date-item-day {
+    font-size: calc(28px * var(--arc-font-scale, 1));
+  }
+  #calendar .fc-date-scroller .date-item.is-active {
+    width: 48px;
+    height: 60px;
+    padding: 4px 0 6px;
+    gap: 3px;
+    border-radius: 12px;
+  }
+  #calendar .fc-date-scroller .date-item.is-active .date-item-day {
+    font-size: 24px;
+  }
+  #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
+    font-size: 11px;
   }
 }
 
@@ -1571,8 +1587,9 @@ body {
   margin: 2% auto;
   padding: 24px;
   border: none;
-  width: 95%;
+  width: auto !important;
   max-width: 920px;
+  min-width: 350px !important;
   border-radius: var(--md3-radius-xl);
   max-height: 92vh;
   overflow-y: auto;
@@ -1721,14 +1738,9 @@ body {
 }
 .modal-layout-grid {
   display: grid;
-  grid-template-columns: 300px 1fr !important;
+  grid-template-columns: minmax(260px, 300px) 1fr !important;
   gap: 20px;
-  align-items: stretch;
-}
-@media (max-width: 600px) {
-  .modal-layout-grid {
-    grid-template-columns: 1fr !important;
-  }
+  align-items: start;
 }
 
 .modal-col {
@@ -1992,7 +2004,8 @@ body {
 /* [MD3] 底部操作列 */
 .modal-actions {
   margin-top: 8px;
-  display: flex;
+  display: flex !important;
+  align-items: stretch;
   gap: 12px;
   padding: 0;
   background: transparent;
@@ -2042,9 +2055,6 @@ body {
   z-index: 4;
   pointer-events: none;
 }
-#calendar .fc-timegrid-slot {
-  border-bottom: none !important;
-}
 #calendar .fc-timegrid-event-harness {
   right: 2% !important;
   padding-top: var(--event-card-vertical-gap);
@@ -2067,7 +2077,7 @@ body {
   background: transparent !important;
 }
 #calendar .fc-resourceTimeGridDay-view .fc-col-header-cell {
-  padding: 0 12px !important;
+  padding: 0 12px 7px !important;
   background: transparent !important;
 }
 #calendar
@@ -2188,7 +2198,7 @@ body {
   position: absolute;
   top: 10px;
   bottom: 10px;
-  left: 10px;
+  left: 4px;
   width: calc(var(--per-resource-time-axis-width) - 20px);
   pointer-events: none;
   z-index: 3;
@@ -2199,7 +2209,7 @@ body {
   right: 0;
   transform: translateY(calc(-50% + var(--per-resource-time-item-offset)));
   text-align: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
   padding: 6px 6px;
@@ -2228,6 +2238,11 @@ body {
   #calendar .fc-resourceTimeGridDay-view .per-resource-time-axis {
     left: 8px;
     width: calc(var(--per-resource-time-axis-width) - 16px);
+  }
+  #calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion {
+    justify-content: center;
+    padding-left: 0 !important;
+    padding-right: 152px !important;
   }
   #calendar .fc-resourceTimeGridDay-view .per-resource-time-item {
     padding: 5px 4px;
@@ -2274,14 +2289,9 @@ body {
   z-index: 1000 !important;
   border-radius: 18px;
 }
-#calendar .fc-resourceTimeGridDay-view .per-resource-time-axis {
-  z-index: 3;
-}
+/* per-resource-time-axis z-index 已包含在上方原始定義 */
 
 /* ==================== 11) Month View ==================== */
-#calendar {
-  touch-action: manipulation;
-}
 .fc-multiMonthMonth-view .fc-multimonth-month {
   padding: 8px;
 }
@@ -2411,6 +2421,8 @@ body {
   color: #6750A4;
   border: 1px solid #CAC4D0;
   padding: 6px 14px;
+  min-width: 56px;
+  text-align: center;
   border-radius: 999px;
   cursor: pointer;
   font-size: 13px;
@@ -2833,14 +2845,14 @@ body {
   white-space: nowrap;
   color: var(--md3-primary);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   min-width: 52px;
   text-align: right;
   display: inline-flex;
   justify-content: flex-end;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 /* [MD3] 店販/助理欄位：透明融入卡片，僅底線 */
@@ -2877,8 +2889,6 @@ body {
   min-width: 140px;
   max-width: 140px;
   height: 36px;
-  padding: 6px 0;
-  box-sizing: border-box;
 }
 /* [MD3] 燙髮下拉 */
 #settlement-col #perm_select {
@@ -2963,13 +2973,7 @@ body {
   min-width: fit-content;
 }
 
-/* [MD3] Layout Grid */
-.modal-layout-grid {
-  display: grid;
-  grid-template-columns: minmax(260px, 300px) 1fr !important;
-  gap: 20px;
-  align-items: start;
-}
+/* [MD3] Layout Grid — 已合併至上方原始定義 */
 #appointmentModal .modal-col {
   height: 100%;
 }
@@ -2981,11 +2985,6 @@ body {
   grid-template-columns: 1fr !important;
 }
 
-.modal-content {
-  width: auto !important;
-  max-width: 920px;
-  min-width: 350px !important;
-}
 /* [MD3] iPad mini 以下改單欄 */
 @media (max-width: 820px) {
   .modal-layout-grid {
@@ -3129,7 +3128,7 @@ body {
   font-size: 12px;
 }
 
-/* [MD3] 統一 settlement 欄位（排除自訂金額、店販、助理） */
+/* [MD3] settlement 欄位共用字型與間距（填充樣式由上方 !important 區塊控制） */
 .settlement-col input[type="text"]:not(.custom-price-input):not(#retail_item),
 .settlement-col input[type="tel"]:not(.custom-price-input),
 .settlement-col input[type="number"]:not(.custom-price-input):not(#retail_price),
@@ -3137,11 +3136,6 @@ body {
 .settlement-col textarea {
   font-size: 14px;
   padding: 8px 12px;
-  border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0;
-  border: none;
-  border-bottom: 1px solid var(--md3-outline-variant);
-  background: var(--md3-surface-container-highest);
-  color: var(--md3-on-surface);
   box-sizing: border-box;
 }
 
@@ -3231,20 +3225,7 @@ body {
   display: none;
 }
 
-/* [MD3] D. 膠囊金額/品名最終覆蓋 */
-.settlement-section .price-val {
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  color: var(--md3-primary) !important;
-  letter-spacing: 0.01em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-.settlement-section .price-label {
-  font-size: 13px;
-  color: var(--md3-on-surface);
-  line-height: 1.2;
-}
+/* [MD3] D. 膠囊金額/品名 — 已合併至上方原始定義 */
 
 /* [MD3] 總金額放大強調 */
 .total-label-text {
@@ -3260,12 +3241,7 @@ body {
   margin-top: 4px;
 }
 
-/* [MD3] E. 底部操作列 — 按鈕等寬並排 */
-.modal-actions {
-  display: flex !important;
-  align-items: stretch;
-  gap: 12px;
-}
+/* [MD3] E. 底部操作列 — 按鈕等寬並排（已合併至上方） */
 #deleteBtn {
   flex: 1 1 0 !important;
   min-height: 48px;
@@ -3534,8 +3510,14 @@ body {
   transition: opacity 0.3s, transform 0.3s;
 }
 /* MD3 模式：顯示月亮（可切到暗色） */
-.theme-toggle-btn .toggle-icon-dark { opacity: 1; transform: rotate(0); }
-.theme-toggle-btn .toggle-icon-light { opacity: 0; transform: rotate(-90deg); }
+.theme-toggle-btn .toggle-icon-dark {
+  opacity: 1;
+  transform: rotate(0);
+}
+.theme-toggle-btn .toggle-icon-light {
+  opacity: 0;
+  transform: rotate(-90deg);
+}
 /* Glass 模式：顯示太陽（可切到亮色） */
 body.theme-glass .theme-toggle-btn {
   background: rgba(255,255,255,0.1);
@@ -3543,8 +3525,14 @@ body.theme-glass .theme-toggle-btn {
   border: 1px solid rgba(255,255,255,0.15);
   backdrop-filter: blur(8px);
 }
-body.theme-glass .theme-toggle-btn .toggle-icon-dark { opacity: 0; transform: rotate(90deg); }
-body.theme-glass .theme-toggle-btn .toggle-icon-light { opacity: 1; transform: rotate(0); }
+body.theme-glass .theme-toggle-btn .toggle-icon-dark {
+  opacity: 0;
+  transform: rotate(90deg);
+}
+body.theme-glass .theme-toggle-btn .toggle-icon-light {
+  opacity: 1;
+  transform: rotate(0);
+}
 
 /* --- 變數覆蓋 --- */
 body.theme-glass {
