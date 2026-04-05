@@ -1282,6 +1282,8 @@
             }
             updateHiddenStartTime(startDate);
             minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            // 重置動畫確保每次打開都播放
+            if (appointmentContent) { appointmentContent.style.animation = 'none'; appointmentContent.offsetHeight; appointmentContent.style.animation = ''; }
             appointmentModal.style.display = 'block';
           }
 
@@ -1383,6 +1385,8 @@
             }
             updateHiddenStartTime(startDate);
             minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            // 重置動畫確保每次打開都播放
+            if (appointmentContent) { appointmentContent.style.animation = 'none'; appointmentContent.offsetHeight; appointmentContent.style.animation = ''; }
             appointmentModal.style.display = 'block';
           }
 

@@ -1608,6 +1608,15 @@ body {
   }
 }
 
+/* 減少動態效果時，跳過動畫但保持內容可見 */
+@media (prefers-reduced-motion: reduce) {
+  .modal-content {
+    animation: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* [MD3] 關閉鈕：圓形 state layer */
 .close-button {
   position: absolute;
@@ -3054,7 +3063,9 @@ body {
   border-bottom: 1px solid transparent !important;
   border-radius: 0 !important;
   outline: none;
+  -webkit-appearance: textfield;
   -moz-appearance: textfield;
+  appearance: textfield;
   transition: border-color 0.2s;
 }
 .custom-price-input:focus {
