@@ -251,17 +251,6 @@ body {
   border-bottom: none !important;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ==================== 4) Toolbar ==================== */
 #calendar .fc-header-toolbar {
   display: none; /* 預設隱藏，改用 Date Scroller */
@@ -1104,7 +1093,6 @@ body {
   max-width: none;
   margin: 16px 0 24px;
   padding: 0;
-  animation: fadeInUp 0.8s ease-out;
 }
 .notes-container {
   background: var(--notes-bg);
@@ -1597,27 +1585,6 @@ body {
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
     0 8px 24px rgba(0, 0, 0, 0.14);
-  /* 預設就是可見狀態，動畫只是裝飾（避免 Safari 新分頁動畫未觸發導致全黑） */
-  opacity: 1;
-  transform: translateY(0);
-  animation: modalSlideIn 0.4s var(--md3-easing);
-}
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 減少動態效果時，跳過動畫 */
-@media (prefers-reduced-motion: reduce) {
-  .modal-content {
-    animation: none;
-  }
 }
 
 /* [MD3] 關閉鈕：圓形 state layer */
@@ -2420,12 +2387,6 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: #fff;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .report-trigger-btn {
@@ -2808,7 +2769,7 @@ body {
   transform: none;
   box-shadow: none;
 }
-/* [CRM功能] 建議項目發亮特效：霓虹燈呼吸閃爍動畫 */
+/* [CRM功能] 建議項目：靜態橘色高亮 */
 .settlement-section .price-item--suggested {
   border-color: #ffab40 !important; /* 亮橘金色 */
   box-shadow:
@@ -2816,30 +2777,8 @@ body {
     0 0 30px rgba(255, 171, 64, 0.3),
     inset 0 0 10px rgba(255, 171, 64, 0.4) !important;
   background: rgba(255, 171, 64, 0.15) !important;
-  animation: suggested-neon-pulse 1.5s ease-in-out infinite;
   transform: scale(1.02);
   z-index: 1;
-}
-@keyframes suggested-neon-pulse {
-  0% {
-    box-shadow:
-      0 0 10px rgba(255, 171, 64, 0.4),
-      0 0 20px rgba(255, 171, 64, 0.2);
-    border-color: rgba(255, 171, 64, 0.6) !important;
-  }
-  50% {
-    box-shadow:
-      0 0 25px rgba(255, 171, 64, 0.8),
-      0 0 50px rgba(255, 171, 64, 0.4),
-      inset 0 0 15px rgba(255, 171, 64, 0.5);
-    border-color: rgba(255, 171, 64, 1) !important;
-  }
-  100% {
-    box-shadow:
-      0 0 10px rgba(255, 171, 64, 0.4),
-      0 0 20px rgba(255, 171, 64, 0.2);
-    border-color: rgba(255, 171, 64, 0.6) !important;
-  }
 }
 /* [MD3] 膠囊品名 */
 .settlement-section .price-label {
@@ -3411,12 +3350,7 @@ body {
   font-weight: 600;
   line-height: 1.5;
   margin-top: 6px;
-  animation: warn-pulse 1.5s ease-in-out infinite;
   box-shadow: 0 0 12px rgba(211, 47, 47, 0.5);
-}
-@keyframes warn-pulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(211, 47, 47, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(211, 47, 47, 0.8); }
 }
 
 /* 警示名單 Modal */
@@ -3591,12 +3525,6 @@ body.theme-glass .modal::before {
     radial-gradient(ellipse 500px 400px at 80% 30%, rgba(168, 85, 247, 0.3), transparent 70%),
     radial-gradient(ellipse 400px 350px at 50% 80%, rgba(16, 185, 129, 0.25), transparent 70%),
     radial-gradient(ellipse 300px 300px at 70% 70%, rgba(251, 146, 60, 0.15), transparent 70%);
-  animation: glassBlobs 12s ease-in-out infinite alternate;
-}
-@keyframes glassBlobs {
-  0%   { transform: scale(1)    translate(0, 0); }
-  50%  { transform: scale(1.05) translate(-20px, 10px); }
-  100% { transform: scale(1)    translate(10px, -15px); }
 }
 body.theme-glass .modal-content {
   background: rgba(15, 15, 25, 0.55);

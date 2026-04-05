@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=56">
+  <link rel="stylesheet" href="styles.css?v=57">
 
 </head>
 
@@ -1282,8 +1282,6 @@
             }
             updateHiddenStartTime(startDate);
             minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
-            // 重置動畫確保每次打開都播放
-            if (appointmentContent) { appointmentContent.style.animation = 'none'; appointmentContent.offsetHeight; appointmentContent.style.animation = ''; }
             appointmentModal.style.display = 'block';
           }
 
@@ -1385,8 +1383,6 @@
             }
             updateHiddenStartTime(startDate);
             minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
-            // 重置動畫確保每次打開都播放
-            if (appointmentContent) { appointmentContent.style.animation = 'none'; appointmentContent.offsetHeight; appointmentContent.style.animation = ''; }
             appointmentModal.style.display = 'block';
           }
 
