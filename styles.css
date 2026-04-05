@@ -1597,23 +1597,26 @@ body {
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
     0 8px 24px rgba(0, 0, 0, 0.14);
-  transform: translateY(-16px);
-  opacity: 0;
-  animation: modalSlideIn 0.4s var(--md3-easing) forwards;
+  /* 預設就是可見狀態，動畫只是裝飾（避免 Safari 新分頁動畫未觸發導致全黑） */
+  opacity: 1;
+  transform: translateY(0);
+  animation: modalSlideIn 0.4s var(--md3-easing);
 }
 @keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* 減少動態效果時，跳過動畫但保持內容可見 */
+/* 減少動態效果時，跳過動畫 */
 @media (prefers-reduced-motion: reduce) {
   .modal-content {
     animation: none;
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
