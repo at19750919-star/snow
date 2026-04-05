@@ -1808,7 +1808,7 @@ body {
 
 /* [MD3] 右欄結帳區：Surface Container */
 .settlement-section {
-  background: var(--md3-surface-container-low);
+  background: #d4c9f7;
   border: none;
   border-radius: var(--md3-radius-lg);
   padding: 14px;
@@ -2772,9 +2772,9 @@ body {
   height: 42px;
   min-height: 42px;
   border-radius: var(--md3-radius-sm);
-  background: var(--md3-surface-container);
+  background: #f3eeff;
   font-size: 13px;
-  border: 1px solid var(--md3-outline-variant);
+  border: 1px solid #c4b5e3;
   transition: all 0.2s var(--md3-easing);
   cursor: pointer;
   overflow: hidden;
@@ -2800,8 +2800,8 @@ body {
 }
 /* [MD3] 價目膠囊 hover：state layer */
 .settlement-section .price-item:hover {
-  background: var(--md3-surface-container-high);
-  border-color: var(--md3-outline);
+  background: #e0d4f7;
+  border-color: #a992db;
   transform: none;
   box-shadow: none;
 }
@@ -3156,7 +3156,7 @@ body {
 
 /* [MD3] 子卡片分組 */
 .settlement-sub-card {
-  background: var(--md3-surface-container);
+  background: #e8e0fc;
   border: none;
   border-radius: var(--md3-radius-md);
   padding: 12px 14px;
@@ -3194,7 +3194,7 @@ body {
 }
 /* [MD3] 底部店販+助理 */
 .settlement-sub-card--footer {
-  background: var(--md3-surface-container-low);
+  background: #ddd2f5;
   border: none;
 }
 
