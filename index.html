@@ -53,7 +53,7 @@
                 <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px -2;">
 
                 <div class="form-row">
-                  <label for="minute_select">時間 (分)</label>
+                  <label for="minute_select">時間</label>
                   <select id="minute_select" name="minute_select"></select>
                 </div>
 
@@ -1273,10 +1273,13 @@
 
             const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const baseMin = startDate.getMinutes();
+            const baseHour = startDate.getHours();
             for (let i = 0; i < 3; i++) {
-              const currentMinute = baseMin + (i * 5);
+              const totalMin = baseMin + (i * 5);
+              const displayHour = (baseHour + Math.floor(totalMin / 60)) % 24;
+              const displayMin = totalMin % 60;
               const opt = document.createElement('option');
-              opt.value = currentMinute; opt.textContent = String(currentMinute).padStart(2, '0');
+              opt.value = totalMin; opt.textContent = String(displayHour).padStart(2, '0') + ':' + String(displayMin).padStart(2, '0');
               if (i === 0) opt.selected = true;
               minuteSelect.appendChild(opt);
             }
@@ -1375,9 +1378,10 @@
             const startDate = event.start;
             const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const startMinute = startDate.getMinutes();
+            const startHour = startDate.getHours();
             for (let m = 0; m < 60; m += 5) {
               const opt = document.createElement('option');
-              opt.value = m; opt.textContent = String(m).padStart(2, '0');
+              opt.value = m; opt.textContent = String(startHour).padStart(2, '0') + ':' + String(m).padStart(2, '0');
               if (m === startMinute) opt.selected = true;
               minuteSelect.appendChild(opt);
             }
