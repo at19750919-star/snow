@@ -1765,6 +1765,22 @@ body {
   text-align: left;
   font-weight: 500;
 }
+.time-select-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.time-select-group select {
+  flex: 0 0 auto;
+  width: auto;
+}
+.time-sep {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-muted);
+  line-height: 1;
+}
 /* [MD3] 左欄輸入框 */
 .blue-card-section input,
 .blue-card-section select {

@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=57">
+  <link rel="stylesheet" href="styles.css?v=58">
 
 </head>
 
@@ -53,8 +53,12 @@
                 <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px -2;">
 
                 <div class="form-row">
-                  <label for="minute_select">時間</label>
-                  <select id="minute_select" name="minute_select"></select>
+                  <label for="hour_select">時間</label>
+                  <div class="time-select-group">
+                    <select id="hour_select" name="hour_select"></select>
+                    <span class="time-sep">:</span>
+                    <select id="minute_select" name="minute_select"></select>
+                  </div>
                 </div>
 
                 <!-- [功能] 預約時長選擇：15分至3小時 -->
@@ -1271,20 +1275,12 @@
 
             updateCalculatedTotal();
 
-            const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const baseMin = startDate.getMinutes();
             const baseHour = startDate.getHours();
-            for (let i = 0; i < 3; i++) {
-              const totalMin = baseMin + (i * 5);
-              const displayHour = (baseHour + Math.floor(totalMin / 60)) % 24;
-              const displayMin = totalMin % 60;
-              const opt = document.createElement('option');
-              opt.value = totalMin; opt.textContent = String(displayHour).padStart(2, '0') + ':' + String(displayMin).padStart(2, '0');
-              if (i === 0) opt.selected = true;
-              minuteSelect.appendChild(opt);
-            }
+            populateTimeSelects(baseHour, baseMin);
             updateHiddenStartTime(startDate);
-            minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            document.getElementById('hour_select').onchange = function () { updateHiddenStartTime(startDate); };
+            document.getElementById('minute_select').onchange = function () { updateHiddenStartTime(startDate); };
             appointmentModal.style.display = 'block';
           }
 
@@ -1376,17 +1372,12 @@
 
             submitBtn.textContent = '儲存';
             const startDate = event.start;
-            const minuteSelect = document.getElementById('minute_select'); minuteSelect.innerHTML = '';
             const startMinute = startDate.getMinutes();
             const startHour = startDate.getHours();
-            for (let m = 0; m < 60; m += 5) {
-              const opt = document.createElement('option');
-              opt.value = m; opt.textContent = String(startHour).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-              if (m === startMinute) opt.selected = true;
-              minuteSelect.appendChild(opt);
-            }
+            populateTimeSelects(startHour, startMinute);
             updateHiddenStartTime(startDate);
-            minuteSelect.onchange = function () { updateHiddenStartTime(startDate) };
+            document.getElementById('hour_select').onchange = function () { updateHiddenStartTime(startDate); };
+            document.getElementById('minute_select').onchange = function () { updateHiddenStartTime(startDate); };
             appointmentModal.style.display = 'block';
           }
 
@@ -1409,10 +1400,32 @@
             return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
           }
 
+          function populateTimeSelects(hour, minute) {
+            const hourSel = document.getElementById('hour_select');
+            const minSel = document.getElementById('minute_select');
+            hourSel.innerHTML = '';
+            minSel.innerHTML = '';
+            for (let h = 12; h <= 20; h++) {
+              const opt = document.createElement('option');
+              opt.value = h;
+              opt.textContent = String(h).padStart(2, '0');
+              if (h === hour) opt.selected = true;
+              hourSel.appendChild(opt);
+            }
+            for (let m = 0; m < 60; m += 5) {
+              const opt = document.createElement('option');
+              opt.value = m;
+              opt.textContent = String(m).padStart(2, '0');
+              if (m === minute) opt.selected = true;
+              minSel.appendChild(opt);
+            }
+          }
+
           function updateHiddenStartTime(baseDate) {
+            const selectedHour = parseInt(document.getElementById('hour_select').value, 10);
             const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
             const dt = new Date(baseDate.getTime());
-            dt.setMinutes(selectedMinute, 0, 0);
+            dt.setHours(selectedHour, selectedMinute, 0, 0);
             document.getElementById('start_time').value = toTaipeiIsoForApi(dt);
           }
 
