@@ -1769,11 +1769,15 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex: 1;
 }
-.time-select-group select {
-  flex: 0 0 auto;
-  width: auto;
+.blue-card-section .time-select-group select {
+  flex: 0 0 70px;
+  width: 70px;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px 8px;
+  box-sizing: border-box;
+  font-size: 15px;
 }
 .time-sep {
   font-weight: 700;
@@ -2662,7 +2666,6 @@ body {
   border-bottom: 1px solid var(--md3-outline) !important;
   border-radius: var(--md3-radius-sm) var(--md3-radius-sm) 0 0 !important;
 }
-#minute_select,
 #duration_select,
 #customer_name,
 #customer_phone,
