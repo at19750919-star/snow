@@ -64,7 +64,7 @@
                 <!-- [功能] 預約時長選擇：15分至3小時 -->
                 <div class="form-row">
                   <label for="duration_select">預約時長</label>
-                  <input type="number" id="duration_select" name="duration_select" min="1" step="1" value="15" placeholder="輸入分鐘數"> 分鐘
+                  <input type="number" id="duration_select" name="duration_select" min="1" step="5" value="15" placeholder="輸入分鐘數"> 分鐘
                 </div>
 
                 <div id="customer-fields-left">
@@ -1353,12 +1353,6 @@
             if (event.start && event.end) {
               const dur = Math.round((event.end - event.start) / 60000);
               const durSelect = document.getElementById('duration_select');
-              // 檢查是否有匹配的選項，若無則暫時加入
-              if (!Array.from(durSelect.options).some(opt => opt.value == dur)) {
-                const opt = document.createElement('option');
-                opt.value = dur; opt.textContent = dur + ' 分鐘';
-                durSelect.appendChild(opt);
-              }
               durSelect.value = dur;
             }
 
