@@ -67,6 +67,19 @@
                   <input type="number" id="duration_select" name="duration_select" min="5" step="5" value="15" placeholder="輸入分鐘數"> 分鐘
                 </div>
 
+                <div class="form-row">
+                  <label for="operator_select">輸入人</label>
+                  <select id="operator_select" name="operator_select" required>
+                    <option value="">-- 請選擇 --</option>
+                    <option value="店長">店長</option>
+                    <option value="雅婷">雅婷</option>
+                    <option value="小白">小白</option>
+                    <option value="陳翎">陳翎</option>
+                    <option value="洪苡芳">洪苡芳</option>
+                    <option value="曹家溱">曹家溱</option>
+                  </select>
+                </div>
+
                 <div id="customer-fields-left">
                   <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px 0;">
 
@@ -388,7 +401,7 @@
         let appointmentModal, leaveModal, reportModal, lookupModal, warnlistModal;
         let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton, warnlistCloseButton;
         let form, leaveForm, notesTextarea, phoneEl, customerFields;
-        let submitBtn, deleteBtn, eventIdInput, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let submitBtn, deleteBtn, eventIdInput, assistantSelect, operatorSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
         let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
         let lastVisitInfo;
         let lastVisitInfoRight;
@@ -450,7 +463,7 @@
         });
         /* 助理 select：有值時文字變深色，空值時保持淺色 */
         document.addEventListener('change', function (e) {
-          if (e.target.id === 'assistant_select') {
+          if (e.target.id === 'assistant_select' || e.target.id === 'operator_select') {
             e.target.style.color = e.target.value ? '' : '';
             e.target.classList.toggle('has-value', !!e.target.value);
           }
@@ -477,6 +490,7 @@
           deleteBtn = document.getElementById('deleteBtn');
           eventIdInput = document.getElementById('event_id');
           assistantSelect = document.getElementById('assistant_select');
+          operatorSelect = document.getElementById('operator_select');
           amountInput = document.getElementById('amount_input');
           unsetPaidBtn = document.getElementById('unsetPaidBtn');
           lastVisitInfo = document.getElementById('last-visit-info');
@@ -950,6 +964,7 @@
               const payload = {
                 action: isEditing ? 'edit' : 'create',
                 id: fd.get('event_id') || undefined,
+                operator_name: fd.get('operator_select') || '',
                 employee_id: fd.get('employee_id'),
                 start: fd.get('start_time'),
                 appointment_type: fd.get('appointment_type'),
@@ -978,6 +993,7 @@
                 const durationMin = parseInt(payload.duration, 10) || 15;
                 const startDt = new Date(payload.start);
                 const endDt = new Date(startDt.getTime() + durationMin * 60000);
+                const previousEnteredBy = isEditing ? (calendar.getEventById(eventId)?.extendedProps?.entered_by || '') : '';
                 if (isEditing) {
                   const oldEv = calendar.getEventById(eventId);
                   if (oldEv) oldEv.remove();
@@ -998,7 +1014,8 @@
                     cut_price: payload.cut_price,
                     total_amount: payload.total_amount,
                     assistant_id: payload.assistant_id,
-                    dye_color: payload.dye_color
+                    dye_color: payload.dye_color,
+                    entered_by: previousEnteredBy || payload.operator_name
                   }
                 });
 
@@ -1232,6 +1249,7 @@
             if (!resource) return;
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             if (assistantSelect) assistantSelect.classList.remove('has-value');
+            if (operatorSelect) operatorSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
             document.getElementById('customer-fields-left').style.display = 'block';
             document.getElementById('settlement-col').style.display = 'none';
@@ -1245,6 +1263,7 @@
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
             assistantSelect.value = ''; amountInput.value = '';
+            if (operatorSelect) operatorSelect.value = '';
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
             document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
@@ -1296,6 +1315,10 @@
             document.getElementById('notes').value = ep.notes || '';
             assistantSelect.value = ep.assistant_id || '';
             assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
+            if (operatorSelect) {
+              operatorSelect.value = '';
+              operatorSelect.classList.remove('has-value');
+            }
             amountInput.value = ep.amount !== undefined ? ep.amount : '';
 
             // [新增] 回填染髮顏色
