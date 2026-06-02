@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=58">
+  <link rel="stylesheet" href="styles.css?v=60">
 
 </head>
 
@@ -114,7 +114,7 @@
               </div>
             </div>
 
-            <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目與助理 -->
+            <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目 -->
             <div class="modal-col settlement-col" id="settlement-col">
               <div class="modal-section settlement-section">
                 <!-- ====== A. 子卡片：剪髮項目 ====== -->
@@ -200,7 +200,7 @@
                   </div>
                 </div>
 
-                <!-- ====== A. 子卡片：店販 + 助理 + 總額 ====== -->
+                <!-- ====== A. 子卡片：店販 + 總額 ====== -->
                 <div class="settlement-sub-card settlement-sub-card--footer">
                   <div class="settlement-row settlement-row--title shop-sales-row">
                     <label for="retail_item">店販</label>
@@ -211,16 +211,6 @@
                   </div>
 
                   <div class="assistant-total-row">
-                    <div class="assistant-field">
-                      <label for="assistant_select">助理</label>
-                      <select id="assistant_select" name="assistant_select">
-                        <option value="">-- 無助理 --</option>
-                        <option value="陳翎">陳翎</option>
-                        <option value="洪苡芳">洪苡芳</option>
-                        <option value="曹家溱">曹家溱</option>
-                      </select>
-                    </div>
-
                     <div class="total-display">
                       <span class="total-label-text">總金額</span>
                       <span id="display-total">$0</span>
@@ -401,7 +391,7 @@
         let appointmentModal, leaveModal, reportModal, lookupModal, warnlistModal;
         let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton, warnlistCloseButton;
         let form, leaveForm, notesTextarea, phoneEl, customerFields;
-        let submitBtn, deleteBtn, eventIdInput, assistantSelect, operatorSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let submitBtn, deleteBtn, eventIdInput, operatorSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
         let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
         let lastVisitInfo;
         let lastVisitInfoRight;
@@ -461,9 +451,9 @@
         document.addEventListener('focusout', function (e) {
           if (e.target.classList.contains('custom-price-input') && !e.target.value) e.target.value = '0';
         });
-        /* 助理 select：有值時文字變深色，空值時保持淺色 */
+        /* 輸入人 select：有值時文字變深色，空值時保持淺色 */
         document.addEventListener('change', function (e) {
-          if (e.target.id === 'assistant_select' || e.target.id === 'operator_select') {
+          if (e.target.id === 'operator_select') {
             e.target.style.color = e.target.value ? '' : '';
             e.target.classList.toggle('has-value', !!e.target.value);
           }
@@ -489,7 +479,6 @@
           submitBtn = document.getElementById('submit-btn');
           deleteBtn = document.getElementById('deleteBtn');
           eventIdInput = document.getElementById('event_id');
-          assistantSelect = document.getElementById('assistant_select');
           operatorSelect = document.getElementById('operator_select');
           amountInput = document.getElementById('amount_input');
           unsetPaidBtn = document.getElementById('unsetPaidBtn');
@@ -719,19 +708,21 @@
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
                 const currencyFormatter = new Intl.NumberFormat('zh-TW');
 
-                // [修改] 結帳後顯示: 助理名字最後一字 + 金額
+                // [修改] 結帳後顯示: 金額
                 let amountLabel = '';
                 if (isPaid) {
-                  const asst = ep.assistant_id || '';
-                  const asstLast = safeTrim(asst).slice(-1);
-                  amountLabel = (asstLast ? asstLast + ' ' : '') + '$' + currencyFormatter.format(paidAmount);
+                  amountLabel = '$' + currencyFormatter.format(paidAmount);
                 }
 
                 const badgeText = svcList.join('');
                 const badgeKey = (svcList && svcList[0]) ? svcList[0] : '預';
                 const badgeCls = svcClassMap[badgeKey] || 'svc-default';
                 const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
-                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span></div>` };
+                const operator = safeTrim(ep.entered_by);
+                // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
+                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹' };
+                const operatorShort = operatorShortMap[operator] || operator;  // 沒對到就退回原字，避免漏顯示
+                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>` };
               },
               eventClassNames: function (arg) {
                 const r = arg.event.getResources();
@@ -971,7 +962,6 @@
                 customer_name: fd.get('customer_name') || '',
                 customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
                 service_id: fd.get('service_id') || '',
-                assistant_id: fd.get('assistant_select') || '',
                 cut_price: (document.querySelector('input[name="cut_price"]:checked')?.value) || '',
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
@@ -1013,7 +1003,6 @@
                     amount: payload.amount,
                     cut_price: payload.cut_price,
                     total_amount: payload.total_amount,
-                    assistant_id: payload.assistant_id,
                     dye_color: payload.dye_color,
                     entered_by: previousEnteredBy || payload.operator_name
                   }
@@ -1059,7 +1048,7 @@
                 else { content.style.maxWidth = '480px'; }
 
                 if (isBlocked) {
-                  assistantSelect.value = ''; amountInput.value = '';
+                  amountInput.value = '';
                   document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                   document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
                   document.getElementById('material-cost-wrap').style.display = 'none';
@@ -1132,7 +1121,7 @@
                 document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
                 document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                 document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
-                assistantSelect.value = ''; amountInput.value = '';
+                amountInput.value = '';
                 document.getElementById('cut_custom').value = '0';
                 document.getElementById('perm_custom').value = '0';
                 document.getElementById('other_custom').value = '0';
@@ -1248,7 +1237,6 @@
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
-            if (assistantSelect) assistantSelect.classList.remove('has-value');
             if (operatorSelect) operatorSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
             document.getElementById('customer-fields-left').style.display = 'block';
@@ -1262,7 +1250,7 @@
             const isXiaobai = String(resource.id) === '3';
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
 
-            assistantSelect.value = ''; amountInput.value = '';
+            amountInput.value = '';
             if (operatorSelect) operatorSelect.value = '';
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
@@ -1313,8 +1301,6 @@
             const serviceSelect = document.getElementById('service_id');
             if (serviceSelect) serviceSelect.value = ep.service_id || '';
             document.getElementById('notes').value = ep.notes || '';
-            assistantSelect.value = ep.assistant_id || '';
-            assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
             if (operatorSelect) {
               operatorSelect.value = '';
               operatorSelect.classList.remove('has-value');

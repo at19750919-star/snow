@@ -836,7 +836,8 @@ body {
 /* 內容排版 */
 #calendar .fc-timegrid-event .fc-event-title.evt-line {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  /* 第 4 欄為輸入人(entered_by)：max-content，無內容時寬度為 0、不留空格 */
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) max-content;
   align-items: center;
   gap: 0;
   width: 100%;
@@ -844,7 +845,8 @@ body {
 }
 .evt-col-svc,
 .evt-col-name,
-.evt-col-phone {
+.evt-col-phone,
+.evt-col-operator {
   position: relative;
   min-width: 0;
   overflow: hidden;
@@ -940,7 +942,22 @@ body {
   font-size: 18px;
   opacity: 0.9;
   text-align: center;
-  padding: 0 6px;
+  /* 收窄左右內距，讓 11 碼手機號完整顯示不被省略號切掉 */
+  padding: 0 2px;
+}
+
+/* 輸入人(entered_by)：固定在卡片最後一格，字較小、色較淡，與電話做層次 */
+.evt-col-operator {
+  color: rgba(255, 255, 255, 0.62);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.1;
+  text-align: center;
+  /* 內容已縮為短代號（單字或 snow），收窄寬度與內距，把版面讓給客戶名/電話 */
+  /* 42px 容得下最寬的 snow；單字代號因欄位為 max-content 仍只佔約 19px */
+  max-width: 42px;
+  padding: 0 3px;
 }
 
 /* Blocked time styles */
@@ -952,7 +969,8 @@ body {
   gap: 0;
 }
 #calendar .fc-event.blocked-time .evt-col-name,
-#calendar .fc-event.blocked-time .evt-col-phone {
+#calendar .fc-event.blocked-time .evt-col-phone,
+#calendar .fc-event.blocked-time .evt-col-operator {
   display: none;
 }
 #calendar .fc-event.blocked-time .evt-svc {
@@ -981,7 +999,8 @@ body {
   text-overflow: ellipsis;
 }
 .evt-col-name::before,
-.evt-col-phone::before {
+.evt-col-phone::before,
+.evt-col-operator::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1365,7 +1384,7 @@ body {
     padding: 0 4px;
   }
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
-    grid-template-columns: auto 1fr 1fr;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) max-content;
     padding-left: 0 !important;
     padding-right: 2px !important;
   }
@@ -1537,7 +1556,7 @@ body {
     padding-right: 2px;
   }
   #calendar .fc-timegrid-event .fc-event-title.evt-line {
-    grid-template-columns: auto 1fr 1fr;
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) max-content;
   }
 }
 
