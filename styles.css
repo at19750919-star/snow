@@ -290,7 +290,7 @@ body {
   display: none;
 }
 #calendar .fc-date-scroller {
-  margin: 8px 10px 12px;
+  margin: 8px 10px 6px;
   padding: 16px 20px 14px;
   background: var(--date-card-bg);
   border-radius: 22px;
@@ -609,7 +609,8 @@ body {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 6px 10px !important;
+  min-height: 50px;
+  padding: 7px 10px !important;
   line-height: 1.1 !important;
   font-family: var(--font-display);
   color: var(--kikyo-dark);
@@ -698,8 +699,9 @@ body {
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   color: rgba(112, 76, 76, 0.92) !important;
-  height: 34px;
-  padding: 0 12px !important;
+  height: 40px;
+  width: 40px;
+  padding: 0 !important;
   font-size: 17px;
   font-weight: 500;
   border-radius: var(--border-radius-small) !important;
@@ -708,9 +710,16 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-width: 72px;
+  gap: 0;
+  min-width: 40px;
   box-shadow: 0 10px 22px rgba(24, 34, 46, 0.18);
+}
+#calendar .header-button-group .hdr-ico {
+  width: 30px;
+  height: 30px;
+  display: block;
+  pointer-events: none;
+  overflow: visible;
 }
 #calendar .header-button-group .leave-icon-button:hover,
 #calendar .header-button-group .fully-booked-button:hover {
@@ -2095,7 +2104,7 @@ body {
   background: transparent !important;
 }
 #calendar .fc-resourceTimeGridDay-view .fc-col-header-cell {
-  padding: 0 12px 7px !important;
+  padding: 0 12px 2px !important;
   background: transparent !important;
 }
 #calendar

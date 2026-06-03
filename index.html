@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=60">
+  <link rel="stylesheet" href="styles.css?v=64">
 
 </head>
 
@@ -26,6 +26,71 @@
     <span class="toggle-icon-dark material-symbols-outlined">dark_mode</span>
     <span class="toggle-icon-light material-symbols-outlined">light_mode</span>
   </button>
+
+  <!-- 表頭按鈕圖示 sprite（排休=椰子樹、可約=行事曆綠勾、已約滿=行事曆紅禁止） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gFrond" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5b9ad9"/><stop offset="1" stop-color="#3f72c0"/>
+      </linearGradient>
+      <linearGradient id="gTrunk" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#274a73"/><stop offset="1" stop-color="#16304f"/>
+      </linearGradient>
+      <linearGradient id="gCalN" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8f9aa6"/><stop offset="1" stop-color="#6f7c8a"/>
+      </linearGradient>
+      <linearGradient id="gChk" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#46c178"/><stop offset="1" stop-color="#2f9d59"/>
+      </linearGradient>
+      <linearGradient id="gBan" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e0584d"/><stop offset="1" stop-color="#c63a30"/>
+      </linearGradient>
+      <filter id="icoSoft" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="1.1" stdDeviation="0.9" flood-color="#23314a" flood-opacity="0.26"/>
+      </filter>
+      <filter id="icoSoftW" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#7a1e16" flood-opacity="0.45"/>
+      </filter>
+    </defs>
+    <!-- 排休：椰子樹 + 沙灘 -->
+    <symbol id="ic-palm" viewBox="0 0 24 24">
+      <g filter="url(#icoSoft)">
+        <path d="M2.5 19.4C7 17.9 17 17.9 21.5 19.4 17 20.6 7 20.6 2.5 19.4Z" fill="#e7cfa6"/>
+        <path d="M3 21.4q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0" fill="none" stroke="#7fb3df" stroke-width="1" stroke-linecap="round"/>
+        <path d="M12.6 18.6C11.7 14 11.6 11.4 13 8.6" fill="none" stroke="url(#gTrunk)" stroke-width="2.1" stroke-linecap="round"/>
+        <g fill="url(#gFrond)">
+          <path d="M13 8.6C9.4 6.7 5.8 7.2 3.6 9.7 6.8 8.7 10 9.2 13 8.6Z"/>
+          <path d="M13 8.6C9.9 6 8.1 4 8 2.3 9.9 4 11.6 5.9 13 8.6Z"/>
+          <path d="M13 8.6C13.7 5 15.2 2.9 17 2.1 15.7 4.3 14.3 6.2 13 8.6Z"/>
+          <path d="M13 8.6C16.6 6.4 20.3 6.7 22.4 9.2 19.1 8.3 15.9 8.7 13 8.6Z"/>
+          <path d="M13 8.6C16.4 8 19.6 8.9 21.4 11.4 18 10.4 15.2 9.6 13 8.6Z"/>
+        </g>
+        <circle cx="12" cy="9.3" r="0.85" fill="url(#gTrunk)"/>
+        <circle cx="13.9" cy="9.1" r="0.85" fill="url(#gTrunk)"/>
+      </g>
+    </symbol>
+    <!-- 可約：行事曆 + 綠色打勾 -->
+    <symbol id="ic-calchk" viewBox="0 0 24 24">
+      <g filter="url(#icoSoft)">
+        <rect x="3.5" y="5" width="14" height="14.5" rx="2.4" fill="#fff" stroke="url(#gCalN)" stroke-width="1.7"/>
+        <path d="M3.5 9h14" stroke="url(#gCalN)" stroke-width="1.6"/>
+        <path d="M7.2 3.2v3.2M13.8 3.2v3.2" stroke="url(#gCalN)" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="15.7" cy="15.4" r="5.1" fill="#fff" stroke="url(#gChk)" stroke-width="2.1"/>
+        <path d="M13.3 15.5l1.7 1.7 3-3.2" fill="none" stroke="url(#gChk)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </symbol>
+    <!-- 已約滿：行事曆 + 紅色禁止（紅底用白線） -->
+    <symbol id="ic-calban-on" viewBox="0 0 24 24">
+      <g filter="url(#icoSoftW)">
+        <rect x="3.5" y="5" width="14" height="14.5" rx="2.4" fill="none" stroke="#fff" stroke-width="1.7" opacity=".95"/>
+        <path d="M3.5 9h14" stroke="#fff" stroke-width="1.5" opacity=".9"/>
+        <path d="M7.2 3.2v3.2M13.8 3.2v3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".95"/>
+        <circle cx="15.7" cy="15.4" r="5.1" fill="rgba(216,75,64,1)" stroke="#fff" stroke-width="2.1"/>
+        <path d="M12.4 12.1l6.6 6.6" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
+      </g>
+    </symbol>
+  </svg>
+
   <div id="calendar-container">
     <div id="calendar"></div>
     <div id="appointmentModal" class="modal appointment-modal">
@@ -638,7 +703,8 @@
                 const leaveIconButton = document.createElement('button');
                 leaveIconButton.type = 'button';
                 leaveIconButton.className = 'leave-icon-button';
-                leaveIconButton.textContent = '排休';
+                leaveIconButton.innerHTML = iconSvg('ic-palm');
+                leaveIconButton.title = '排休';
                 btnGroup.appendChild(leaveIconButton);
                 leaveIconButton.addEventListener('click', function (event) {
                   event.preventDefault(); event.stopPropagation();
@@ -651,7 +717,8 @@
                 fbBtn.type = 'button';
                 fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
                 fbBtn.dataset.resourceId = String(arg.resource.id);
-                fbBtn.textContent = isFB ? '已約滿' : '約滿';
+                fbBtn.innerHTML = iconSvg(isFB ? 'ic-calban-on' : 'ic-calchk');
+                fbBtn.title = isFB ? '已約滿' : '約滿';
                 btnGroup.appendChild(fbBtn);
                 hostEl.appendChild(btnGroup);
 
@@ -667,12 +734,12 @@
                         const i = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId && l.reason === '已約滿');
                         if (i !== -1) employeeLeaveData.splice(i, 1);
                       }
-                      fbBtn.classList.remove('fb-active'); fbBtn.textContent = '約滿';
+                      fbBtn.classList.remove('fb-active'); fbBtn.innerHTML = iconSvg('ic-calchk'); fbBtn.title = '約滿';
                     } else {
                       const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveLeave', resourceId, date, reason: '已約滿' }) });
                       const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
                       if (Array.isArray(employeeLeaveData)) employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
-                      fbBtn.classList.add('fb-active'); fbBtn.textContent = '已約滿';
+                      fbBtn.classList.add('fb-active'); fbBtn.innerHTML = iconSvg('ic-calban-on'); fbBtn.title = '已約滿';
                     }
                     invalidateCache('getLeave');
                     paintEmployeeLeave(); syncFullyBookedButtons();
@@ -743,6 +810,10 @@
             } catch (error) { console.error('讀取雲端資料失敗:', error); }
           }
 
+          function iconSvg(id) {
+            return '<svg viewBox="0 0 24 24" class="hdr-ico"><use href="#' + id + '"></use></svg>';
+          }
+
           function syncFullyBookedButtons() {
             try {
               if (!calendar || !employeeLeaveData || calendar.view?.type !== 'resourceTimeGridDay') return;
@@ -750,7 +821,7 @@
               document.querySelectorAll('#calendar .fully-booked-button[data-resource-id]').forEach(btn => {
                 const rid = btn.dataset.resourceId;
                 const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
-                if (isFB) { btn.classList.add('fb-active'); btn.textContent = '已約滿'; } else { btn.classList.remove('fb-active'); btn.textContent = '約滿'; }
+                if (isFB) { btn.classList.add('fb-active'); btn.innerHTML = iconSvg('ic-calban-on'); btn.title = '已約滿'; } else { btn.classList.remove('fb-active'); btn.innerHTML = iconSvg('ic-calchk'); btn.title = '約滿'; }
               });
             } catch (e) { }
           }
