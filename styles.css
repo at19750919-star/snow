@@ -3391,6 +3391,716 @@ body {
   box-shadow: 0 0 12px rgba(211, 47, 47, 0.5);
 }
 
+/* 主預約彈窗：重新整理成單一設計系統 */
+#appointmentModal {
+  --appt-primary: #4b6872;
+  --appt-primary-hover: #3f5962;
+  --appt-primary-soft: rgba(75, 104, 114, 0.12);
+  --appt-panel: #f8f5f1;
+  --appt-panel-strong: #eef2f4;
+  --appt-border: #ded6cd;
+  --appt-input: #ffffff;
+  --appt-text: #1f2b31;
+  --appt-muted: #6d7478;
+  --appt-danger: #b3261e;
+}
+
+#appointmentModal .appointment-dialog {
+  width: min(96vw, 1120px) !important;
+  max-width: 1120px !important;
+  min-width: 0 !important;
+  margin: 1vh auto;
+  padding: 0;
+  overflow: hidden;
+  background: #fbfaf8;
+  color: var(--appt-text);
+  border: 1px solid rgba(222, 214, 205, 0.9);
+  border-radius: 24px;
+}
+
+#appointmentModal.is-create .appointment-dialog,
+#appointmentModal.is-blocked .appointment-dialog {
+  width: min(94vw, 680px) !important;
+  max-width: 680px !important;
+}
+
+#appointmentModal.is-edit .appointment-dialog {
+  width: min(76vw, 900px) !important;
+  max-width: 900px !important;
+  max-height: calc(100vh - 12px);
+  margin: 6px auto;
+}
+
+#appointmentModal .appointment-form {
+  display: flex;
+  flex-direction: column;
+  max-height: 96vh;
+}
+
+#appointmentModal.is-edit .appointment-form {
+  max-height: calc(100vh - 12px);
+}
+
+#appointmentModal .appointment-close-button {
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  background: rgba(75, 104, 114, 0.08);
+  color: var(--appt-primary);
+}
+
+#appointmentModal .appointment-close-button:hover,
+#appointmentModal .appointment-close-button:focus {
+  background: rgba(75, 104, 114, 0.16);
+  color: var(--appt-text);
+}
+
+#appointmentModal .appointment-grid {
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr) !important;
+  gap: 18px;
+  align-items: stretch;
+  padding: 14px 58px 12px 16px;
+  overflow-y: auto;
+}
+
+#appointmentModal.is-create .appointment-grid,
+#appointmentModal.is-blocked .appointment-grid {
+  grid-template-columns: 1fr !important;
+}
+
+#appointmentModal.is-edit .appointment-grid {
+  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) !important;
+  gap: 10px;
+  padding: 10px 40px 6px 10px;
+}
+
+#appointmentModal .appointment-panel {
+  min-width: 0;
+  height: auto;
+  border: 1px solid var(--appt-border);
+  border-radius: 16px;
+  background: var(--appt-panel);
+  box-shadow: none;
+}
+
+#appointmentModal .appointment-panel--details {
+  padding: 16px;
+}
+
+#appointmentModal.is-edit .appointment-panel--details,
+#appointmentModal.is-edit .settlement-section {
+  padding: 9px;
+}
+
+#appointmentModal .appointment-panel--settlement {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+#appointmentModal #settlement-col[style*="display: none"] {
+  display: none !important;
+}
+
+#appointmentModal .settlement-section {
+  max-height: none;
+  padding: 16px;
+  background: var(--appt-panel-strong);
+  border: 1px solid var(--appt-border);
+  border-radius: 16px;
+  overflow: visible;
+}
+
+#appointmentModal .appointment-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+#appointmentModal.is-edit .appointment-panel-header {
+  margin-bottom: 6px;
+}
+
+#appointmentModal .appointment-panel-header h4 {
+  margin: 0;
+  color: var(--appt-text);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+#appointmentModal.is-edit .appointment-panel-header h4 {
+  font-size: 16px;
+}
+
+#appointmentModal .appointment-type-block {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--appt-border);
+}
+
+#appointmentModal.is-edit .appointment-type-block {
+  gap: 4px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+#appointmentModal .field-label,
+#appointmentModal .appointment-field > label,
+#appointmentModal .settlement-row > label,
+#appointmentModal .settlement-section label[for] {
+  margin: 0;
+  color: var(--appt-muted) !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+#appointmentModal .type-toggle-container {
+  height: 42px;
+  border: 1px solid var(--appt-border);
+  background: var(--appt-input);
+}
+
+#appointmentModal.is-edit .type-toggle-container {
+  height: 34px;
+}
+
+#appointmentModal .toggle-label {
+  color: var(--appt-muted) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+#appointmentModal .sliding-glider {
+  background: var(--appt-primary) !important;
+}
+
+#appointmentModal #appointment-blocked:checked ~ .sliding-glider {
+  background: #6d7478 !important;
+}
+
+#appointmentModal #appointment-normal:checked ~ .toggle-label.left,
+#appointmentModal #appointment-blocked:checked ~ .toggle-label.right {
+  color: #ffffff !important;
+}
+
+#appointmentModal .appointment-fields,
+#appointmentModal .customer-fields {
+  display: grid;
+  gap: 10px;
+}
+
+#appointmentModal.is-edit .appointment-fields,
+#appointmentModal.is-edit .customer-fields {
+  gap: 6px;
+}
+
+#appointmentModal.is-create .appointment-fields,
+#appointmentModal.is-blocked .appointment-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#appointmentModal .customer-fields {
+  padding-top: 0;
+}
+
+#appointmentModal.is-create .customer-fields {
+  grid-column: 1 / -1;
+  display: contents !important;
+}
+
+#appointmentModal.is-create .appointment-field:has(#hour_select) {
+  order: 1;
+}
+
+#appointmentModal.is-create .appointment-field:has(#duration_select) {
+  order: 2;
+}
+
+#appointmentModal.is-create .appointment-field:has(#customer_name) {
+  order: 3;
+}
+
+#appointmentModal.is-create .appointment-field:has(#customer_phone) {
+  order: 4;
+}
+
+#appointmentModal.is-create .appointment-field:has(#service_id) {
+  order: 5;
+}
+
+#appointmentModal.is-create .appointment-field:has(#operator_select) {
+  order: 6;
+  grid-column: auto;
+}
+
+#appointmentModal .appointment-field {
+  display: grid !important;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+#appointmentModal.is-edit .appointment-field {
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 8px;
+}
+
+#appointmentModal .appointment-field--notes {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  padding-top: 12px;
+  border-top: 1px solid var(--appt-border);
+}
+
+#appointmentModal.is-edit .appointment-field--notes {
+  padding-top: 6px;
+}
+
+#appointmentModal.is-create .appointment-field--wide,
+#appointmentModal.is-create .appointment-field--notes,
+#appointmentModal.is-blocked .appointment-field--wide,
+#appointmentModal.is-blocked .appointment-field--notes {
+  grid-column: 1 / -1;
+}
+
+#appointmentModal.is-create .appointment-field--notes {
+  order: 7;
+}
+
+#appointmentModal .appointment-field--notes label {
+  width: auto;
+}
+
+#appointmentModal .time-select-group,
+#appointmentModal .duration-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#appointmentModal .duration-input-wrap span,
+#appointmentModal .time-sep {
+  color: var(--appt-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#appointmentModal input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not(.custom-price-input),
+#appointmentModal select,
+#appointmentModal textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--appt-border) !important;
+  border-radius: 10px !important;
+  background: var(--appt-input) !important;
+  color: var(--appt-text) !important;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.18s var(--md3-easing), box-shadow 0.18s var(--md3-easing);
+}
+
+#appointmentModal.is-edit input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not(.custom-price-input),
+#appointmentModal.is-edit select,
+#appointmentModal.is-edit textarea {
+  min-height: 32px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+#appointmentModal input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not(.custom-price-input):focus,
+#appointmentModal select:focus,
+#appointmentModal textarea:focus {
+  outline: none;
+  border-color: var(--appt-primary) !important;
+  box-shadow: 0 0 0 3px rgba(75, 104, 114, 0.16);
+}
+
+#appointmentModal textarea {
+  min-height: 66px;
+  resize: vertical;
+}
+
+#appointmentModal.is-edit textarea {
+  min-height: 48px;
+}
+
+#appointmentModal #hour_select,
+#appointmentModal #minute_select {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+#appointmentModal #duration_select {
+  flex: 1 1 auto;
+}
+
+#appointmentModal .settlement-sub-card {
+  margin: 0 0 12px;
+  padding: 14px;
+  border: 1px solid rgba(222, 214, 205, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+#appointmentModal.is-edit .settlement-sub-card {
+  margin-bottom: 6px;
+  padding: 7px;
+}
+
+#appointmentModal .settlement-sub-card:last-child {
+  margin-bottom: 0;
+}
+
+#appointmentModal .settlement-sub-card .sub-card-title {
+  display: flex;
+  align-items: center;
+  margin: 0 0 10px !important;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--appt-border);
+  color: var(--appt-text) !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0;
+}
+
+#appointmentModal.is-edit .settlement-sub-card .sub-card-title {
+  margin-bottom: 5px !important;
+  padding-bottom: 4px;
+  font-size: 12px !important;
+}
+
+#appointmentModal .settlement-sub-card .sub-card-title::before {
+  width: 7px;
+  height: 7px;
+  background: var(--appt-primary);
+}
+
+#appointmentModal .price-group {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(118px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+#appointmentModal.is-edit .price-group {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+#appointmentModal .settlement-section .price-item {
+  min-width: 0;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--appt-border);
+  border-radius: 10px;
+  background: var(--appt-input);
+  color: var(--appt-text);
+}
+
+#appointmentModal.is-edit .settlement-section .price-item {
+  height: 31px;
+  min-height: 31px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+#appointmentModal.is-edit .settlement-section .price-label {
+  font-size: 11px;
+}
+
+#appointmentModal.is-edit .settlement-section .price-val {
+  min-width: 38px;
+  font-size: 12px;
+}
+
+#appointmentModal .settlement-section .price-item:hover {
+  background: var(--appt-primary-soft);
+  border-color: rgba(75, 104, 114, 0.34);
+}
+
+#appointmentModal .settlement-section .price-item:has(input[type="radio"]:checked),
+#appointmentModal .settlement-section .price-item:has(input[type="checkbox"]:checked) {
+  background: var(--appt-primary) !important;
+  border-color: var(--appt-primary) !important;
+  box-shadow: none;
+}
+
+#appointmentModal .settlement-section .price-label,
+#appointmentModal .settlement-section .price-val {
+  color: inherit;
+  letter-spacing: 0;
+}
+
+#appointmentModal .settlement-section .price-val {
+  color: var(--appt-primary);
+  font-weight: 800;
+}
+
+#appointmentModal .settlement-section .price-item:has(input[type="radio"]:checked) .price-label,
+#appointmentModal .settlement-section .price-item:has(input[type="checkbox"]:checked) .price-label,
+#appointmentModal .settlement-section .price-item:has(input[type="radio"]:checked) .price-val,
+#appointmentModal .settlement-section .price-item:has(input[type="checkbox"]:checked) .price-val {
+  color: #ffffff !important;
+}
+
+#appointmentModal .custom-val-wrap {
+  align-items: center;
+}
+
+#appointmentModal .custom-price-input {
+  width: 44px !important;
+  min-width: 36px;
+  max-width: 54px;
+  color: inherit !important;
+  border-bottom-color: currentcolor !important;
+}
+
+#appointmentModal.is-edit .custom-price-input {
+  width: 34px !important;
+  min-width: 28px;
+  max-width: 40px;
+}
+
+#appointmentModal .appointment-inline-field,
+#appointmentModal .settlement-section .settlement-row {
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+#appointmentModal.is-edit .appointment-inline-field,
+#appointmentModal.is-edit .settlement-section .settlement-row {
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+#appointmentModal .shop-sales-row {
+  display: grid !important;
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+#appointmentModal .shop-sales-inputs {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 100px;
+  gap: 8px;
+  width: 100%;
+}
+
+#appointmentModal.is-edit .shop-sales-inputs {
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 6px;
+}
+
+#appointmentModal .shop-sales-inputs #retail_item,
+#appointmentModal .shop-sales-inputs #retail_price {
+  width: 100%;
+}
+
+#appointmentModal .appointment-total-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+}
+
+#appointmentModal .appointment-total-summary #display-total {
+  color: var(--appt-primary);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: none;
+  letter-spacing: 0;
+}
+
+#appointmentModal.is-edit .appointment-total-summary #display-total {
+  font-size: 24px;
+}
+
+#appointmentModal .appointment-net-total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: auto;
+}
+
+#appointmentModal .net-amount-text {
+  margin: 0;
+  color: var(--appt-muted);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#appointmentModal.is-edit .net-amount-text {
+  font-size: 11px;
+}
+
+#appointmentModal .unset-paid-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--appt-border);
+  border-radius: var(--md3-radius-pill);
+  background: transparent;
+  color: var(--appt-primary);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#appointmentModal .last-visit-info {
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--appt-border);
+}
+
+#appointmentModal .appointment-actions-anchor {
+  padding: 0 58px 14px 16px;
+}
+
+#appointmentModal.is-edit .appointment-actions-anchor {
+  padding: 0 40px 6px 10px;
+}
+
+#appointmentModal .appointment-actions {
+  display: flex !important;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--appt-border);
+}
+
+#appointmentModal.is-edit .appointment-actions {
+  gap: 8px;
+  padding-top: 5px;
+}
+
+#appointmentModal #submit-btn,
+#appointmentModal #deleteBtn {
+  flex: 1 1 0;
+  min-height: 48px;
+  padding: 0 18px !important;
+  border-radius: var(--md3-radius-pill) !important;
+  font-size: 15px !important;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+#appointmentModal.is-edit #submit-btn,
+#appointmentModal.is-edit #deleteBtn {
+  min-height: 36px;
+  font-size: 13px !important;
+}
+
+#appointmentModal #submit-btn {
+  border: none;
+  background: var(--appt-primary);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+#appointmentModal #submit-btn:hover {
+  background: var(--appt-primary-hover);
+  box-shadow: none;
+}
+
+#appointmentModal #deleteBtn {
+  border: 1px solid rgba(179, 38, 30, 0.36) !important;
+  background: rgba(179, 38, 30, 0.06) !important;
+  color: var(--appt-danger) !important;
+}
+
+#appointmentModal #deleteBtn:hover {
+  background: rgba(179, 38, 30, 0.12) !important;
+  border-color: var(--appt-danger) !important;
+}
+
+body.theme-glass #appointmentModal {
+  --appt-primary: #7db7c4;
+  --appt-primary-hover: #9bcbd4;
+  --appt-primary-soft: rgba(125, 183, 196, 0.16);
+  --appt-panel: rgba(255, 255, 255, 0.04);
+  --appt-panel-strong: rgba(255, 255, 255, 0.035);
+  --appt-border: rgba(255, 255, 255, 0.12);
+  --appt-input: rgba(255, 255, 255, 0.07);
+  --appt-text: #f3f3f3;
+  --appt-muted: rgba(255, 255, 255, 0.64);
+}
+
+body.theme-glass #appointmentModal .appointment-dialog {
+  background: rgba(15, 15, 25, 0.72);
+}
+
+body.theme-glass #appointmentModal .settlement-sub-card,
+body.theme-glass #appointmentModal .last-visit-info {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 900px) {
+  #appointmentModal .appointment-dialog {
+    width: min(96vw, 640px) !important;
+  }
+
+  #appointmentModal .appointment-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #appointmentModal:not(.is-edit) .price-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  #appointmentModal .appointment-dialog {
+    width: 98vw !important;
+    max-height: 96vh;
+    border-radius: 18px;
+  }
+
+  #appointmentModal .appointment-grid {
+    padding: 14px 54px 14px 14px;
+  }
+
+  #appointmentModal .appointment-panel--details,
+  #appointmentModal .settlement-section {
+    padding: 14px;
+  }
+
+  #appointmentModal .appointment-field,
+  #appointmentModal .appointment-inline-field,
+  #appointmentModal .settlement-section .settlement-row,
+  #appointmentModal .shop-sales-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  #appointmentModal .shop-sales-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  #appointmentModal .appointment-actions-anchor {
+    padding: 0 54px 14px 14px;
+  }
+}
+
 /* 警示名單 Modal */
 .warnlist-add-row {
   display: flex;

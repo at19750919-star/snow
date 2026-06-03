@@ -26,22 +26,21 @@
     <span class="toggle-icon-dark material-symbols-outlined">dark_mode</span>
     <span class="toggle-icon-light material-symbols-outlined">light_mode</span>
   </button>
-  <div id="calendar-container">h
+  <div id="calendar-container">
     <div id="calendar"></div>
-    <div id="appointmentModal" class="modal">
-      <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <form id="appointmentForm">
+    <div id="appointmentModal" class="modal appointment-modal">
+      <div class="modal-content appointment-dialog">
+        <button type="button" class="close-button appointment-close-button" aria-label="關閉預約彈窗">&times;</button>
+        <form id="appointmentForm" class="appointment-form">
           <input type="hidden" id="event_id" name="event_id">
           <input type="hidden" id="start_time" name="start_time">
           <input type="hidden" id="employee_id" name="employee_id">
           <input type="hidden" id="amount_input" name="amount_input">
 
-          <div class="modal-layout-grid">
-            <!-- [彈窗左欄] 藍色卡片區域：顧客資料與預約時長 -->
-            <div class="modal-col">
-              <div class="modal-section blue-card-section" id="appointment-info-card">
-                <label>預約類型</label>
+          <div class="modal-layout-grid appointment-grid">
+            <section class="modal-section blue-card-section appointment-panel appointment-panel--details" id="appointment-info-card">
+              <div class="appointment-type-block">
+                <label class="field-label">預約類型</label>
                 <div class="type-toggle-container">
                   <input type="radio" id="appointment-normal" name="appointment_type" value="normal" checked>
                   <input type="radio" id="appointment-blocked" name="appointment_type" value="blocked">
@@ -49,10 +48,10 @@
                   <label for="appointment-blocked" class="toggle-label right">不約時段</label>
                   <span class="sliding-glider"></span>
                 </div>
+              </div>
 
-                <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px -2;">
-
-                <div class="form-row">
+              <div class="appointment-fields">
+                <div class="form-row appointment-field appointment-field--time">
                   <label for="hour_select">時間</label>
                   <div class="time-select-group">
                     <select id="hour_select" name="hour_select"></select>
@@ -61,13 +60,15 @@
                   </div>
                 </div>
 
-                <!-- [功能] 預約時長選擇：15分至3小時 -->
-                <div class="form-row">
-                  <label for="duration_select">預約時長</label>
-                  <input type="number" id="duration_select" name="duration_select" min="5" step="5" value="15" placeholder="輸入分鐘數"> 分鐘
+                <div class="form-row appointment-field">
+                  <label for="duration_select">時長</label>
+                  <div class="duration-input-wrap">
+                    <input type="number" id="duration_select" name="duration_select" min="5" step="5" value="15" placeholder="輸入分鐘數">
+                    <span>分鐘</span>
+                  </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row appointment-field appointment-field--wide">
                   <label for="operator_select">輸入人</label>
                   <select id="operator_select" name="operator_select" required>
                     <option value="">-- 請選擇 --</option>
@@ -80,22 +81,20 @@
                   </select>
                 </div>
 
-                <div id="customer-fields-left">
-                  <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px 0;">
-
-                  <div class="form-row">
+                <div id="customer-fields-left" class="customer-fields">
+                  <div class="form-row appointment-field">
                     <label for="customer_name">顧客姓名</label>
                     <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
                   </div>
 
-                  <div class="form-row">
+                  <div class="form-row appointment-field">
                     <label for="customer_phone">電話</label>
                     <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off"
                       placeholder="09xx-xxx-xxx">
                   </div>
 
-                  <div class="form-row">
-                    <label for="service_id">項目 (選填)</label>
+                  <div class="form-row appointment-field">
+                    <label for="service_id">項目</label>
                     <select id="service_id" name="service_id">
                       <option value="">-- 不選 --</option>
                       <option value="剪髮">剪髮</option>
@@ -107,24 +106,30 @@
                   </div>
                 </div>
 
-                <hr style="border:none; border-top:1px solid #CAC4D0; margin:8px 0;">
-
-                <label for="notes">備註</label>
-                <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
+                <div class="form-row appointment-field appointment-field--notes">
+                  <label for="notes">備註</label>
+                  <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
+                </div>
               </div>
-            </div>
+            </section>
 
-            <!-- [彈窗右欄] 結帳綠卡區域：選擇剪髮/染燙項目 -->
-            <div class="modal-col settlement-col" id="settlement-col">
+            <section class="modal-col settlement-col appointment-panel appointment-panel--settlement" id="settlement-col">
               <div class="modal-section settlement-section">
-                <!-- ====== A. 子卡片：剪髮項目 ====== -->
+                <div class="appointment-panel-header">
+                  <div class="total-display appointment-total-summary">
+                    <span class="total-label-text">總金額</span>
+                    <span id="display-total">$0</span>
+                    <div class="appointment-net-total">
+                      <span class="net-amount-text">入帳金額：<span id="display-net">$0</span></span>
+                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="settlement-sub-card">
                   <label class="sub-card-title">剪髮項目</label>
                   <div class="price-group">
-                    <!-- 隱藏的 0 元選項，用於改回未結帳 -->
                     <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
-
-                    <!-- B. 常用項目置頂 -->
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
                           data-cost="0"> 成人剪髮</span> <span class="price-val">$ 450</span></label>
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
@@ -145,7 +150,6 @@
                   </div>
                 </div>
 
-                <!-- ====== A. 子卡片：其他項目 ====== -->
                 <div class="settlement-sub-card">
                   <label class="sub-card-title">其他項目</label>
                   <div class="price-group">
@@ -164,19 +168,17 @@
                   </div>
                 </div>
 
-                <!-- [CRM功能] 染髮顏色紀錄區塊 (僅在 CRM 找到色號時顯示) -->
-                <div id="dye-color-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                  <label for="dye_color_input" style="color:#6750A4;">染髮顏色紀錄</label>
+                <div id="dye-color-wrap" class="settlement-row appointment-inline-field" style="display:none;">
+                  <label for="dye_color_input">染髮顏色紀錄</label>
                   <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
                 </div>
 
-                <div id="material-cost-wrap" class="settlement-row" style="display:none; margin-top:10px;">
-                  <label for="custom_material_cost" style="color:#6750A4;">材料費 (自填)</label>
+                <div id="material-cost-wrap" class="settlement-row appointment-inline-field" style="display:none;">
+                  <label for="custom_material_cost">材料費</label>
                   <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric"
                     placeholder="請輸入材料費...">
                 </div>
 
-                <!-- ====== A. 子卡片：燙髮 ====== -->
                 <div class="settlement-sub-card">
                   <label class="sub-card-title">燙髮</label>
                   <div class="price-group">
@@ -200,7 +202,6 @@
                   </div>
                 </div>
 
-                <!-- ====== A. 子卡片：店販 + 總額 ====== -->
                 <div class="settlement-sub-card settlement-sub-card--footer">
                   <div class="settlement-row settlement-row--title shop-sales-row">
                     <label for="retail_item">店販</label>
@@ -210,25 +211,17 @@
                     </div>
                   </div>
 
-                  <div class="assistant-total-row">
-                    <div class="total-display">
-                      <span class="total-label-text">總金額</span>
-                      <span id="display-total">$0</span>
-                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
-                      <div class="net-amount-text">(入帳金額: <span id="display-net">$0</span>)</div>
-                    </div>
-                  </div>
                 </div>
               </div>
               <div id="last-visit-info-right" class="last-visit-info" hidden>上次消費：-</div>
-            </div>
+            </section>
           </div>
 
-          <div id="appointment-actions-anchor"></div>
-          <div class="modal-actions" style="margin-top: 14px;">
-            <button type="button" id="deleteBtn"
-              style="display:none;">刪除預約</button>
-            <button type="submit" id="submit-btn">儲存</button>
+          <div id="appointment-actions-anchor" class="appointment-actions-anchor">
+            <div class="modal-actions appointment-actions">
+              <button type="button" id="deleteBtn" style="display:none;">刪除預約</button>
+              <button type="submit" id="submit-btn">儲存</button>
+            </div>
           </div>
         </form>
       </div>
@@ -497,12 +490,17 @@
 
           deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
+          function setAppointmentModalMode(mode) {
+            if (!appointmentModal) return;
+            appointmentModal.classList.toggle('is-create', mode === 'create');
+            appointmentModal.classList.toggle('is-edit', mode === 'edit');
+            appointmentModal.classList.toggle('is-blocked', mode === 'blocked');
+          }
+
           function placeAppointmentActions(mode) {
-            if (!appointmentActions || !appointmentInfoCard) return;
-            /* 不論 create/edit，按鈕一律放在左欄藍卡內底部 */
-            if (mode === 'create' && appointmentModal) appointmentModal.classList.add('is-create');
-            else if (appointmentModal) appointmentModal.classList.remove('is-create');
-            appointmentInfoCard.appendChild(appointmentActions);
+            if (!appointmentActions) return;
+            setAppointmentModalMode(mode);
+            if (appointmentActionsAnchor) appointmentActionsAnchor.appendChild(appointmentActions);
           }
 
           async function fetchDailyNote(dStr) {
@@ -1040,12 +1038,10 @@
             document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
               radio.addEventListener('change', function () {
                 const isBlocked = this.value === 'blocked';
-                document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
+                document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'grid';
                 document.getElementById('settlement-col').style.display = (!!eventIdInput.value && !isBlocked) ? 'block' : 'none';
                 document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
-                const content = document.querySelector('.modal-content');
-                if (!isBlocked && eventIdInput.value) { content.style.maxWidth = '960px'; }
-                else { content.style.maxWidth = '480px'; }
+                setAppointmentModalMode(isBlocked ? 'blocked' : (eventIdInput.value ? 'edit' : 'create'));
 
                 if (isBlocked) {
                   amountInput.value = '';
@@ -1239,11 +1235,11 @@
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             if (operatorSelect) operatorSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
-            document.getElementById('customer-fields-left').style.display = 'block';
+            document.getElementById('customer-fields-left').style.display = 'grid';
             document.getElementById('settlement-col').style.display = 'none';
             placeAppointmentActions('create');
-            /* 按鈕已固定在左欄內，不需設定 gridColumn */
-            if (appointmentContent) appointmentContent.style.maxWidth = '450px';
+            /* 按鈕固定在主彈窗底部，由 appointment-actions-anchor 承接 */
+            if (appointmentContent) appointmentContent.style.maxWidth = '';
             document.getElementById('notes').placeholder = '請輸入備註資訊.';
             document.getElementById('employee_id').value = resource.id;
 
@@ -1315,10 +1311,11 @@
 
             const isBlocked = ep.appointment_type === 'blocked';
             document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
-            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'block';
+            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'grid';
             document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
             placeAppointmentActions('edit');
-            if (appointmentContent) appointmentContent.style.maxWidth = isBlocked ? '480px' : '960px';
+            setAppointmentModalMode(isBlocked ? 'blocked' : 'edit');
+            if (appointmentContent) appointmentContent.style.maxWidth = '';
 
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
