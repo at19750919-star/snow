@@ -4903,7 +4903,7 @@ body.theme-glass #appointmentModal .sliding-glider {
   gap: 12px;
   min-height: 52px;
   margin: 0;
-  padding: 8px 12px;
+  padding: 2px 4px;
   border: 1px solid rgba(67, 107, 133, 0.12);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.6);
@@ -5814,8 +5814,8 @@ body:not(.theme-glass) #appointmentModal .total-label-text,
 body:not(.theme-glass) #appointmentModal .net-amount-text{color:rgba(255,255,255,.68) !important;}
 
 /* 底部按鈕：儲存=白底深字 / 刪除=白框危險色 / 改回未結帳(清除)=小型白框膠囊 */
-body:not(.theme-glass) #appointmentModal #submit-btn{background:#fff !important;color:#2b3e44 !important;border:none !important;}
-body:not(.theme-glass) #appointmentModal #submit-btn:hover{background:#f0ece4 !important;}
+body:not(.theme-glass) #appointmentModal #submit-btn{background:#d8f1df !important;color:#2f5f45 !important;border:none !important;}
+body:not(.theme-glass) #appointmentModal #submit-btn:hover{background:#c7e8d1 !important;}
 body:not(.theme-glass) #appointmentModal #deleteBtn{
   background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.34) !important;color:#ffd9d4 !important;}
 body:not(.theme-glass) #appointmentModal #deleteBtn:hover{background:rgba(216,75,64,.92) !important;border-color:transparent !important;color:#fff !important;}
@@ -5886,7 +5886,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-panel--details {
   /* 新增模式頂列上下收緊；左右仍保留原本舒適點擊空間。 */
-  padding: 6px 16px 10px !important;
+  padding: 8px 16px 12px !important;
   overflow: visible !important;
 }
 
@@ -6050,7 +6050,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
   align-items: center !important;
   column-gap: 12px !important;
   /* 頂列（toggle/儲存）與下方欄位之間的垂直間距。 */
-  row-gap: 8px !important;
+  row-gap: 10px !important;
 }
 #appointmentModal.is-create .appointment-type-block {
   order: 1 !important;
@@ -6148,7 +6148,7 @@ body:not(.theme-glass) #appointmentModal .total-label-text{font-size:11px !impor
 
 body:not(.theme-glass) #appointmentModal.is-create .appointment-bottom-bar {
   /* 儲存鈕移到上方後收緊間距、移除分隔線（見 is-create order 重排） */
-  padding: 0 !important;
+  padding: 2px 0 4px !important;
   border-top: 0 !important;
 }
 
