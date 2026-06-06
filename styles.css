@@ -958,6 +958,7 @@ body {
 .evt-svc.svc-default {
   color: #f371ec !important;
   text-shadow: none !important;
+  border-color: #f371ec !important; /* 外框跟著文字一起變粉紫色 */
 }
 
 .evt-col-name {
