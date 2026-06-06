@@ -2823,16 +2823,26 @@ body {
   transform: none;
   box-shadow: none;
 }
-/* [CRM功能] 建議項目：靜態橘色高亮 */
-.settlement-section .price-item--suggested {
-  border-color: #ffab40 !important; /* 亮橘金色 */
+/* [CRM功能] 建議項目（上次項目）：整塊實心橘底高亮，一眼可辨。
+   前綴 body #appointmentModal 提高權重，覆蓋 5845 行 !important 白卡底色（含 glass 主題） */
+.settlement-section .price-item--suggested,
+body #appointmentModal .settlement-section .price-item--suggested,
+body.theme-glass #appointmentModal .settlement-section .price-item--suggested {
+  background: #ff9800 !important; /* 實心亮橘，整個按鈕變色 */
+  border-color: #e67e00 !important; /* 深一階橘邊框 */
+  color: #fff !important;
   box-shadow:
-    0 0 15px rgba(255, 171, 64, 0.6),
-    0 0 30px rgba(255, 171, 64, 0.3),
-    inset 0 0 10px rgba(255, 171, 64, 0.4) !important;
-  background: rgba(255, 171, 64, 0.15) !important;
+    0 0 14px rgba(255, 152, 0, 0.55),
+    0 2px 6px rgba(230, 126, 0, 0.4) !important;
   transform: scale(1.02);
   z-index: 1;
+}
+/* 建議項目內文字轉白以維持對比（覆蓋預設深色/紫色字） */
+#appointmentModal .settlement-section .price-item--suggested .price-label,
+#appointmentModal .settlement-section .price-item--suggested .price-val,
+body.theme-glass #appointmentModal .settlement-section .price-item--suggested .price-label,
+body.theme-glass #appointmentModal .settlement-section .price-item--suggested .price-val {
+  color: #fff !important;
 }
 /* [MD3] 膠囊品名 */
 .settlement-section .price-label {
@@ -4641,8 +4651,8 @@ body.theme-glass #appointmentModal .appointment-dialog {
 }
 
 #appointmentModal.is-edit .appointment-dialog {
-  width: min(88vw, 720px) !important;
-  max-width: 720px !important;
+  width: min(94vw, 1100px) !important;
+  max-width: 1100px !important;
 }
 
 #appointmentModal .appointment-form {
@@ -4670,7 +4680,9 @@ body.theme-glass #appointmentModal .appointment-dialog {
      改 stretch → 左右兩欄等高、底部對齊（三主題共用，glass/md3 也受惠）。
      左欄 .appointment-panel--details 本身是 flex column，會被拉高撐滿。 */
   align-items: stretch;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) !important;
+  /* 左欄固定較窄（只放預約基本資料），右側結算區吃掉剩餘空間，
+     視窗放大時主要讓右側 4 欄價目格變寬，不再左右等比放大。 */
+  grid-template-columns: 400px minmax(0, 1fr) !important;
   gap: 10px;
   padding: 12px;
   overflow: visible;
@@ -6027,6 +6039,37 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
   grid-column: 1 / -1 !important;
 }
 
+/* 統一各列控制元件高度（備註除外、標籤不算）：頂列 toggle／儲存鈕、姓名卡／時間／時長／輸入人鈕／項目鈕都拉成同一高度，視覺每行齊高 */
+#appointmentModal.is-create {
+  --appt-row-h: 52px;
+}
+#appointmentModal.is-create .type-toggle-container,
+#appointmentModal.is-create #submit-btn,
+#appointmentModal.is-create .customer-identity-card,
+#appointmentModal.is-create .time-select-group,
+#appointmentModal.is-create .duration-input-wrap,
+#appointmentModal.is-create .operator-segmented button,
+#appointmentModal.is-create .service-icon-buttons button {
+  box-sizing: border-box !important;
+  min-height: var(--appt-row-h) !important;
+  height: var(--appt-row-h) !important;
+}
+
+/* 編輯模式（主彈窗 is-edit）：同樣統一這五列高度（姓名卡／時間／時長／輸入人鈕／項目鈕），備註除外、標籤不算 */
+#appointmentModal.is-edit {
+  --appt-row-h: 52px;
+}
+#appointmentModal.is-edit .type-toggle-container,
+#appointmentModal.is-edit .customer-identity-card,
+#appointmentModal.is-edit .time-select-group,
+#appointmentModal.is-edit .duration-input-wrap,
+#appointmentModal.is-edit .operator-segmented button,
+#appointmentModal.is-edit .service-icon-buttons button {
+  box-sizing: border-box !important;
+  min-height: var(--appt-row-h) !important;
+  height: var(--appt-row-h) !important;
+}
+
 #appointmentModal.is-create #notes {
   height: 86px !important;
   min-height: 86px !important;
@@ -6087,8 +6130,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create #submit-btn {
   width: 100% !important;
-  /* 新增模式：儲存鈕與同列 toggle（高 36）等高；既有預約底部三鈕的 52px 不受影響 */
-  min-height: 36px !important;
+  /* 新增模式：儲存鈕與同列 toggle 等高（52px，見上方統一列高規則）；既有預約底部三鈕不受影響 */
 }
 
 /* 新增模式專屬修正：details 面板在 is-create 改為 flex 後，
