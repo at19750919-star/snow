@@ -36,6 +36,7 @@
 
 :root {
   /* ✅ 字型分層 */
+  --font-main-black: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", "Heiti TC", sans-serif;
   --font-sans: "jf open 粉圓", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --font-display: "jf open 粉圓", "Inter", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --font-mono: "JetBrains Mono", "Noto Sans TC", monospace;
@@ -206,7 +207,7 @@ body {
   -webkit-text-size-adjust: 100%;
   margin: 0;
   padding: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-main-black);
   font-size: 15px;
   font-weight: 400;
   height: auto;
@@ -221,6 +222,9 @@ body {
 }
 
 #calendar-container {
+  --font-sans: var(--font-main-black);
+  --font-display: var(--font-main-black);
+
   padding: 2px 2px 2px;
 }
 
@@ -630,10 +634,10 @@ body {
   min-height: 50px;
   padding: 7px 10px !important;
   line-height: 1.1 !important;
-  font-family: var(--font-display);
+font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   color: var(--kikyo-dark);
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 900;
   letter-spacing: 0.88em;
   white-space: nowrap;
   overflow: visible;
@@ -889,8 +893,8 @@ body {
   text-align: left;
   padding-left: 0;
   padding-right: 4px;
-  /* 還原當時 3D 白框勳章版本：往上 4px 與姓名/電話對齊 */
-  transform: translateY(-4px);
+  /* 還原當時 3D 白框勳章版本：往上 1px 與姓名/電話對齊 */
+  transform: translateY(-1px);
 }
 .evt-services {
   display: inline-flex;
@@ -914,16 +918,15 @@ body {
 
   /* 2. 文字設定 */
   font-size: 20px;
-  font-weight: 800;
-  font-family: var(--font-display), sans-serif;
-  line-height: 1;
+  font-weight: 900;
+  font-family: var(--font-main-black);
   color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); /* 移除白色高光，保留淡陰影 */
 
-  /* 3. 3D 效果核心（無色濾鏡）*/
+  /* 3. 3D 效果核心：框線保持平面，浮起感交給文字 */
   border: 3px solid #ffffff; /* A. 白色粗外框 */
-  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35); /* B. 內陰影：圓框內凹陷感 */
-  background-image: radial-gradient(
+  box-shadow: none;
+  /*background-image: radial-gradient(
     circle at 30% 20%,
     rgba(255, 255, 255, 0.8) 0%,
     rgba(255, 255, 255, 0.2) 40%,
@@ -945,9 +948,8 @@ body {
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
   background-color: transparent !important; /* 強制透明 */
-  background-image: inherit !important; /* 繼承上面的 3D 光澤 */
   border: 3px solid #ffffff !important; /* 確保框線一致 */
-  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35) !important; /* 確保陰影一致 */
+  box-shadow: none !important; /* 框不浮出，只讓字浮出 */
 }
 
 /* [修改] 第 5 點：燙/染/護/預設文字改黃色，加強陰影 */
@@ -957,7 +959,7 @@ body {
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
   color: #f371ec !important;
-  text-shadow: none !important;
+  text-shadow: 0 1px 1px rgba(60, 20, 70, 0.24) !important;
   border-color: #f371ec !important; /* 外框跟著文字一起變粉紫色 */
 }
 
@@ -1605,12 +1607,16 @@ body {
 /* ==================== 14) Modal ==================== */
 /* [MD3] 遮罩層：Material You scrim */
 .modal {
+  --font-sans: "jf open 粉圓", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-display: "jf open 粉圓", "Inter", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+
   display: none;
   position: fixed;
   z-index: 1000;
   inset: 0;
   overflow: auto;
   overflow-x: hidden;
+  font-family: var(--font-sans);
   background: var(--md3-scrim);
 }
 /* [MD3] 背景裝飾（保留但改為極淡紫色暈染） */
@@ -5190,7 +5196,7 @@ body.theme-glass #appointmentModal .sliding-glider {
 
 #appointmentModal .service-icon-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -5211,6 +5217,7 @@ body.theme-glass #appointmentModal .sliding-glider {
 #appointmentModal .service-icon-buttons button[data-service-value="剪髮"] { background-image: url("icons/svc-cut.png?v=b2"); }
 #appointmentModal .service-icon-buttons button[data-service-value="染"] { background-image: url("icons/svc-dye.png?v=b2"); }
 #appointmentModal .service-icon-buttons button[data-service-value="燙"] { background-image: url("icons/svc-perm.png?v=b2"); }
+#appointmentModal .service-icon-buttons button[data-service-value="染+燙"] { background-image: url("icons/svc-dye-perm.png?v=b1"); }
 #appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"] { background-image: url("icons/svc-scalp.png?v=b2"); }
 
 #appointmentModal .service-icon-buttons button:hover {
@@ -5925,14 +5932,14 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-panel--details {
   /* 新增模式頂列上下收緊；左右仍保留原本舒適點擊空間。 */
-  padding: 8px 16px 12px !important;
+  padding: 10px 18px 14px !important;
   overflow: visible !important;
 }
 
 #appointmentModal.is-create .appointment-fields {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-  gap: 12px 14px !important;
+  gap: 13px 16px !important;
   align-items: start !important;
 }
 
@@ -5949,6 +5956,9 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-field > label {
   width: auto !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
 }
 
 #appointmentModal.is-create .customer-identity-card {
@@ -5977,12 +5987,14 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create #customer_name {
-  width: 190px !important;
-  font-size: 28px !important;
+  width: 230px !important;
+  font-size: 25px !important;
+  line-height: 1.15 !important;
 }
 
 #appointmentModal.is-create #customer_phone {
-  font-size: 20px !important;
+  font-size: 19px !important;
+  line-height: 1.15 !important;
 }
 
 #appointmentModal.is-create .appointment-field:has(#hour_select) {
@@ -6005,29 +6017,33 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create .duration-input-wrap {
-  gap: 8px !important;
+  gap: 10px !important;
   padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 #appointmentModal.is-create #duration_select {
-  width: 86px !important;
-  min-width: 86px !important;
+  width: 88px !important;
+  min-width: 88px !important;
   padding: 6px 10px !important;
   border-radius: 10px !important;
   background: rgba(0, 0, 0, 0.18) !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28) !important;
+  font-size: 29px !important;
 }
 
 #appointmentModal.is-create .duration-input-wrap span {
   align-self: end !important;
   margin-bottom: 0 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
 }
 
 #appointmentModal.is-create .appointment-field:has(#operator_select) {
   order: 4 !important;
   grid-column: 1 / -1 !important;
+  gap: 4px !important;
 }
 
 #appointmentModal.is-create .operator-segmented {
@@ -6037,6 +6053,13 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .operator-segmented button {
   min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 4px !important;
+  font-size: 24px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
 }
 
 #appointmentModal.is-create .appointment-field:has(#service_id) {
@@ -6045,13 +6068,14 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create .service-icon-buttons {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 8px !important;
 }
 
 #appointmentModal.is-create .service-icon-buttons button {
   min-width: 0 !important;
-  min-height: 58px !important;
+  min-height: 60px !important;
+  background-size: auto 43px !important;
 }
 
 #appointmentModal.is-create .service-icon-buttons button.is-on {
@@ -6106,8 +6130,27 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create #notes {
-  height: 86px !important;
-  min-height: 86px !important;
+  height: 92px !important;
+  min-height: 92px !important;
+  padding: 12px 14px !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+
+#appointmentModal.is-create .toggle-label {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+}
+
+#appointmentModal.is-create #submit-btn {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+}
+
+#appointmentModal.is-create .duration-step-btn {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 20px !important;
 }
 
 /* 編輯模式橫式（2 欄）：備註框改彈性高度，左欄自動跟右欄(價目格)等高，
@@ -6225,7 +6268,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
   }
 
   #appointmentModal.is-create .service-icon-buttons {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
 }
 
@@ -6499,6 +6542,7 @@ body.theme-neu #appointmentModal .service-icon-buttons button::before {
 body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="剪髮"]::before { background-image: url("icons/svc-cut.png?v=b2"); }
 body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="染"]::before { background-image: url("icons/svc-dye.png?v=b2"); }
 body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="燙"]::before { background-image: url("icons/svc-perm.png?v=b2"); }
+body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="染+燙"]::before { background-image: url("icons/svc-dye-perm.png?v=b1"); }
 body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"]::before { background-image: url("icons/svc-scalp.png?v=b2"); }
 body.theme-neu #appointmentModal .service-icon-buttons button:hover {
   background-color: var(--neu-bg) !important;

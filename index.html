@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=155">
+  <link rel="stylesheet" href="styles.css?v=164">
 
 </head>
 
@@ -196,6 +196,7 @@
                       <button type="button" data-service-value="剪髮" title="剪髮"><span class="material-symbols-outlined" aria-hidden="true">content_cut</span></button>
                       <button type="button" data-service-value="染" title="染"><span class="material-symbols-outlined" aria-hidden="true">brush</span></button>
                       <button type="button" data-service-value="燙" title="燙"><span class="material-symbols-outlined" aria-hidden="true">waves</span></button>
+                      <button type="button" data-service-value="染+燙" title="染+燙" aria-label="染加燙"><span class="material-symbols-outlined" aria-hidden="true">auto_fix_high</span></button>
                       <button type="button" data-service-value="頭皮護理" title="頭皮護理"><span class="material-symbols-outlined" aria-hidden="true">spa</span></button>
                     </div>
                   </div>
@@ -705,10 +706,11 @@
 
           function syncServiceButtons() {
             const current = document.getElementById('service_id')?.value || '';
+            const selectedServices = current.split(',').map(s => s.trim()).filter(s => s);
             // 唯讀檢視時只顯示「實際選中」的項目鈕，其餘隱藏；解鎖後全部恢復可選。
             const readonly = !!appointmentModal && appointmentModal.classList.contains('is-readonly');
             document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
-              const selected = btn.dataset.serviceValue === current;
+              const selected = selectedServices.includes(btn.dataset.serviceValue);
               btn.classList.toggle('is-on', selected);
               btn.style.display = (readonly && !selected) ? 'none' : '';
             });
@@ -749,7 +751,25 @@
             document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
               btn.addEventListener('click', () => {
                 if (!serviceSelect) return;
-                serviceSelect.value = serviceSelect.value === btn.dataset.serviceValue ? '' : (btn.dataset.serviceValue || '');
+                const selectedServices = serviceSelect.value.split(',').map(s => s.trim()).filter(s => s);
+                const btnValue = btn.dataset.serviceValue || '';
+                const idx = selectedServices.indexOf(btnValue);
+                if (idx > -1) {
+                  selectedServices.splice(idx, 1);
+                } else {
+                  selectedServices.push(btnValue);
+                }
+                if (btnValue === '染+燙') {
+                  serviceSelect.value = serviceSelect.value === '染+燙' ? '' : '染+燙';
+                } else if (selectedServices.includes('染') && selectedServices.includes('燙')) {
+                  serviceSelect.value = '染+燙';
+                } else if (selectedServices.length === 0) {
+                  serviceSelect.value = '';
+                } else if (selectedServices.length === 1) {
+                  serviceSelect.value = selectedServices[0];
+                } else {
+                  serviceSelect.value = btnValue;
+                }
                 serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
                 syncServiceButtons();
               });
@@ -965,7 +985,16 @@
                 if (ep.appointment_type === 'blocked') {
                   return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>` };
                 }
-                const svcList = svcMap[ep.service_id] || ['預'];
+                const svcList = (() => {
+                  const serviceId = ep.service_id || '';
+                  if (serviceId.includes(',')) {
+                    const selected = serviceId.split(',').map(s => s.trim()).filter(s => s);
+                    const serviceToIcon = { '剪髮': '剪', '染': '染', '燫': '燫', '頭皮護理': '護' };
+                    return selected.map(svc => serviceToIcon[svc] || svc.charAt(0)).filter(s => s);
+                  } else {
+                    return svcMap[serviceId] || ['預'];
+                  }
+                })();
                 const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
                 const safeTrim = (v) => (v != null ? String(v).trim() : '');
                 const name = safeTrim(ep.customer_name) || safeTrim(ep.notes);
