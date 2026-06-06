@@ -11,12 +11,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=64">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
+
+  <link rel="stylesheet" href="styles.css?v=134">
 
 </head>
 
@@ -104,8 +106,13 @@
 
           <div class="modal-layout-grid appointment-grid">
             <section class="modal-section blue-card-section appointment-panel appointment-panel--details" id="appointment-info-card">
+              <div class="appointment-modal-head">
+                <span class="appointment-kicker">JINGMEI · 預約登記</span>
+                <h2 id="appointment-modal-title">新增預約</h2>
+                <span id="appointment-modal-when">請選擇時間</span>
+              </div>
+
               <div class="appointment-type-block">
-                <label class="field-label">預約類型</label>
                 <div class="type-toggle-container">
                   <input type="radio" id="appointment-normal" name="appointment_type" value="normal" checked>
                   <input type="radio" id="appointment-blocked" name="appointment_type" value="blocked">
@@ -114,6 +121,8 @@
                   <span class="sliding-glider"></span>
                 </div>
               </div>
+
+              <!-- 既有預約預設唯讀，按底部「編輯」鈕才解鎖左側預約資訊欄位 -->
 
               <div class="appointment-fields">
                 <div class="form-row appointment-field appointment-field--time">
@@ -128,8 +137,10 @@
                 <div class="form-row appointment-field">
                   <label for="duration_select">時長</label>
                   <div class="duration-input-wrap">
+                    <button type="button" class="duration-step-btn" data-duration-step="-5" aria-label="減少 5 分鐘">−</button>
                     <input type="number" id="duration_select" name="duration_select" min="5" step="5" value="15" placeholder="輸入分鐘數">
-                    <span>分鐘</span>
+                    <span>分</span>
+                    <button type="button" class="duration-step-btn" data-duration-step="5" aria-label="增加 5 分鐘">+</button>
                   </div>
                 </div>
 
@@ -144,18 +155,31 @@
                     <option value="洪苡芳">洪苡芳</option>
                     <option value="曹家溱">曹家溱</option>
                   </select>
+                  <div class="operator-segmented" aria-label="選擇輸入人">
+                    <button type="button" data-operator-value="店長">雪</button>
+                    <button type="button" data-operator-value="雅婷">婷</button>
+                    <button type="button" data-operator-value="小白">白</button>
+                    <button type="button" data-operator-value="陳翎">陳</button>
+                    <button type="button" data-operator-value="洪苡芳">紅</button>
+                    <button type="button" data-operator-value="曹家溱">曹</button>
+                  </div>
                 </div>
 
                 <div id="customer-fields-left" class="customer-fields">
-                  <div class="form-row appointment-field">
-                    <label for="customer_name">顧客姓名</label>
-                    <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
-                  </div>
+                  <div class="customer-identity-card">
+                    <div class="customer-avatar" aria-hidden="true">客</div>
+                    <div class="customer-identity-fields">
+                      <div class="form-row appointment-field">
+                        <label for="customer_name">顧客姓名</label>
+                        <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名">
+                      </div>
 
-                  <div class="form-row appointment-field">
-                    <label for="customer_phone">電話</label>
-                    <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off"
-                      placeholder="09xx-xxx-xxx">
+                      <div class="form-row appointment-field">
+                        <label for="customer_phone">電話</label>
+                        <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off"
+                          placeholder="09xx-xxx-xxx">
+                      </div>
+                    </div>
                   </div>
 
                   <div class="form-row appointment-field">
@@ -168,6 +192,12 @@
                       <option value="染+燙">染+燙</option>
                       <option value="頭皮護理">頭皮護理</option>
                     </select>
+                    <div class="service-icon-buttons" aria-label="選擇項目">
+                      <button type="button" data-service-value="剪髮" title="剪髮"><span class="material-symbols-outlined" aria-hidden="true">content_cut</span></button>
+                      <button type="button" data-service-value="染" title="染"><span class="material-symbols-outlined" aria-hidden="true">brush</span></button>
+                      <button type="button" data-service-value="燙" title="燙"><span class="material-symbols-outlined" aria-hidden="true">waves</span></button>
+                      <button type="button" data-service-value="頭皮護理" title="頭皮護理"><span class="material-symbols-outlined" aria-hidden="true">spa</span></button>
+                    </div>
                   </div>
                 </div>
 
@@ -176,23 +206,36 @@
                   <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
                 </div>
               </div>
+
+              <div class="appointment-bottom-bar">
+                <div class="total-display appointment-total-summary">
+                  <span class="total-label-text">總金額</span>
+                  <span id="display-total">$0</span>
+                  <div class="appointment-net-total">
+                    <span class="net-amount-text">入帳 <span id="display-net">$0</span></span>
+                    <button type="button" id="unsetPaidBtn" class="unset-paid-btn">重置</button>
+                  </div>
+                </div>
+
+                <div id="appointment-actions-anchor" class="appointment-actions-anchor">
+                  <div class="modal-actions appointment-actions">
+                    <button type="button" id="appointmentEditBtn" class="appointment-edit-btn">
+                      編輯
+                    </button>
+                    <button type="button" id="deleteBtn" style="display:none;">刪除</button>
+                    <button type="submit" id="submit-btn">儲存</button>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <section class="modal-col settlement-col appointment-panel appointment-panel--settlement" id="settlement-col">
               <div class="modal-section settlement-section">
-                <div class="appointment-panel-header">
-                  <div class="total-display appointment-total-summary">
-                    <span class="total-label-text">總金額</span>
-                    <span id="display-total">$0</span>
-                    <div class="appointment-net-total">
-                      <span class="net-amount-text">入帳金額：<span id="display-net">$0</span></span>
-                      <button type="button" id="unsetPaidBtn" class="unset-paid-btn">改回未結帳</button>
-                    </div>
+                <div class="settlement-sub-card settlement-sub-card--cut">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">剪髮</label>
+                    <span class="settlement-card-tag">CUT</span>
                   </div>
-                </div>
-
-                <div class="settlement-sub-card">
-                  <label class="sub-card-title">剪髮項目</label>
                   <div class="price-group">
                     <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
@@ -215,8 +258,11 @@
                   </div>
                 </div>
 
-                <div class="settlement-sub-card">
-                  <label class="sub-card-title">其他項目</label>
+                <div class="settlement-sub-card settlement-sub-card--extra">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">其他項目</label>
+                    <span class="settlement-card-tag">EXTRA</span>
+                  </div>
                   <div class="price-group">
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="150" data-cost="0"> 洗髮</span> <span class="price-val">$ 150</span></label>
@@ -244,8 +290,11 @@
                     placeholder="請輸入材料費...">
                 </div>
 
-                <div class="settlement-sub-card">
-                  <label class="sub-card-title">燙髮</label>
+                <div class="settlement-sub-card settlement-sub-card--perm">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">燙髮</label>
+                    <span class="settlement-card-tag">PERM</span>
+                  </div>
                   <div class="price-group">
                     <input type="radio" name="perm_price" value="0" data-cost="0" style="display:none;" checked>
                     <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="700"
@@ -273,6 +322,12 @@
                     <div class="shop-sales-inputs">
                       <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
                       <input type="number" id="retail_price" name="retail_price" placeholder="金額" min="0">
+                      <select id="assistant_select" name="assistant_select">
+                        <option value="">-- 選助理 --</option>
+                        <option value="陳翎">陳翎</option>
+                        <option value="洪苡芳">洪苡芳</option>
+                        <option value="曹家溱">曹家溱</option>
+                      </select>
                     </div>
                   </div>
 
@@ -280,13 +335,6 @@
               </div>
               <div id="last-visit-info-right" class="last-visit-info" hidden>上次消費：-</div>
             </section>
-          </div>
-
-          <div id="appointment-actions-anchor" class="appointment-actions-anchor">
-            <div class="modal-actions appointment-actions">
-              <button type="button" id="deleteBtn" style="display:none;">刪除預約</button>
-              <button type="submit" id="submit-btn">儲存</button>
-            </div>
           </div>
         </form>
       </div>
@@ -449,7 +497,7 @@
         let appointmentModal, leaveModal, reportModal, lookupModal, warnlistModal;
         let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton, warnlistCloseButton;
         let form, leaveForm, notesTextarea, phoneEl, customerFields;
-        let submitBtn, deleteBtn, eventIdInput, operatorSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let submitBtn, deleteBtn, eventIdInput, operatorSelect, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
         let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
         let lastVisitInfo;
         let lastVisitInfoRight;
@@ -488,16 +536,26 @@
           return _inflightRequests[url];
         }
 
-        /* ===== 主題切換：MD3 亮色 ↔ Glassmorphism 暗色 ===== */
+        /* ===== 主題切換：三態循環 MD3 深色 → Glass 玻璃 → Neu 新擬態 → 回 MD3 ===== */
         (function initThemeToggle() {
+          // 三態循環順序；'md3' 為預設（不掛任何 theme-* class）
+          const THEMES = ['md3', 'glass', 'neu'];
+          function applyTheme(name) {
+            document.body.classList.remove('theme-glass', 'theme-neu');
+            if (name === 'glass') document.body.classList.add('theme-glass');
+            else if (name === 'neu') document.body.classList.add('theme-neu');
+          }
           const saved = localStorage.getItem('modal-theme');
-          if (saved === 'glass') document.body.classList.add('theme-glass');
+          applyTheme(THEMES.includes(saved) ? saved : 'md3');
           document.addEventListener('click', function (e) {
             const btn = e.target.closest('#themeToggleBtn');
             if (!btn) return;
-            document.body.classList.toggle('theme-glass');
-            const isGlass = document.body.classList.contains('theme-glass');
-            localStorage.setItem('modal-theme', isGlass ? 'glass' : 'md3');
+            const cur = document.body.classList.contains('theme-glass') ? 'glass'
+                      : document.body.classList.contains('theme-neu') ? 'neu'
+                      : 'md3';
+            const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+            applyTheme(next);
+            localStorage.setItem('modal-theme', next);
           });
         })();
 
@@ -509,9 +567,9 @@
         document.addEventListener('focusout', function (e) {
           if (e.target.classList.contains('custom-price-input') && !e.target.value) e.target.value = '0';
         });
-        /* 輸入人 select：有值時文字變深色，空值時保持淺色 */
+        /* 輸入人/助理 select：有值時文字變深色，空值時保持淺色 */
         document.addEventListener('change', function (e) {
-          if (e.target.id === 'operator_select') {
+          if (e.target.id === 'operator_select' || e.target.id === 'assistant_select') {
             e.target.style.color = e.target.value ? '' : '';
             e.target.classList.toggle('has-value', !!e.target.value);
           }
@@ -538,6 +596,7 @@
           deleteBtn = document.getElementById('deleteBtn');
           eventIdInput = document.getElementById('event_id');
           operatorSelect = document.getElementById('operator_select');
+          assistantSelect = document.getElementById('assistant_select');
           amountInput = document.getElementById('amount_input');
           unsetPaidBtn = document.getElementById('unsetPaidBtn');
           lastVisitInfo = document.getElementById('last-visit-info');
@@ -562,11 +621,153 @@
             appointmentModal.classList.toggle('is-blocked', mode === 'blocked');
           }
 
+          // 既有預約彈窗：把左側「預約資訊」欄位鎖成唯讀（不含右側結帳區/金額/重置/刪除/儲存）。
+          // 底部三顆按鈕「編輯 / 刪除預約 / 儲存」固定並排常駐（不依唯讀狀態切換可見性）；
+          // 「編輯」鈕負責解鎖欄位，解鎖後（!on）變灰示意已可編輯。
+          function setAppointmentReadonly(on) {
+            if (!appointmentModal) return;
+            appointmentModal.classList.toggle('is-readonly', !!on);
+            const editBtn = document.getElementById('appointmentEditBtn');
+            const isEdit = appointmentModal.classList.contains('is-edit');
+            // 編輯鈕只在「既有預約（is-edit）」模式顯示；新增模式不需要。
+            if (editBtn) {
+              editBtn.style.display = isEdit ? 'inline-flex' : 'none';
+              editBtn.classList.toggle('is-unlocked', isEdit && !on);
+              editBtn.disabled = isEdit && !on;
+            }
+            // 刪除/儲存：既有預約模式常駐顯示；新增模式維持原本（由 placeAppointmentActions 控制 is-create 樣式）。
+            if (submitBtn) submitBtn.style.display = 'inline-block';
+            if (deleteBtn) deleteBtn.style.display = isEdit ? 'inline-block' : 'none';
+            syncVisualAppointmentControls();
+          }
+
+          function syncOperatorRequired() {
+            if (!operatorSelect) return;
+            // 輸入人只在新增預約時必填；既有預約結帳/更新不要求重新選。
+            operatorSelect.required = !(eventIdInput && eventIdInput.value);
+          }
+
+          function syncAssistantRequired() {
+            if (!assistantSelect) return;
+            // 店販助理一律非必填：儲存預約時不選助理也能通過驗證（使用者要求）。
+            assistantSelect.required = false;
+          }
+
           function placeAppointmentActions(mode) {
             if (!appointmentActions) return;
             setAppointmentModalMode(mode);
             if (appointmentActionsAnchor) appointmentActionsAnchor.appendChild(appointmentActions);
           }
+
+          function formatAppointmentWhen(dateObj) {
+            const dt = dateObj instanceof Date ? dateObj : new Date(dateObj);
+            if (isNaN(dt.getTime())) return '請選擇時間';
+            const parts = new Intl.DateTimeFormat('zh-TW', {
+              timeZone: 'Asia/Taipei',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              weekday: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }).formatToParts(dt).reduce((acc, part) => {
+              acc[part.type] = part.value;
+              return acc;
+            }, {});
+            const weekday = parts.weekday && parts.weekday.startsWith('週') ? parts.weekday : `週${parts.weekday || ''}`;
+            return `${parts.year}.${parts.month}.${parts.day}（${weekday}）· ${parts.hour}:${parts.minute}`;
+          }
+
+          function setAppointmentHeader(mode, startDate) {
+            const titleEl = document.getElementById('appointment-modal-title');
+            const whenEl = document.getElementById('appointment-modal-when');
+            if (titleEl) titleEl.textContent = mode === 'blocked' ? '設定不約時段' : (mode === 'edit' ? '編輯預約' : '新增預約');
+            if (whenEl) whenEl.textContent = formatAppointmentWhen(startDate);
+          }
+
+          function syncCustomerAvatar() {
+            const avatar = document.querySelector('#appointmentModal .customer-avatar');
+            const name = document.getElementById('customer_name')?.value.trim();
+            if (avatar) avatar.textContent = name ? name.charAt(0) : '客';
+          }
+
+          function syncOperatorButtons() {
+            const current = operatorSelect ? operatorSelect.value : '';
+            // 唯讀檢視時只顯示「實際選中」的輸入人鈕，其餘隱藏；解鎖後全部恢復可選。
+            const readonly = !!appointmentModal && appointmentModal.classList.contains('is-readonly');
+            document.querySelectorAll('#appointmentModal [data-operator-value]').forEach(btn => {
+              const selected = btn.dataset.operatorValue === current;
+              btn.classList.toggle('is-on', selected);
+              btn.style.display = (readonly && !selected) ? 'none' : '';
+            });
+          }
+
+          function syncServiceButtons() {
+            const current = document.getElementById('service_id')?.value || '';
+            // 唯讀檢視時只顯示「實際選中」的項目鈕，其餘隱藏；解鎖後全部恢復可選。
+            const readonly = !!appointmentModal && appointmentModal.classList.contains('is-readonly');
+            document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
+              const selected = btn.dataset.serviceValue === current;
+              btn.classList.toggle('is-on', selected);
+              btn.style.display = (readonly && !selected) ? 'none' : '';
+            });
+          }
+
+          function syncVisualAppointmentControls() {
+            syncCustomerAvatar();
+            syncOperatorButtons();
+            syncServiceButtons();
+          }
+
+          function installAppointmentVisualControls() {
+            const durationInput = document.getElementById('duration_select');
+            document.querySelectorAll('#appointmentModal [data-duration-step]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!durationInput) return;
+                const step = Number(btn.dataset.durationStep) || 5;
+                const min = Number(durationInput.min) || 5;
+                const current = Number(durationInput.value) || min;
+                durationInput.value = String(Math.max(min, current + step));
+                durationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                durationInput.dispatchEvent(new Event('change', { bubbles: true }));
+              });
+            });
+
+            document.querySelectorAll('#appointmentModal [data-operator-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!operatorSelect) return;
+                const value = btn.dataset.operatorValue || '';
+                const canToggleOff = appointmentModal?.classList.contains('is-create');
+                operatorSelect.value = canToggleOff && operatorSelect.value === value ? '' : value;
+                operatorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                syncOperatorButtons();
+              });
+            });
+
+            const serviceSelect = document.getElementById('service_id');
+            document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!serviceSelect) return;
+                serviceSelect.value = serviceSelect.value === btn.dataset.serviceValue ? '' : (btn.dataset.serviceValue || '');
+                serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                syncServiceButtons();
+              });
+            });
+
+            document.getElementById('customer_name')?.addEventListener('input', syncCustomerAvatar);
+            operatorSelect?.addEventListener('change', syncOperatorButtons);
+            serviceSelect?.addEventListener('change', syncServiceButtons);
+
+            // 「編輯」鈕：解鎖左側預約資訊欄位
+            document.getElementById('appointmentEditBtn')?.addEventListener('click', () => {
+              setAppointmentReadonly(false);
+            });
+
+            syncVisualAppointmentControls();
+          }
+
+          installAppointmentVisualControls();
 
           async function fetchDailyNote(dStr) {
             const meta = document.querySelector('.notes-meta span');
@@ -1034,6 +1235,7 @@
                 cut_price: (document.querySelector('input[name="cut_price"]:checked')?.value) || '',
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
+                assistant_id: fd.get('assistant_select') || '',
                 notes: fd.get('notes') || '',
                 duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
@@ -1072,6 +1274,7 @@
                     amount: payload.amount,
                     cut_price: payload.cut_price,
                     total_amount: payload.total_amount,
+                    assistant_id: payload.assistant_id,
                     dye_color: payload.dye_color,
                     entered_by: previousEnteredBy || payload.operator_name
                   }
@@ -1112,12 +1315,23 @@
                 document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'grid';
                 document.getElementById('settlement-col').style.display = (!!eventIdInput.value && !isBlocked) ? 'block' : 'none';
                 document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
-                setAppointmentModalMode(isBlocked ? 'blocked' : (eventIdInput.value ? 'edit' : 'create'));
+                const nextMode = isBlocked ? 'blocked' : (eventIdInput.value ? 'edit' : 'create');
+                setAppointmentModalMode(nextMode);
+                // 使用者主動切換預約類型代表正在編輯，解除唯讀鎖定
+                setAppointmentReadonly(false);
+                setAppointmentHeader(nextMode, document.getElementById('start_time')?.value);
+                syncOperatorRequired();
+                syncAssistantRequired();
 
                 if (isBlocked) {
                   amountInput.value = '';
                   document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                   document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                  if (assistantSelect) {
+                    assistantSelect.value = '';
+                    assistantSelect.classList.remove('has-value');
+                  }
+                  syncVisualAppointmentControls();
                   document.getElementById('material-cost-wrap').style.display = 'none';
                   document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
                   document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
@@ -1163,6 +1377,25 @@
               if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
             });
 
+            // 讓剪髮 / 燙髮的 radio 跟「其他項目」一樣支援「再點一次取消選取」(切回 value=0 的未選狀態)
+            ['cut_price', 'perm_price'].forEach(groupName => {
+              document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
+                if (radio.value === '0') return; // 隱藏的「未選」狀態本身不處理
+                const label = radio.closest('.price-item') || radio;
+                // 在 label 上記錄按下前的選中狀態(label 一定收得到 pointerdown，點到文字也算)
+                label.addEventListener('pointerdown', () => { radio.dataset.wasChecked = radio.checked ? '1' : '0'; });
+                radio.addEventListener('click', function () {
+                  if (this.dataset.wasChecked === '1') {
+                    const zero = document.querySelector(`input[name="${groupName}"][value="0"]`);
+                    if (zero) zero.checked = true;
+                    this.checked = false;
+                    updateCalculatedTotal();
+                  }
+                  this.dataset.wasChecked = '0';
+                });
+              });
+            });
+
             const materialCostWrap = document.getElementById('material-cost-wrap');
             const customMaterialCostInput = document.getElementById('custom_material_cost');
             const syncMaterialCostUI = () => {
@@ -1188,6 +1421,10 @@
                 document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
                 document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
                 document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                if (assistantSelect) {
+                  assistantSelect.value = '';
+                  assistantSelect.classList.remove('has-value');
+                }
                 amountInput.value = '';
                 document.getElementById('cut_custom').value = '0';
                 document.getElementById('perm_custom').value = '0';
@@ -1269,6 +1506,7 @@
               const show = !document.querySelector('input[name="appointment_type"][value="blocked"]').checked && Number.isFinite(netAmount) && netAmount > 0;
               unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
             }
+            syncAssistantRequired();
           }
 
           function paintEmployeeLeave() {
@@ -1304,11 +1542,14 @@
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
+            syncOperatorRequired();
             if (operatorSelect) operatorSelect.classList.remove('has-value');
+            if (assistantSelect) assistantSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
             document.getElementById('customer-fields-left').style.display = 'grid';
             document.getElementById('settlement-col').style.display = 'none';
             placeAppointmentActions('create');
+            setAppointmentReadonly(false); // 新增預約一律可直接編輯
             /* 按鈕固定在主彈窗底部，由 appointment-actions-anchor 承接 */
             if (appointmentContent) appointmentContent.style.maxWidth = '';
             document.getElementById('notes').placeholder = '請輸入備註資訊.';
@@ -1323,6 +1564,10 @@
             document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
             document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
             document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+            if (assistantSelect) {
+              assistantSelect.value = '';
+              assistantSelect.classList.remove('has-value');
+            }
             document.getElementById('material-cost-wrap').style.display = 'none';
 
             // Clear new fields
@@ -1345,8 +1590,16 @@
             const baseHour = startDate.getHours();
             populateTimeSelects(baseHour, baseMin);
             updateHiddenStartTime(startDate);
-            document.getElementById('hour_select').onchange = function () { updateHiddenStartTime(startDate); };
-            document.getElementById('minute_select').onchange = function () { updateHiddenStartTime(startDate); };
+            setAppointmentHeader('create', startDate);
+            syncVisualAppointmentControls();
+            document.getElementById('hour_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader('create', document.getElementById('start_time').value);
+            };
+            document.getElementById('minute_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader('create', document.getElementById('start_time').value);
+            };
             appointmentModal.style.display = 'block';
           }
 
@@ -1354,6 +1607,7 @@
             form.reset();
             const ep = event.extendedProps || {};
             eventIdInput.value = event.id;
+            syncOperatorRequired();
             deleteBtn.style.display = 'inline-block';
             const rs = event.getResources();
             document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
@@ -1368,9 +1622,16 @@
             const serviceSelect = document.getElementById('service_id');
             if (serviceSelect) serviceSelect.value = ep.service_id || '';
             document.getElementById('notes').value = ep.notes || '';
+            if (assistantSelect) {
+              assistantSelect.value = ep.assistant_id || '';
+              assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
+            }
             if (operatorSelect) {
-              operatorSelect.value = '';
-              operatorSelect.classList.remove('has-value');
+              // 還原當初輸入人：後端 entered_by 存的是輸入人全名（店長/雅婷/小白/陳翎/洪苡芳/曹家溱），
+              // 與 operatorSelect 的 option value 及項目鈕 data-operator-value 完全一致，可直接回填。
+              const enteredBy = (ep.entered_by != null ? String(ep.entered_by) : '').trim();
+              operatorSelect.value = enteredBy;
+              operatorSelect.classList.toggle('has-value', !!operatorSelect.value);
             }
             amountInput.value = ep.amount !== undefined ? ep.amount : '';
 
@@ -1386,6 +1647,9 @@
             document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
             placeAppointmentActions('edit');
             setAppointmentModalMode(isBlocked ? 'blocked' : 'edit');
+            // 既有「一般預約」預設唯讀，按「編輯」鈕才解鎖；不約時段維持現狀可直接操作。
+            setAppointmentReadonly(!isBlocked);
+            syncVisualAppointmentControls();
             if (appointmentContent) appointmentContent.style.maxWidth = '';
 
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
@@ -1421,6 +1685,7 @@
               document.getElementById('display-total').textContent = '$' + totalAmt;
               window.displayTotal = totalAmt;  // 設置全域總金額
             }
+            syncAssistantRequired();
             if (unsetPaidBtn && eventIdInput.value) {
               const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
               unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
@@ -1439,8 +1704,15 @@
             const startHour = startDate.getHours();
             populateTimeSelects(startHour, startMinute);
             updateHiddenStartTime(startDate);
-            document.getElementById('hour_select').onchange = function () { updateHiddenStartTime(startDate); };
-            document.getElementById('minute_select').onchange = function () { updateHiddenStartTime(startDate); };
+            setAppointmentHeader(isBlocked ? 'blocked' : 'edit', startDate);
+            document.getElementById('hour_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader(isBlocked ? 'blocked' : 'edit', document.getElementById('start_time').value);
+            };
+            document.getElementById('minute_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader(isBlocked ? 'blocked' : 'edit', document.getElementById('start_time').value);
+            };
             appointmentModal.style.display = 'block';
           }
 
