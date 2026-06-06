@@ -989,7 +989,7 @@
                   const serviceId = ep.service_id || '';
                   if (serviceId.includes(',')) {
                     const selected = serviceId.split(',').map(s => s.trim()).filter(s => s);
-                    const serviceToIcon = { '剪髮': '剪', '染': '染', '燫': '燫', '頭皮護理': '護' };
+                    const serviceToIcon = { '剪髮': '剪', '染': '染', '燙': '燙', '頭皮護理': '護' };
                     return selected.map(svc => serviceToIcon[svc] || svc.charAt(0)).filter(s => s);
                   } else {
                     return svcMap[serviceId] || ['預'];
