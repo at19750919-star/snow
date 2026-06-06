@@ -25,10 +25,19 @@
   font-display: swap;
 }
 
+/* 全站主要字型：jf open 粉圓 2.1（圓黑體，台灣常用字，自架 woff2）*/
+@font-face {
+  font-family: "jf open 粉圓";
+  src: url("fonts/jf-openhuninn-2.1.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* ✅ 字型分層 */
-  --font-sans: "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  --font-display: "Inter", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-sans: "jf open 粉圓", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-display: "jf open 粉圓", "Inter", "Chiron Sung HK WS", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --font-mono: "JetBrains Mono", "Noto Sans TC", monospace;
 
   /* 品牌主色系 */
@@ -880,6 +889,7 @@ body {
   text-align: left;
   padding-left: 0;
   padding-right: 4px;
+  /* 還原當時 3D 白框勳章版本：往上 4px 與姓名/電話對齊 */
   transform: translateY(-4px);
 }
 .evt-services {
@@ -890,45 +900,54 @@ body {
   flex-wrap: nowrap;
 }
 
-/* [樣式] 3D 服務勳章 (透明變色龍版)：調整圓角與內邊距 */
+/* [樣式] 3D 服務勳章（白框立體版，還原自 e334e23）*/
 .evt-svc {
+  /* 1. 形狀與排版 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
-  width: auto;
-  height: auto;
-  padding: 0 6px;
+  height: 34px; /* 配合粗框，高度微調 */
+  padding: 0 9px; /* 貼著字、左右留一點縫，不再固定寬度 */
   box-sizing: border-box;
-  border-radius: 10px;
-  font-size: 28px;
+  border-radius: 10px; /* 膠囊圓角 */
+
+  /* 2. 文字設定 */
+  font-size: 20px;
   font-weight: 800;
   font-family: var(--font-display), sans-serif;
   line-height: 1;
   color: #ffffff;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-  filter: none;
-  border: none;
-  box-shadow: none;
-  background-image: none;
-  background-color: transparent;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  /* 3. 3D 效果核心（無色濾鏡）*/
+  border: 3px solid #ffffff; /* A. 白色粗外框 */
+  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35); /* B. 內陰影：圓框內凹陷感 */
+  background-image: radial-gradient(
+    circle at 30% 20%,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.2) 40%,
+    transparent 70%
+  ); /* C. 3D 光源：半透明白光澤，透出底下卡片色 */
+  background-color: transparent; /* D. 底色透明 */
+
+  /* 4. 防跑版 */
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* [樣式] 分類勳章邊框：剪、染、燙、護 同一為白色或淺色系 */
+/* [樣式] 分類勳章：剪/染/燙/護 共用透明 3D 白框（還原自 e334e23）*/
 .evt-svc.svc-cut,
 .evt-svc.svc-dye,
 .evt-svc.svc-perm,
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
-  background-color: transparent !important;
-  background-image: none !important;
-  border: none !important;
-  box-shadow: none !important;
+  background-color: transparent !important; /* 強制透明 */
+  background-image: inherit !important; /* 繼承上面的 3D 光澤 */
+  border: 3px solid #ffffff !important; /* 確保框線一致 */
+  box-shadow: inset 1px 2px 6px rgba(0, 0, 0, 0.35) !important; /* 確保陰影一致 */
 }
 
 /* [修改] 第 5 點：燙/染/護/預設文字改黃色，加強陰影 */
@@ -1561,7 +1580,7 @@ body {
     font-size: 20px;
   }
   #calendar .evt-svc {
-    font-size: 28px;
+    font-size: 20px; /* 還原 3D 白框勳章原始字級 */
   }
   .evt-col-svc,
   .evt-col-name,
@@ -4626,7 +4645,14 @@ body.theme-glass .left-col-footer .assistant-field > label {
   --appt-line: #e4e3e1;
   --appt-muted: #8b908d;
   color: var(--appt-slate);
-  font-family: Inter, "Chiron Sung HK WS", "Noto Sans TC", system-ui, sans-serif;
+  font-family: "jf open 粉圓", Inter, "Chiron Sung HK WS", "Noto Sans TC", system-ui, sans-serif;
+}
+/* 彈窗內表單控件(input/textarea/select/button)沿用同一字型，避免瀏覽器預設 Arial */
+#appointmentModal input,
+#appointmentModal textarea,
+#appointmentModal select,
+#appointmentModal button {
+  font-family: inherit;
 }
 
 #appointmentModal .appointment-dialog,
@@ -5380,7 +5406,7 @@ body.theme-glass #appointmentModal .settlement-section {
 body.theme-glass #appointmentModal .settlement-sub-card {
   --card-accent: var(--appt-sage);
   --card-accent-deep: var(--appt-sage-deep);
-  --card-text: #6f9782;
+  --card-text: #4d6b60;
   margin: 0;
   padding: 12px 13px;
   border: 0;
@@ -5405,14 +5431,14 @@ body.theme-glass #appointmentModal .settlement-sub-card {
 #appointmentModal .settlement-sub-card--extra {
   --card-accent: var(--appt-mauve);
   --card-accent-deep: var(--appt-mauve-deep);
-  --card-text: #b07398;
+  --card-text: #8a5575;
   background: linear-gradient(150deg, #f7eef3 0%, var(--appt-mauve-pale) 55%, #ecdde6 100%);
 }
 
 #appointmentModal .settlement-sub-card--perm {
   --card-accent: var(--appt-iris);
   --card-accent-deep: var(--appt-iris-deep);
-  --card-text: #787eb4;
+  --card-text: #565d97;
   background: linear-gradient(150deg, #eeeff8 0%, var(--appt-iris-pale) 55%, #dfe1f2 100%);
 }
 
@@ -5855,14 +5881,14 @@ body:not(.theme-glass) #appointmentModal .settlement-sub-card--perm .price-item:
   display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:4px 6px !important;}
 #appointmentModal .price-item,
 #appointmentModal .settlement-section .price-item{
-  display:flex !important;flex-direction:column !important;align-items:flex-start !important;justify-content:center !important;
-  gap:2px !important;width:auto !important;min-width:0 !important;height:auto !important;min-height:32px !important;
-  padding:4px 8px !important;border-radius:10px !important;background:rgba(255,255,255,.45) !important;border:1px solid rgba(255,255,255,.55) !important;}
+  display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:space-between !important;
+  gap:6px !important;width:auto !important;min-width:0 !important;height:auto !important;min-height:34px !important;
+  padding:3px 8px !important;border-radius:10px !important;background:rgba(255,255,255,.45) !important;border:1px solid rgba(255,255,255,.55) !important;}
 #appointmentModal .price-item .price-label{
-  display:block !important;font-family:var(--font-sans) !important;font-size:11px !important;font-weight:500 !important;
-  color:var(--card-text) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;max-width:100% !important;margin:0 !important;}
+  display:block !important;font-family:var(--font-sans) !important;font-size:12px !important;font-weight:800 !important;
+  color:var(--card-text) !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;max-width:100% !important;margin:0 !important;flex:0 1 auto !important;min-width:0 !important;}
 #appointmentModal .price-item .price-val{
-  font-family:var(--font-display) !important;font-size:14px !important;font-weight:800 !important;line-height:1 !important;color:var(--card-text) !important;}
+  font-family:var(--font-display) !important;font-size:14px !important;font-weight:800 !important;line-height:1 !important;color:var(--card-text) !important;white-space:nowrap !important;flex:0 0 auto !important;}
 #appointmentModal .price-item--custom .custom-price-input{
   width:62px !important;min-height:0 !important;padding:0 6px !important;line-height:1 !important;font-family:var(--font-display) !important;font-weight:700 !important;}
 #appointmentModal .price-item:has(input:checked) .price-label,
@@ -6073,6 +6099,26 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 #appointmentModal.is-create #notes {
   height: 86px !important;
   min-height: 86px !important;
+}
+
+/* 編輯模式橫式（2 欄）：備註框改彈性高度，左欄自動跟右欄(價目格)等高，
+   價目格高度變動時備註自動伸縮，避免左欄過高把彈窗撐出垂直捲軸。
+   只在 2 欄版面（>900px）套用；直式單欄（≤900px）維持原本小尺寸。 */
+@media (min-width: 901px) {
+  #appointmentModal.is-edit .appointment-fields {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+  #appointmentModal.is-edit .appointment-field--notes {
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
+    min-height: 0 !important;
+  }
+  #appointmentModal.is-edit #notes {
+    height: auto !important;
+    min-height: 60px !important;
+    flex: 1 1 auto !important;
+  }
 }
 
 #appointmentModal.is-create .appointment-bottom-bar {
