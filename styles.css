@@ -5169,10 +5169,10 @@ body.theme-glass #appointmentModal .sliding-glider {
 
 /* 用 GPT 生成的精製向量圖示當背景，隱藏原字型圖示 */
 #appointmentModal .service-icon-buttons button > * { display: none !important; }
-#appointmentModal .service-icon-buttons button[data-service-value="剪髮"] { background-image: url("icons/svc-cut.png?v=b1"); }
-#appointmentModal .service-icon-buttons button[data-service-value="染"] { background-image: url("icons/svc-dye.png?v=b1"); }
-#appointmentModal .service-icon-buttons button[data-service-value="燙"] { background-image: url("icons/svc-perm.png?v=b1"); }
-#appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"] { background-image: url("icons/svc-scalp.png?v=b1"); }
+#appointmentModal .service-icon-buttons button[data-service-value="剪髮"] { background-image: url("icons/svc-cut.png?v=b2"); }
+#appointmentModal .service-icon-buttons button[data-service-value="染"] { background-image: url("icons/svc-dye.png?v=b2"); }
+#appointmentModal .service-icon-buttons button[data-service-value="燙"] { background-image: url("icons/svc-perm.png?v=b2"); }
+#appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"] { background-image: url("icons/svc-scalp.png?v=b2"); }
 
 #appointmentModal .service-icon-buttons button:hover {
   transform: translateY(-1px);
@@ -6399,10 +6399,10 @@ body.theme-neu #appointmentModal .service-icon-buttons button::before {
   filter: grayscale(1) brightness(0.5) contrast(1.2);
   pointer-events: none;
 }
-body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="剪髮"]::before { background-image: url("icons/svc-cut.png?v=b1"); }
-body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="染"]::before { background-image: url("icons/svc-dye.png?v=b1"); }
-body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="燙"]::before { background-image: url("icons/svc-perm.png?v=b1"); }
-body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"]::before { background-image: url("icons/svc-scalp.png?v=b1"); }
+body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="剪髮"]::before { background-image: url("icons/svc-cut.png?v=b2"); }
+body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="染"]::before { background-image: url("icons/svc-dye.png?v=b2"); }
+body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="燙"]::before { background-image: url("icons/svc-perm.png?v=b2"); }
+body.theme-neu #appointmentModal .service-icon-buttons button[data-service-value="頭皮護理"]::before { background-image: url("icons/svc-scalp.png?v=b2"); }
 body.theme-neu #appointmentModal .service-icon-buttons button:hover {
   background-color: var(--neu-bg) !important;
 }
