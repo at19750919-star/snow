@@ -5166,7 +5166,7 @@ body.theme-glass #appointmentModal .sliding-glider {
 
 #appointmentModal .operator-segmented {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
@@ -6047,7 +6047,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create .operator-segmented {
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
   gap: 8px !important;
 }
 
