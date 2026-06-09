@@ -11,14 +11,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&display=swap" rel="stylesheet">
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
     rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=164">
+  <link rel="stylesheet" href="styles.css?v=208">
 
 </head>
 
@@ -154,6 +154,7 @@
                     <option value="陳翎">陳翎</option>
                     <option value="洪苡芳">洪苡芳</option>
                     <option value="曹家溱">曹家溱</option>
+                    <option value="吳佩珈">吳佩珈</option>
                   </select>
                   <div class="operator-segmented" aria-label="選擇輸入人">
                     <button type="button" data-operator-value="店長">雪</button>
@@ -162,6 +163,7 @@
                     <button type="button" data-operator-value="陳翎">陳</button>
                     <button type="button" data-operator-value="洪苡芳">洪</button>
                     <button type="button" data-operator-value="曹家溱">曹</button>
+                    <button type="button" data-operator-value="吳佩珈">珈</button>
                   </div>
                 </div>
 
@@ -196,7 +198,6 @@
                       <button type="button" data-service-value="剪髮" title="剪髮"><span class="material-symbols-outlined" aria-hidden="true">content_cut</span></button>
                       <button type="button" data-service-value="染" title="染"><span class="material-symbols-outlined" aria-hidden="true">brush</span></button>
                       <button type="button" data-service-value="燙" title="燙"><span class="material-symbols-outlined" aria-hidden="true">waves</span></button>
-                      <button type="button" data-service-value="染+燙" title="染+燙" aria-label="染加燙"><span class="material-symbols-outlined" aria-hidden="true">auto_fix_high</span></button>
                       <button type="button" data-service-value="頭皮護理" title="頭皮護理"><span class="material-symbols-outlined" aria-hidden="true">spa</span></button>
                     </div>
                   </div>
@@ -204,6 +205,7 @@
 
                 <div class="form-row appointment-field appointment-field--notes">
                   <label for="notes">備註</label>
+                  <div id="last-visit-note" class="last-visit-note" hidden></div>
                   <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
                 </div>
               </div>
@@ -328,6 +330,7 @@
                         <option value="陳翎">陳翎</option>
                         <option value="洪苡芳">洪苡芳</option>
                         <option value="曹家溱">曹家溱</option>
+                        <option value="吳佩珈">吳佩珈</option>
                       </select>
                     </div>
                   </div>
@@ -476,7 +479,7 @@
         '3': '小白'
       };
       const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
-      const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 1024px)';
+      const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 480px)';
 
       (function () {
         function getDesignerNameById(id) {
@@ -706,11 +709,10 @@
 
           function syncServiceButtons() {
             const current = document.getElementById('service_id')?.value || '';
-            const selectedServices = current.split(',').map(s => s.trim()).filter(s => s);
             // 唯讀檢視時只顯示「實際選中」的項目鈕，其餘隱藏；解鎖後全部恢復可選。
             const readonly = !!appointmentModal && appointmentModal.classList.contains('is-readonly');
             document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
-              const selected = selectedServices.includes(btn.dataset.serviceValue);
+              const selected = btn.dataset.serviceValue === current;
               btn.classList.toggle('is-on', selected);
               btn.style.display = (readonly && !selected) ? 'none' : '';
             });
@@ -751,25 +753,7 @@
             document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
               btn.addEventListener('click', () => {
                 if (!serviceSelect) return;
-                const selectedServices = serviceSelect.value.split(',').map(s => s.trim()).filter(s => s);
-                const btnValue = btn.dataset.serviceValue || '';
-                const idx = selectedServices.indexOf(btnValue);
-                if (idx > -1) {
-                  selectedServices.splice(idx, 1);
-                } else {
-                  selectedServices.push(btnValue);
-                }
-                if (btnValue === '染+燙') {
-                  serviceSelect.value = serviceSelect.value === '染+燙' ? '' : '染+燙';
-                } else if (selectedServices.includes('染') && selectedServices.includes('燙')) {
-                  serviceSelect.value = '染+燙';
-                } else if (selectedServices.length === 0) {
-                  serviceSelect.value = '';
-                } else if (selectedServices.length === 1) {
-                  serviceSelect.value = selectedServices[0];
-                } else {
-                  serviceSelect.value = btnValue;
-                }
+                serviceSelect.value = serviceSelect.value === btn.dataset.serviceValue ? '' : (btn.dataset.serviceValue || '');
                 serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
                 syncServiceButtons();
               });
@@ -983,21 +967,15 @@
                   '剪+頭皮護理': ['護']
                 };
                 if (ep.appointment_type === 'blocked') {
-                  return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${ep.notes ? ep.notes : ''}</span></div>` };
+                  const dn = decodeNotes(ep.notes);
+                  const blockedText = [dn.lastVisit, dn.free].filter(Boolean).join(' / ');
+                  return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${escapeHtml(blockedText)}</span></div>` };
                 }
-                const svcList = (() => {
-                  const serviceId = ep.service_id || '';
-                  if (serviceId.includes(',')) {
-                    const selected = serviceId.split(',').map(s => s.trim()).filter(s => s);
-                    const serviceToIcon = { '剪髮': '剪', '染': '染', '燙': '燙', '頭皮護理': '護' };
-                    return selected.map(svc => serviceToIcon[svc] || svc.charAt(0)).filter(s => s);
-                  } else {
-                    return svcMap[serviceId] || ['預'];
-                  }
-                })();
+                const svcList = svcMap[ep.service_id] || ['預'];
                 const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
                 const safeTrim = (v) => (v != null ? String(v).trim() : '');
-                const name = safeTrim(ep.customer_name) || safeTrim(ep.notes);
+                const decodedNotes = decodeNotes(ep.notes);
+                const name = safeTrim(ep.customer_name) || safeTrim(decodedNotes.free);
                 const phone = safeTrim(ep.customer_phone);
                 const paidAmount = Number(ep.total_amount) || Number(ep.amount);  // 優先使用總金額，舊資料用入帳金額
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
@@ -1017,7 +995,10 @@
                 // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
                 const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹' };
                 const operatorShort = operatorShortMap[operator] || operator;  // 沒對到就退回原字，避免漏顯示
-                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${name}</span><span class="evt-col-phone">${isPaid ? amountLabel : phone}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>` };
+                const lastVisitLine = decodedNotes.lastVisit
+                  ? `<div class="evt-line evt-last-visit"><span class="evt-col-last-visit">上次 ${escapeHtml(decodedNotes.lastVisit)}</span></div>`
+                  : '';
+                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${escapeHtml(name)}</span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>${lastVisitLine}` };
               },
               eventClassNames: function (arg) {
                 const r = arg.event.getResources();
@@ -1068,6 +1049,58 @@
 
           function normalizePhone(value) {
             return String(value || '').replace(/\D/g, '').slice(0, 10);
+          }
+
+          // ===== 備註編碼：把「上次消費(唯讀)」與「自由備註(可編輯)」合併成單一 notes 字串 =====
+          // 後端 notes 欄位不變，前端用 sentinel 前綴 + 分隔符把兩段編在一起。
+          const LAST_VISIT_PREFIX = '【上次】';
+          const NOTES_SEP = '⟦⟧';   // 自訂分隔符，避免與使用者輸入衝突
+
+          // 解析既有 notes 字串 → { lastVisit, free }
+          // 新格式：【上次】<上次消費>⟦⟧<自由備註>
+          // 舊格式(已移除的 auto-fill 產物)：「上次：<日期> / <設計師> / <項目>」開頭、無 sentinel
+          //   → 視為唯讀上次消費,存檔時 encodeNotes 會升級成新格式;換行後的內容當自由備註。
+          // 其餘(無 sentinel、不以「上次：」開頭)：整段當自由備註,可編輯。
+          const OLD_LAST_VISIT_PREFIXES = ['上次：', '上次:'];   // 全形冒號優先,半形保險
+          function decodeNotes(raw) {
+            const s = (raw == null ? '' : String(raw));
+            if (s.startsWith(LAST_VISIT_PREFIX)) {
+              const rest = s.slice(LAST_VISIT_PREFIX.length);
+              const idx = rest.indexOf(NOTES_SEP);
+              if (idx >= 0) {
+                return { lastVisit: rest.slice(0, idx), free: rest.slice(idx + NOTES_SEP.length) };
+              }
+              return { lastVisit: rest, free: '' };
+            }
+            const oldPrefix = OLD_LAST_VISIT_PREFIXES.find(p => s.startsWith(p));
+            if (oldPrefix) {
+              const body = s.slice(oldPrefix.length);   // 去掉「上次：」前綴
+              const nl = body.indexOf('\n');
+              if (nl >= 0) {
+                // 第一行為上次消費,換行後的內容當自由備註(連同後續換行一併保留)
+                return { lastVisit: body.slice(0, nl).trim(), free: body.slice(nl + 1) };
+              }
+              return { lastVisit: body.trim(), free: '' };
+            }
+            return { lastVisit: '', free: s };
+          }
+
+          // 組合 → 單一 notes 字串。lastVisit 為空時只存自由備註(不加前綴)。
+          function encodeNotes(lastVisit, free) {
+            const lv = (lastVisit == null ? '' : String(lastVisit)).trim();
+            const fr = (free == null ? '' : String(free));
+            if (!lv) return fr;
+            return LAST_VISIT_PREFIX + lv + NOTES_SEP + fr;
+          }
+
+          // 更新表單裡的「上次消費」唯讀區塊
+          function setLastVisitNote(text) {
+            const el = document.getElementById('last-visit-note');
+            if (!el) return;
+            const t = (text == null ? '' : String(text)).trim();
+            el.dataset.raw = t;   // 存原始值供存檔重組，避免解析顯示文字
+            el.textContent = t ? `上次消費　${t}` : '';
+            el.hidden = !t;
           }
 
           function formatLastVisitLabel(rawStart) {
@@ -1184,18 +1217,17 @@
                         }
                       });
                     }
-                    // 4. 自動填入上次消費資訊到備註（若備註為空）
-                    const notesInput = document.getElementById('notes');
-                    if (notesInput && !notesInput.value.trim()) {
+                    // 4. 自動填入上次消費資訊到「唯讀」上次消費區塊（不再受備註是否為空限制，查到就一定顯示）
+                    {
                       const lastDate = formatLastVisitLabel(history.start);
                       const lastSvc = history.service_id || '';
                       const lastDesigner = getDesignerNameById(history.employee_id);
                       if (lastDate) {
-                        const parts = [`上次：${lastDate}`];
+                        const parts = [lastDate];
                         if (lastDesigner) parts.push(lastDesigner);
                         if (lastSvc) parts.push(lastSvc);
                         if (history.dye_color) parts.push(`色號:${history.dye_color}`);
-                        notesInput.value = parts.join(' / ');
+                        setLastVisitNote(parts.join(' / '));
                       }
                     }
 
@@ -1265,7 +1297,7 @@
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
                 assistant_id: fd.get('assistant_select') || '',
-                notes: fd.get('notes') || '',
+                notes: encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || ''),
                 duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
                 dye_color: document.getElementById('dye_color_input').value
@@ -1612,6 +1644,7 @@
             // [CRM功能] 清除上一次留下的建議發亮狀態
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
             updateLastVisitInfo('', '');
+            setLastVisitNote('');   // 新建時清空唯讀上次消費(form.reset 不會清 div)
 
             updateCalculatedTotal();
 
@@ -1650,7 +1683,11 @@
             }
             const serviceSelect = document.getElementById('service_id');
             if (serviceSelect) serviceSelect.value = ep.service_id || '';
-            document.getElementById('notes').value = ep.notes || '';
+            {
+              const decoded = decodeNotes(ep.notes);
+              setLastVisitNote(decoded.lastVisit);
+              document.getElementById('notes').value = decoded.free;
+            }
             if (assistantSelect) {
               assistantSelect.value = ep.assistant_id || '';
               assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
@@ -1837,7 +1874,11 @@
               <div class="date-row">
                 <div class="date-left-col">
                   <div class="date-label">
-                    <span class="date-header-month"></span>
+                    <div class="date-stack">
+                      <span class="date-header-ghost" aria-hidden="true"></span>
+                      <span class="date-header-month"></span>
+                      <span class="date-header-weekday"></span>
+                    </div>
                     <div class="nav-arrows">
                       <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
                       <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
@@ -1865,6 +1906,23 @@
             return scroller;
           }
 
+          function setDateHeaderParts(scroller, year, monthNum, dayNum, weekdayStr, isMonthView) {
+            if (!scroller) return;
+            const ghost = scroller.querySelector('.date-header-ghost');
+            const monthEl = scroller.querySelector('.date-header-month');
+            const wdEl = scroller.querySelector('.date-header-weekday');
+            const mm = String(monthNum).padStart(2, '0');
+            if (ghost) ghost.textContent = String(year);
+            if (isMonthView) {
+              if (monthEl) monthEl.textContent = `${mm} 月`;
+              if (wdEl) wdEl.textContent = '';
+            } else {
+              const dd = String(dayNum).padStart(2, '0');
+              if (monthEl) monthEl.textContent = `${mm} / ${dd}`;
+              if (wdEl) wdEl.textContent = weekdayStr || '';
+            }
+          }
+
           function updateDateScroller(info) {
             const cal = document.getElementById('calendar');
             if (!cal || !info || !info.view) return;
@@ -1890,11 +1948,11 @@
             const dateLocale = 'zh-TW';
             const monthRaw = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' }).format(activeDate);
 
-            // 更新顯示（月視圖僅顯示 年/月，不顯示日）
-            if (info.view && info.view.type === 'dayGridMonth') {
-              scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}`;
-            } else {
-              scroller.querySelector('.date-header-month').textContent = `${activeDate.getFullYear()}年${monthRaw.includes('月') ? monthRaw : monthRaw + '月'}${activeDate.getDate()}日`;
+            // 更新顯示（重疊字：大型年份襯底 + 月/日前景 + 星期）
+            {
+              const _isMonth = !!(info.view && info.view.type === 'dayGridMonth');
+              const _wd = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(activeDate);
+              setDateHeaderParts(scroller, activeDate.getFullYear(), activeDate.getMonth() + 1, activeDate.getDate(), _wd, _isMonth);
             }
 
             syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
@@ -1904,9 +1962,9 @@
             if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1);
             const before = []; const after = [];
             let cursor = new Date(activeBase);
-            while (before.length < 10) { cursor.setDate(cursor.getDate() - 1); if (cursor.getDay() === 1) continue; before.push(new Date(cursor)); }
+            while (before.length < 7) { cursor.setDate(cursor.getDate() - 1); if (cursor.getDay() === 1) continue; before.push(new Date(cursor)); }
             cursor = new Date(activeBase);
-            while (after.length < 10) { cursor.setDate(cursor.getDate() + 1); if (cursor.getDay() === 1) continue; after.push(new Date(cursor)); }
+            while (after.length < 7) { cursor.setDate(cursor.getDate() + 1); if (cursor.getDay() === 1) continue; after.push(new Date(cursor)); }
             dates.push(...before.reverse(), activeBase, ...after);
 
             strip.innerHTML = '';
@@ -1971,7 +2029,16 @@
             const scroller = cal.querySelector('.fc-date-scroller');
             if (scroller) {
               scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
-              scroller.querySelector('.mobile-resource-toggle').querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
+              // 進入 ≤480 單一設計師模式時，把篩選列搬到卡片與行事曆表頭之間（只搬一次）
+              const toggleEl = document.querySelector('.mobile-resource-toggle');
+              if (shouldShowSingle && toggleEl && toggleEl.dataset.moved !== '1') {
+                const harness = cal.querySelector('.fc-view-harness') || scroller.nextSibling;
+                scroller.parentNode.insertBefore(toggleEl, harness);
+                toggleEl.dataset.moved = '1';
+              }
+              if (toggleEl) {
+                toggleEl.querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
+              }
             }
             if (!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
             else cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
@@ -1986,7 +2053,7 @@
               item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
               item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
               item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
-              item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.7, 1 - dist * 0.08)).toFixed(2));
+              item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.42, 1 - dist * 0.1)).toFixed(2));
             });
           }
           function selectDateFromItem(item) {
@@ -2012,12 +2079,9 @@
               const sc = document.querySelector('.fc-date-scroller');
               if (sc) {
                 const [y, m, d] = item.dataset.date.split('-').map(Number);
-                const monthRaw = `${m}`;
-                if (calendar && calendar.view && calendar.view.type === 'dayGridMonth') {
-                  sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月`;
-                } else {
-                  sc.querySelector('.date-header-month').textContent = `${y}年${monthRaw}月${d}日`;
-                }
+                const _isMonth2 = !!(calendar && calendar.view && calendar.view.type === 'dayGridMonth');
+                const _wd2 = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(new Date(y, m - 1, d, 12));
+                setDateHeaderParts(sc, y, m, d, _wd2, _isMonth2);
               }
             } catch (e) { }
             // 強制更新日期顯示

@@ -248,8 +248,8 @@ body {
   position: absolute;
   top: 6px;
   right: 50px;
-  width: 150px;
-  height: 150px;
+  width: clamp(120px, 12.6vw, 190px);
+  height: clamp(120px, 12.6vw, 190px);
   background-image: url("呆.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -312,8 +312,8 @@ body {
   display: none;
 }
 #calendar .fc-date-scroller {
-  margin: 8px 10px 6px;
-  padding: 16px 20px 14px;
+  margin: 6px 6px 6px;
+  padding: clamp(8px, 0.67vw, 10px) clamp(15px, 1.26vw, 19px) clamp(15px, 1.26vw, 19px);
   background: var(--date-card-bg);
   border-radius: 22px;
   box-shadow: var(--shadow-soft);
@@ -322,7 +322,8 @@ body {
   overflow: visible;
   border: 1px solid #CAC4D0;
   height: auto;
-  min-height: 145px;
+  /* 卡片高度隨寬度連續縮放（不再固定 145px 凍結）；下限為手機可讀最小值 */
+  min-height: clamp(108px, 12vw, 150px);
   box-sizing: border-box;
 }
 
@@ -390,6 +391,55 @@ body {
   padding: 0;
   width: 100%;
   padding-right: 0;
+  position: relative;
+}
+/* 重疊字：年份大字襯底 + 月/日前景 + 星期 */
+#calendar .fc-date-scroller .date-stack {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* 基準字級：整塊(年/月日/週)以此等比縮放，子元素全部用 em 相對它 */
+  /* 下限調低，讓 1024~1187px 之間仍連續縮放，並由此一套 clamp 一路管到手機 */
+  font-size: clamp(22px, 3.2vw, 48px);
+  padding-top: 0.63em;
+  flex: 0 0 auto;
+}
+/* 疊字底層：大型紫色年份襯底，製造虛實對比層次感 */
+#calendar .fc-date-scroller .date-header-ghost {
+  position: absolute;
+  top: 0;
+  left: -0.03em;
+  font-family: var(--font-display);
+  font-size: 1.63em; /* 相對 date-stack 基準 */
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #9C89D4; /* 淺紫（年）*/
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  line-height: 1;
+}
+#calendar .fc-date-scroller .date-header-weekday {
+  position: relative;
+  z-index: 3;
+  font-family: "Source Serif 4", serif;
+  font-size: 0.58em; /* 相對 date-stack 基準，跟著一起縮放 */
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: none; /* 首字大寫其餘小寫，如 Tue */
+  color: #38276A; /* 深紫（週）*/
+  margin-top: -0.7em;
+  margin-left: 8.3em;
+  line-height: 1;
+  /* 浮起感：強光暈把 Tue 與底下 09 分離 + 深投影製造抬升（用 em 跟著縮放）*/
+  text-shadow:
+    0 0 0.27em rgba(255, 255, 255, 1),
+    0 0 0.55em rgba(255, 255, 255, 0.95),
+    0 0 0.55em rgba(255, 255, 255, 0.95),
+    0 0.18em 0.36em rgba(56, 39, 106, 0.5);
 }
 #calendar .fc-date-scroller .date-toggle,
 #calendar .fc-date-scroller .mobile-resource-toggle {
@@ -416,14 +466,19 @@ body {
 #calendar .fc-date-scroller .mobile-resource-toggle {
   display: none; /* 桌面版隱藏，手機版才顯示 */
 }
+/* 篩選列被搬出卡片後（成為 #calendar 直接子節點），預設隱藏；只有 ≤480px 才顯示 */
+#calendar > .mobile-resource-toggle {
+  display: none;
+}
 #calendar .fc-date-scroller .date-toggle-btn,
-#calendar .fc-date-scroller .resource-toggle-btn {
+#calendar .fc-date-scroller .resource-toggle-btn,
+#calendar > .mobile-resource-toggle .resource-toggle-btn {
   border: none;
   background: transparent;
   color: var(--date-card-muted);
-  padding: 8px 12px;
+  font-size: clamp(10px, 1.1vw, 16px); /* 跟著視窗縮放，下限放低讓窄版繼續縮 */
+  padding: 0.6em 0.92em; /* em 相對自身字級，跟著縮 */
   border-radius: 999px;
-  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -432,12 +487,20 @@ body {
     color 0.2s ease,
     box-shadow 0.2s ease;
 }
-#calendar .fc-date-scroller .resource-toggle-btn {
-  padding: 6px 10px;
-  font-size: 12px;
+#calendar .fc-date-scroller .resource-toggle-btn,
+#calendar > .mobile-resource-toggle .resource-toggle-btn {
+  font-size: clamp(9px, 1.0vw, 15px);
+  padding: 0.5em 0.83em;
+}
+/* 報表/預約/警示：卡片內覆蓋，跟著視窗縮放（不動全域 .report-trigger-btn）*/
+#calendar .fc-date-scroller .report-trigger-btn {
+  font-size: clamp(10px, 1.1vw, 16px);
+  padding: 0.46em 1.08em;
+  min-width: 4.3em;
 }
 #calendar .fc-date-scroller .date-toggle-btn.is-active,
-#calendar .fc-date-scroller .resource-toggle-btn.is-active {
+#calendar .fc-date-scroller .resource-toggle-btn.is-active,
+#calendar > .mobile-resource-toggle .resource-toggle-btn.is-active {
   background: #6750A4;
   color: #FFFFFF;
   box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
@@ -445,8 +508,28 @@ body {
 
 #calendar .fc-date-scroller .date-header-month {
   font-family: var(--font-display);
-  font-size: clamp(26px, 2.2vw, 30px);
-  font-weight: 600;
+  font-size: 1em; /* = date-stack 基準 */
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #7C61BC; /* 中紫（月日），介於淺紫年份與深紫星期之間 */
+  position: relative;
+  z-index: 1;
+  margin-top: 0.21em;
+  margin-left: 1.68em;
+  line-height: 1;
+}
+
+/* 寬版：日期留在左上角，切換按鈕釘到卡片最左下角（窄版維持原位，避免壓到全部/店長篩選列） */
+@media (min-width: 1025px) {
+  #calendar .fc-date-scroller .date-left-col {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  #calendar .fc-date-scroller .date-toggle {
+    margin-bottom: -10px;
+    margin-left: -6px;
+  }
 }
 
 #calendar .fc-date-scroller .date-strip {
@@ -455,7 +538,8 @@ body {
   gap: 0px;
   margin-top: 0;
   padding: 2px 2px;
-  min-height: 100px;
+  /* 數字條高度隨寬度連續縮放（原固定 100px 是凍結卡片高度的元兇之一）*/
+  min-height: clamp(72px, 8.3vw, 100px);
   justify-content: center;
   overflow-x: auto;
   scroll-snap-type: x proximity;
@@ -507,8 +591,8 @@ body {
 #calendar .fc-date-scroller .date-item {
   flex: 0 0 auto;
   width: auto;
-  min-width: 62px;
-  padding: 10px 8px;
+  min-width: clamp(30px, 4.3vw, 60px);
+  padding: 10px 5px;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
@@ -538,12 +622,12 @@ body {
   box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.25);
 }
 #calendar .fc-date-scroller .date-item-weekday {
-  font-size: 13px;
+  font-size: clamp(9px, 1.1vw, 16px);
   color: var(--date-card-muted);
   letter-spacing: 0.16em;
 }
 #calendar .fc-date-scroller .date-item-day {
-  font-size: calc(38px * var(--arc-font-scale, 1));
+  font-size: calc(clamp(22px, 3.2vw, 47px) * var(--arc-font-scale, 1));
   font-weight: 700;
   font-family: var(--font-display);
   transition: font-size 0.25s ease;
@@ -553,8 +637,8 @@ body {
   border-color: var(--date-item-active-border);
   color: var(--date-item-active-text);
   box-shadow: var(--date-item-shadow);
-  width: 72px;
-  height: 92px;
+  width: clamp(44px, 6.07vw, 88px);
+  height: clamp(56px, 7.76vw, 112px);
   padding: 10px 0 12px;
   border-radius: 16px;
   justify-content: flex-start;
@@ -564,14 +648,14 @@ body {
   margin-bottom: 8px;
 }
 #calendar .fc-date-scroller .date-item.is-active .date-item-day {
-  font-size: 48px;
+  font-size: clamp(28px, 4.05vw, 58px);
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
+  font-size: clamp(11px, 1.52vw, 22px);
   font-weight: 600;
   letter-spacing: 0.14em;
   line-height: 1;
@@ -910,11 +994,12 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  height: 34px; /* 配合粗框，高度微調 */
-  padding: 0 9px; /* 貼著字、左右留一點縫，不再固定寬度 */
+  flex: 0 0 auto; /* 不被壓縮 */
+  width: 36px; /* 正方形，幾乎貼滿事件卡片(約39px)高度 */
+  height: 36px;
+  padding: 0;
   box-sizing: border-box;
-  border-radius: 10px; /* 膠囊圓角 */
+  border-radius: 10px; /* 圓角方形 */
 
   /* 2. 文字設定 */
   font-size: 20px;
@@ -1268,49 +1353,24 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   }
   #calendar .fc-date-scroller {
     margin: 8px 10px 12px;
-    padding: 14px 16px 14px;
+    /* 卡片內距交回頂部的 clamp 系統管理（移除舊固定 14px/16px 覆蓋），讓高度連續縮放 */
   }
-  #calendar .fc-date-scroller .date-header-month {
-    font-size: 24px;
-  }
+  /* 篩選列按鈕（≤480px 才出現，靠 JS data-mobile-resource 啟用）：保留外觀 */
   #calendar .fc-date-scroller .resource-toggle-btn {
     padding: 8px 12px;
     font-size: 14px;
   }
-  #calendar .fc-date-scroller .date-strip {
-    gap: 8px;
-    min-height: 90px;
-    padding-top: 8px;
-  }
-  #calendar .fc-date-scroller .date-item {
-    width: 58px;
-    padding: 8px 0;
-  }
-  #calendar .fc-date-scroller .date-item.is-active {
-    width: 60px;
-    height: 74px;
-    border-radius: 14px;
-    padding: 8px 0 10px;
-    gap: 6px;
-  }
-  #calendar .fc-date-scroller .date-item.is-active .date-item-day {
-    font-size: 30px;
-  }
-  #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
-    font-size: 12px;
-  }
+  /* 注意：date-stack / date-strip / date-item / 選中格 的尺寸覆蓋已移除，
+     改由頂部 clamp() 系統一路連續控制到手機（下限即為手機可讀最小值），
+     消除 ~1024px 的高度凍結與 38→24 跳動 */
   #calendar .fc-date-scroller.is-mobile-resource {
     height: auto;
   }
   #calendar .fc-date-scroller.is-mobile-resource .date-left-col {
     gap: 6px;
   }
-  #calendar .fc-date-scroller.is-mobile-resource .date-toggle,
-  #calendar .fc-date-scroller.is-mobile-resource .mobile-resource-toggle {
+  #calendar .fc-date-scroller.is-mobile-resource .date-toggle {
     align-self: flex-start;
-  }
-  #calendar .fc-date-scroller.is-mobile-resource .mobile-resource-toggle {
-    display: flex;
   }
 
   /* Mobile Resource hiding logic */
@@ -1425,13 +1485,7 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
     padding-left: 0 !important;
     padding-right: 2px !important;
   }
-  /* [手機版] 服務勳章：調整為方矩型並貼齊左側 */
-  .evt-svc {
-    font-size: 13px;
-    height: 24px;
-    padding: 0 10px;
-    border-radius: 8px; /* 從 999px 改為 8px，與電腦版一致偏方型 */
-  }
+  /* [手機版] 服務勳章：維持與桌面一致的正方形、不縮小（沿用基準 .evt-svc 的 36px 正方形）*/
   .evt-col-svc {
     text-align: left;
     padding-left: 0;
@@ -1506,6 +1560,20 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   }
   #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
     font-size: 11px;
+  }
+  /* 篩選列獨立成一條橫列：夾在日期卡片與行事曆設計師表頭中間 */
+  #calendar > .mobile-resource-toggle {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 8px 14px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(103, 80, 164, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(103, 80, 164, 0.12);
   }
 }
 
@@ -1774,6 +1842,35 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   background: var(--md3-surface-container);
   border: none;
 }
+/* 預約表單內：唯讀「上次消費」區塊（程式自動填、不可手動編輯） */
+.last-visit-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--md3-on-surface-variant);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+  padding: 8px 12px;
+  border-radius: var(--md3-radius-sm);
+  background: var(--md3-surface-container);
+  border-left: 3px solid var(--md3-primary, #6750a4);
+  user-select: text;
+}
+.last-visit-note[hidden] { display: none; }
+
+/* 行事曆事件卡片上的「上次消費」次要列 */
+.evt-last-visit {
+  font-size: 10px;
+  line-height: 1.2;
+  opacity: 0.78;
+  margin-top: 1px;
+}
+.evt-col-last-visit {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .form-span-2 {
   grid-column: 1 / -1;
 }
@@ -5166,7 +5263,7 @@ body.theme-glass #appointmentModal .sliding-glider {
 
 #appointmentModal .operator-segmented {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
@@ -6047,7 +6144,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 }
 
 #appointmentModal.is-create .operator-segmented {
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
   gap: 8px !important;
 }
 
