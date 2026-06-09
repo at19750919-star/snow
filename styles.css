@@ -5173,7 +5173,7 @@ body.theme-glass #appointmentModal .sliding-glider {
   background-image: none;
   box-shadow: none !important;
   color: #ffffff !important;
-  font-size: 36px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: 1px;
   line-height: 1;
@@ -5184,7 +5184,7 @@ body.theme-glass #appointmentModal .sliding-glider {
 
 #appointmentModal .time-sep {
   color: rgba(255, 255, 255, 0.78);
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
   margin: 0 1px;
@@ -5234,7 +5234,7 @@ body.theme-glass #appointmentModal .sliding-glider {
   background: transparent !important;
   box-shadow: none !important;
   color: #ffffff !important;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: 1px;
   line-height: 1;
@@ -5983,7 +5983,7 @@ body:not(.theme-glass) #appointmentModal .settlement-sub-card--perm .price-item:
 /* ===== 3) 排版：價格膠囊等寬 4 欄、等高、垂直結構 ===== */
 #appointmentModal .price-group,
 #appointmentModal .settlement-section .price-group{
-  display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:4px 6px !important;}
+  display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px 6px !important;}
 #appointmentModal .price-item,
 #appointmentModal .settlement-section .price-item{
   display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:space-between !important;
@@ -7117,4 +7117,101 @@ body.theme-glass #appointmentModal .custom-price-input {
 body.theme-glass #appointmentModal .appointment-panel--settlement,
 body.theme-glass #appointmentModal .settlement-section .settlement-row > label {
   color: var(--lg-text) !important;
+}
+
+/*
+=====================================================================
+(20) 預約彈窗「時間 / 時長」欄位調整
+   1. 數字字型改 Dela Gothic One
+   2. 時長已於 HTML 移除「分」字
+   3. 標籤改放控制項左邊、同一行（label 左、控件右）
+   4. 時間欄與時長欄等寬（跨唯讀 / 編輯解鎖 / 新增三種模式一致）
+   放在檔案最後，特異度相同時勝出。
+=====================================================================
+*/
+
+/* (3) 標籤在左、同一行：覆蓋前面 flex-direction:column 的設定。
+   涵蓋 base、is-edit、is-create 三種狀態。 */
+#appointmentModal .appointment-field--time,
+#appointmentModal .appointment-field--duration,
+#appointmentModal.is-edit .appointment-field--time,
+#appointmentModal.is-edit .appointment-field--duration,
+#appointmentModal.is-create .appointment-field--time,
+#appointmentModal.is-create .appointment-field--duration {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+/* 標籤本身不換行、不被壓縮，貼齊控件左側 */
+#appointmentModal .appointment-field--time > label,
+#appointmentModal .appointment-field--duration > label {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  align-self: center !important;
+}
+
+/* 控件群組改為填滿標籤右側剩餘空間；取消原本 column 版面的 align-self:center 置中 */
+#appointmentModal .appointment-field--time .time-select-group,
+#appointmentModal .appointment-field--duration .duration-input-wrap,
+#appointmentModal.is-create .appointment-field--time .time-select-group,
+#appointmentModal.is-create .appointment-field--duration .duration-input-wrap {
+  align-self: center !important;
+  margin-left: auto !important;
+}
+
+/* (4) 等寬 —— 唯讀模式：.appointment-fields 是 row wrap 的 flex，時間 / 時長兩欄同一排。
+   先前規則(約 6486 行)用高特異度的 :has(#duration_select) 把時長設成 flex:0 0 auto，
+   故此處同樣用含 id 的 :has() 選擇器拉高特異度才能覆蓋。兩欄給相同 flex-basis(140px)
+   並可伸長(grow 1)、可壓縮(shrink 1)，因起始基準相同、伸縮係數相同 → 兩欄等寬，
+   與內容多寡無關。其餘列(輸入人 / 項目)仍維持各自 auto 寬度。 */
+#appointmentModal.is-readonly .appointment-field--time,
+#appointmentModal.is-readonly .appointment-fields .appointment-field:has(#hour_select),
+#appointmentModal.is-readonly .appointment-field--duration,
+#appointmentModal.is-readonly .appointment-fields .appointment-field:has(#duration_select) {
+  flex: 1 1 140px !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* (4) 等寬 —— 編輯解鎖 / 新增模式：.appointment-fields 是 2 欄 grid（1fr 1fr），
+   時間佔第 1 欄、時長佔第 2 欄，兩軌等寬即自動等寬。確保各只佔單欄不跨欄。 */
+#appointmentModal.is-edit .appointment-field--time,
+#appointmentModal.is-create .appointment-field--time {
+  grid-column: 1 / 2 !important;
+}
+#appointmentModal.is-edit .appointment-field--duration,
+#appointmentModal.is-create .appointment-field--duration {
+  grid-column: 2 / 3 !important;
+}
+
+/* (1) 數字字型 Dela Gothic One：時間的時 / 分 與冒號、時長的數字 */
+#appointmentModal #hour_select,
+#appointmentModal #minute_select,
+#appointmentModal .time-sep,
+#appointmentModal #duration_select {
+  font-family: "Dela Gothic One", sans-serif !important;
+}
+
+/* (5) 防溢出修正（v213）
+   問題：大字型下「12:20」的 .time-select-group 實寬約 168px，超過時間欄(142px)
+   往右溢出，蓋住「時長」欄與其標籤。
+   作法（組合 a + c）：
+   (a) 數字字級已下修（時/分 36→30、冒號 30→26、時長 28→26）使群組變窄；
+   (c) 唯讀模式把「時間 / 時長」兩欄各撐滿半排，逼「輸入人」換到下一整列，
+       讓時間/時長獨佔一行、有充裕橫向空間、彼此不重疊。
+   編輯解鎖 / 新增模式本就是 2 欄 grid，「輸入人(--wide)」已 grid-column:1/-1 自成一列，
+   時間佔軌1、時長佔軌2，只需字級合身即可不溢出，故下方換列規則僅針對唯讀。 */
+
+/* 唯讀：時間 / 時長各佔半排（含 gap 共 100%），其後欄位被擠到下一列 */
+#appointmentModal.is-readonly .appointment-field--time,
+#appointmentModal.is-readonly .appointment-fields .appointment-field:has(#hour_select),
+#appointmentModal.is-readonly .appointment-field--duration,
+#appointmentModal.is-readonly .appointment-fields .appointment-field:has(#duration_select) {
+  flex: 1 1 calc(50% - 9px) !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  width: auto !important;
 }
