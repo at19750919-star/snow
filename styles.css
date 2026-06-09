@@ -6460,6 +6460,46 @@ body:not(.theme-glass) #appointmentModal.is-create .appointment-total-summary {
   cursor: not-allowed;
 }
 
+/* 唯讀時「輸入人」與「項目」併到同一排（輸入人鈕 → 項目鈕）。
+   唯讀下 JS 只保留選中的那一顆按鈕，所以兩欄各只有 1 顆鈕，合併成一行較精簡。
+   做法：把欄位區改成 row wrap 的 flex；其餘列強制整行（flex 100%）維持原本上下排，
+   只有輸入人欄（order 4）與項目欄（order 5）收成 auto 寬度，自然並排在同一行。
+   只在 .is-readonly 生效；解鎖（is-edit 非 readonly）與新增（is-create）完全不受影響。 */
+#appointmentModal.is-readonly .appointment-fields {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 10px 18px;
+}
+/* 預設每一列都佔整行，維持原本的單欄上下堆疊 */
+#appointmentModal.is-readonly .appointment-fields > .appointment-field {
+  flex: 0 0 100%;
+  width: 100%;
+}
+/* 唯讀時 #customer-fields-left 為 display:contents，其子項（顧客卡 / 項目欄）直接成為 flex item */
+#appointmentModal.is-readonly .appointment-fields .customer-identity-card {
+  flex: 0 0 100%;
+  width: 100%;
+}
+/* 只有「輸入人」與「項目」兩欄收成自適應寬度，並排在同一行 */
+#appointmentModal.is-readonly .appointment-field--wide,
+#appointmentModal.is-readonly .appointment-field:has(#service_id) {
+  flex: 0 0 auto !important;
+  width: auto !important;
+}
+/* 兩欄內的按鈕列：唯讀只剩 1 顆鈕，改成 flex 讓容器收到單顆按鈕的寬度，
+   不要再被 repeat(7/5,1fr) 的空白軌道撐開或壓扁 */
+#appointmentModal.is-readonly .appointment-field--wide .operator-segmented,
+#appointmentModal.is-readonly .appointment-field:has(#service_id) .service-icon-buttons {
+  display: flex;
+  width: auto;
+}
+#appointmentModal.is-readonly .appointment-field--wide .operator-segmented button,
+#appointmentModal.is-readonly .appointment-field:has(#service_id) .service-icon-buttons button {
+  min-width: 56px;
+}
+
 /*
 =====================================================================
 (15) 新擬態主題 theme-neu（Neumorphism / 淺色浮雕）— 試看版
