@@ -6482,9 +6482,11 @@ body:not(.theme-glass) #appointmentModal.is-create .appointment-total-summary {
   flex: 0 0 100%;
   width: 100%;
 }
-/* 只有「輸入人」與「項目」兩欄收成自適應寬度，並排在同一行 */
+/* 「輸入人」與「項目」收成自適應寬度並排同一行；「時間」與「時長」同理併一行(不換行) */
 #appointmentModal.is-readonly .appointment-field--wide,
-#appointmentModal.is-readonly .appointment-field:has(#service_id) {
+#appointmentModal.is-readonly .appointment-field:has(#service_id),
+#appointmentModal.is-readonly .appointment-field--time,
+#appointmentModal.is-readonly .appointment-field:has(#duration_select) {
   flex: 0 0 auto !important;
   width: auto !important;
 }
