@@ -1781,6 +1781,41 @@
               updateHiddenStartTime(startDate);
               setAppointmentHeader(isBlocked ? 'blocked' : 'edit', document.getElementById('start_time').value);
             };
+
+            // [CRM功能] 結帳時也提示「上一次來店剪髮價位」(實心橘高亮，不自動勾選)。
+            // 先清掉殘留高亮(form.reset 不會清 class)，避免上一筆帶過來；只針對一般預約。
+            document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
+            if (!isBlocked) {
+              const editPhone = normalizePhone(ep.customer_phone || '');
+              if (editPhone.length === 10) {
+                // 射後不理，不阻擋彈窗開啟；沿用 create 流程的 _crmCache 快取
+                (async () => {
+                  try {
+                    if (!window._crmCache) window._crmCache = {};
+                    let history;
+                    if (window._crmCache[editPhone]) {
+                      history = window._crmCache[editPhone];
+                    } else {
+                      const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${editPhone}`, { method: 'GET', mode: 'cors' });
+                      history = await res.json();
+                      window._crmCache[editPhone] = history;
+                    }
+                    // 與新增流程完全相同的高亮邏輯：取最近一次非零剪髮價，標對應 cut_price 選項
+                    const histCut = parseInt(history && history.cut_price, 10);
+                    if (Number.isFinite(histCut) && histCut > 0) {
+                      document.querySelectorAll('input[name="cut_price"]').forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested');
+                        if (parseInt(r.value, 10) === histCut && item) {
+                          item.classList.add('price-item--suggested');
+                        }
+                      });
+                    }
+                  } catch (err) { console.error('CRM查詢失敗(結帳上次剪髮價):', err); }
+                })();
+              }
+            }
+
             appointmentModal.style.display = 'block';
           }
 
