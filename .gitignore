@@ -1,1 +1,9 @@
 node_modules/
+
+# 本機工具產物（非專案內容）
+.claude/
+.playwright-mcp/
+.superpowers/
+
+# 除錯用截圖（非 app 素材；呆.png/dai.png/cut.png 等是 app 用的，不忽略）
+century-*.png
