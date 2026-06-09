@@ -1141,8 +1141,9 @@
               else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
               else e.target.value = d;
 
-              // [警示名單] 當輸入滿 10 碼，檢查是否在警示名單中
+              // [警示名單] 當輸入滿 10 碼，檢查是否在警示名單中（射後不理，不阻擋下方歷史查詢，兩者並行）
               if (d.length === 10) {
+                (async () => {
                 try {
                   const warnRes = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=checkWarn&phone=${d}`, { method: 'GET', mode: 'cors' });
                   const warnData = await warnRes.json();
@@ -1163,6 +1164,7 @@
                     if (banner) banner.style.display = 'none';
                   }
                 } catch (err) { console.error('警示名單查詢失敗:', err); }
+                })();
               } else {
                 const banner = document.getElementById('warn-banner');
                 if (banner) banner.style.display = 'none';
