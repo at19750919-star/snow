@@ -993,7 +993,7 @@
                 const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
                 const operator = safeTrim(ep.entered_by);
                 // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
-                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹' };
+                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹', '吳佩珈': '珈' };
                 const operatorShort = operatorShortMap[operator] || operator;  // 沒對到就退回原字，避免漏顯示
                 const lastVisitLine = decodedNotes.lastVisit
                   ? `<div class="evt-line evt-last-visit"><span class="evt-col-last-visit">上次 ${escapeHtml(decodedNotes.lastVisit)}</span></div>`
@@ -1339,7 +1339,7 @@
                     total_amount: payload.total_amount,
                     assistant_id: payload.assistant_id,
                     dye_color: payload.dye_color,
-                    entered_by: previousEnteredBy || payload.operator_name
+                    entered_by: payload.operator_name || previousEnteredBy
                   }
                 });
 
