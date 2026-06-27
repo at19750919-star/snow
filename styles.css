@@ -7215,3 +7215,60 @@ body.theme-glass #appointmentModal .settlement-section .settlement-row > label {
   max-width: none !important;
   width: auto !important;
 }
+
+
+/* 陪同人數按鈕與預約卡 +N 標記。 */
+.evt-col-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.evt-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evt-pax {
+  flex: none;
+  margin-left: 2px;
+  color: #e2761b;
+  font-size: 0.82em;
+  font-weight: 800;
+}
+
+#appointmentModal .name-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+#appointmentModal .name-control-wrap input {
+  flex: 1;
+  min-width: 0;
+}
+
+#appointmentModal .pax-toggle {
+  flex: none;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 7px;
+  color: var(--appt-slate-2, #52606a);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(67, 107, 133, 0.28);
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+#appointmentModal .pax-toggle.is-on {
+  color: #fff;
+  background: #e2761b;
+  border-color: #e2761b;
+}

@@ -172,7 +172,11 @@
                     <div class="customer-identity-fields">
                       <div class="form-row appointment-field">
                         <label for="customer_name">顧客姓名</label>
-                        <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
+                        <div class="name-control-wrap">
+                          <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
+                          <input type="hidden" id="pax_count" name="pax_count" value="1">
+                          <button type="button" id="pax_toggle" class="pax-toggle" aria-label="陪同人數" title="陪同人數（點一下循環：陪 → 1 → 2 → 3）">陪</button>
+                        </div>
                       </div>
 
                       <div class="form-row appointment-field">
@@ -718,10 +722,22 @@
             });
           }
 
+          function syncPaxToggle() {
+            const input = document.getElementById('pax_count');
+            const btn = document.getElementById('pax_toggle');
+            if (!input || !btn) return;
+            let pax = parseInt(input.value, 10);
+            if (!(pax >= 1 && pax <= 4)) pax = 1;
+            input.value = String(pax);
+            btn.textContent = pax === 1 ? '陪' : String(pax - 1);
+            btn.classList.toggle('is-on', pax > 1);
+          }
+
           function syncVisualAppointmentControls() {
             syncCustomerAvatar();
             syncOperatorButtons();
             syncServiceButtons();
+            syncPaxToggle();
           }
 
           function installAppointmentVisualControls() {
@@ -757,6 +773,16 @@
                 serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
                 syncServiceButtons();
               });
+            });
+
+            const paxInput = document.getElementById('pax_count');
+            document.getElementById('pax_toggle')?.addEventListener('click', () => {
+              if (!paxInput) return;
+              let pax = parseInt(paxInput.value, 10);
+              if (!(pax >= 1 && pax <= 4)) pax = 1;
+              pax = pax >= 4 ? 1 : pax + 1;
+              paxInput.value = String(pax);
+              syncPaxToggle();
             });
 
             document.getElementById('customer_name')?.addEventListener('input', syncCustomerAvatar);
@@ -976,6 +1002,8 @@
                 const safeTrim = (v) => (v != null ? String(v).trim() : '');
                 const decodedNotes = decodeNotes(ep.notes);
                 const name = safeTrim(ep.customer_name) || safeTrim(decodedNotes.free);
+                const paxNum = parseInt(ep.pax, 10);
+                const paxExtra = (paxNum >= 2 && paxNum <= 4) ? (paxNum - 1) : 0;
                 const phone = safeTrim(ep.customer_phone);
                 const paidAmount = Number(ep.total_amount) || Number(ep.amount);  // 優先使用總金額，舊資料用入帳金額
                 const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
@@ -998,7 +1026,7 @@
                 const lastVisitLine = decodedNotes.lastVisit
                   ? `<div class="evt-line evt-last-visit"><span class="evt-col-last-visit">上次 ${escapeHtml(decodedNotes.lastVisit)}</span></div>`
                   : '';
-                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name">${escapeHtml(name)}</span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>${lastVisitLine}` };
+                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name"><span class="evt-name-text">${escapeHtml(name)}</span>${paxExtra > 0 ? `<span class="evt-pax">+${paxExtra}</span>` : ''}</span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>${lastVisitLine}` };
               },
               eventClassNames: function (arg) {
                 const r = arg.event.getResources();
@@ -1302,7 +1330,8 @@
                 notes: encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || ''),
                 duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
-                dye_color: document.getElementById('dye_color_input').value
+                dye_color: document.getElementById('dye_color_input').value,
+                pax: fd.get('pax_count') || 1
               };
               submitBtn.disabled = true; appointmentModal.style.display = 'none'; invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
@@ -1339,6 +1368,7 @@
                     total_amount: payload.total_amount,
                     assistant_id: payload.assistant_id,
                     dye_color: payload.dye_color,
+                    pax: payload.pax,
                     entered_by: payload.operator_name || previousEnteredBy
                   }
                 });
@@ -1640,6 +1670,7 @@
             document.getElementById('dye-color-wrap').style.display = 'none';
             document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
+            document.getElementById('pax_count').value = '1';
             const warnBanner = document.getElementById('warn-banner');
             if (warnBanner) warnBanner.style.display = 'none';
 
@@ -1685,6 +1716,11 @@
             }
             const serviceSelect = document.getElementById('service_id');
             if (serviceSelect) serviceSelect.value = ep.service_id || '';
+            const paxCount = document.getElementById('pax_count');
+            if (paxCount) {
+              const p = parseInt(ep.pax, 10);
+              paxCount.value = String(p >= 1 && p <= 4 ? p : 1);
+            }
             {
               const decoded = decodeNotes(ep.notes);
               setLastVisitNote(decoded.lastVisit);
