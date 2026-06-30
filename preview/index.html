@@ -1,0 +1,2837 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>世紀髮廊 景美店</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,1,0&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@900&family=Source+Serif+4:wght@900&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css?v=936">
+
+  <script>
+    // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
+    // 這份設定是「可在網頁上自訂的色票」的唯一來源，三處共用。
+    window.THEME_COLOR_KEYS = [
+      { key: 'theme-brand', var: '--brand', label: '品牌主色（紫）' },
+      { key: 'theme-blue',  var: '--blue',  label: '店長' },
+      { key: 'theme-peach', var: '--peach', label: '雅婷' },
+      { key: 'theme-slate', var: '--slate', label: '小白' },
+      { key: 'theme-paid',  var: '--paid',  label: '結帳卡片' }
+    ];
+    // 可調「推導參數」（數字%，用滑桿）：值含單位字串(如 "24%")，存 localStorage
+    window.THEME_PARAM_KEYS = [
+      { key: 'theme-col-alpha',  var: '--resource-col-alpha', label: '欄底濃度',     min: 0,  max: 60, step: 2, unit: '%' },
+      { key: 'theme-card-light', var: '--card-grad-light',    label: '卡片漸層濃度', min: 50, max: 95, step: 5, unit: '%' }
+    ];
+    try {
+      window.THEME_COLOR_KEYS.forEach(function (c) {
+        var v = localStorage.getItem(c.key);
+        if (v) document.documentElement.style.setProperty(c.var, v);
+      });
+      window.THEME_PARAM_KEYS.forEach(function (p) {
+        var v = localStorage.getItem(p.key);
+        if (v) document.documentElement.style.setProperty(p.var, v);
+      });
+    } catch (e) {}
+  </script>
+
+</head>
+
+<body>
+  <a href="../" class="preview-return-btn" title="回正式版" aria-label="回正式版">
+    <span class="material-symbols-outlined" aria-hidden="true">home</span>
+    <span class="preview-return-label">正式版</span>
+  </a>
+
+  <!-- 表頭按鈕圖示 sprite（排休=椰子樹、可約=行事曆綠勾、已約滿=行事曆紅禁止） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gFrond" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5b9ad9"/><stop offset="1" stop-color="#3f72c0"/>
+      </linearGradient>
+      <linearGradient id="gTrunk" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#274a73"/><stop offset="1" stop-color="#16304f"/>
+      </linearGradient>
+      <linearGradient id="gCalN" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8f9aa6"/><stop offset="1" stop-color="#6f7c8a"/>
+      </linearGradient>
+      <linearGradient id="gChk" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#46c178"/><stop offset="1" stop-color="#2f9d59"/>
+      </linearGradient>
+      <linearGradient id="gBan" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e0584d"/><stop offset="1" stop-color="#c63a30"/>
+      </linearGradient>
+      <filter id="icoSoft" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="1.1" stdDeviation="0.9" flood-color="#23314a" flood-opacity="0.26"/>
+      </filter>
+      <filter id="icoSoftW" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#7a1e16" flood-opacity="0.45"/>
+      </filter>
+    </defs>
+    <!-- 排休：椰子樹 + 沙灘 -->
+    <symbol id="ic-palm" viewBox="0 0 24 24">
+      <g filter="url(#icoSoft)">
+        <path d="M2.5 19.4C7 17.9 17 17.9 21.5 19.4 17 20.6 7 20.6 2.5 19.4Z" fill="#e7cfa6"/>
+        <path d="M3 21.4q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0" fill="none" stroke="#7fb3df" stroke-width="1" stroke-linecap="round"/>
+        <path d="M12.6 18.6C11.7 14 11.6 11.4 13 8.6" fill="none" stroke="url(#gTrunk)" stroke-width="2.1" stroke-linecap="round"/>
+        <g fill="url(#gFrond)">
+          <path d="M13 8.6C9.4 6.7 5.8 7.2 3.6 9.7 6.8 8.7 10 9.2 13 8.6Z"/>
+          <path d="M13 8.6C9.9 6 8.1 4 8 2.3 9.9 4 11.6 5.9 13 8.6Z"/>
+          <path d="M13 8.6C13.7 5 15.2 2.9 17 2.1 15.7 4.3 14.3 6.2 13 8.6Z"/>
+          <path d="M13 8.6C16.6 6.4 20.3 6.7 22.4 9.2 19.1 8.3 15.9 8.7 13 8.6Z"/>
+          <path d="M13 8.6C16.4 8 19.6 8.9 21.4 11.4 18 10.4 15.2 9.6 13 8.6Z"/>
+        </g>
+        <circle cx="12" cy="9.3" r="0.85" fill="url(#gTrunk)"/>
+        <circle cx="13.9" cy="9.1" r="0.85" fill="url(#gTrunk)"/>
+      </g>
+    </symbol>
+    <!-- 可約：行事曆 + 綠色打勾 -->
+    <symbol id="ic-calchk" viewBox="0 0 24 24">
+      <g filter="url(#icoSoft)">
+        <rect x="3.5" y="5" width="14" height="14.5" rx="2.4" fill="#fff" stroke="url(#gCalN)" stroke-width="1.7"/>
+        <path d="M3.5 9h14" stroke="url(#gCalN)" stroke-width="1.6"/>
+        <path d="M7.2 3.2v3.2M13.8 3.2v3.2" stroke="url(#gCalN)" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="15.7" cy="15.4" r="5.1" fill="#fff" stroke="url(#gChk)" stroke-width="2.1"/>
+        <path d="M13.3 15.5l1.7 1.7 3-3.2" fill="none" stroke="url(#gChk)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </symbol>
+    <!-- 已約滿：行事曆 + 紅色禁止（紅底用白線） -->
+    <symbol id="ic-calban-on" viewBox="0 0 24 24">
+      <g filter="url(#icoSoftW)">
+        <rect x="3.5" y="5" width="14" height="14.5" rx="2.4" fill="none" stroke="#fff" stroke-width="1.7" opacity=".95"/>
+        <path d="M3.5 9h14" stroke="#fff" stroke-width="1.5" opacity=".9"/>
+        <path d="M7.2 3.2v3.2M13.8 3.2v3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".95"/>
+        <circle cx="15.7" cy="15.4" r="5.1" fill="rgba(216,75,64,1)" stroke="#fff" stroke-width="2.1"/>
+        <path d="M12.4 12.1l6.6 6.6" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <div id="calendar-container">
+    <div id="calendar"></div>
+    <div id="appointmentModal" class="modal appointment-modal">
+      <div class="modal-content appointment-dialog">
+        <button type="button" class="close-button appointment-close-button" aria-label="關閉預約彈窗">&times;</button>
+        <form id="appointmentForm" class="appointment-form">
+          <input type="hidden" id="event_id" name="event_id">
+          <input type="hidden" id="start_time" name="start_time">
+          <input type="hidden" id="employee_id" name="employee_id">
+          <input type="hidden" id="amount_input" name="amount_input">
+
+          <div class="modal-layout-grid appointment-grid">
+            <section class="modal-section blue-card-section appointment-panel appointment-panel--details" id="appointment-info-card">
+              <div class="appointment-modal-head">
+                <span class="appointment-kicker">JINGMEI · 預約登記</span>
+                <span id="appointment-modal-when">請選擇時間</span>
+              </div>
+
+              <div class="appointment-type-block">
+                <div class="type-toggle-container">
+                  <input type="radio" id="appointment-normal" name="appointment_type" value="normal" checked>
+                  <input type="radio" id="appointment-blocked" name="appointment_type" value="blocked">
+                  <label for="appointment-normal" class="toggle-label left">一般預約</label>
+                  <label for="appointment-blocked" class="toggle-label right">不約時段</label>
+                  <span class="sliding-glider"></span>
+                </div>
+              </div>
+
+              <!-- 既有預約預設唯讀，按底部「編輯」鈕才解鎖左側預約資訊欄位 -->
+
+              <div class="appointment-fields">
+                <div class="form-row appointment-field appointment-field--time">
+                  <label for="hour_select">時間</label>
+                  <div class="time-select-group">
+                    <select id="hour_select" name="hour_select"></select>
+                    <span class="time-sep">:</span>
+                    <select id="minute_select" name="minute_select"></select>
+                  </div>
+                </div>
+
+                <div class="form-row appointment-field appointment-field--duration">
+                  <label for="duration_select">時長</label>
+                  <div class="duration-input-wrap">
+                    <button type="button" class="duration-step-btn" data-duration-step="-5" aria-label="減少 5 分鐘">−</button>
+                    <input type="number" id="duration_select" name="duration_select" min="5" step="5" value="30" placeholder="輸入分鐘數">
+                    <button type="button" class="duration-step-btn" data-duration-step="5" aria-label="增加 5 分鐘">+</button>
+                  </div>
+                </div>
+
+                <div class="form-row appointment-field appointment-field--wide appointment-field--operator">
+                  <label for="operator_select">結果</label>
+                  <select id="operator_select" name="operator_select" style="display:none;" required>
+                    <option value="">-- 請選擇 --</option>
+                    <option value="店長">店長</option>
+                    <option value="雅婷">雅婷</option>
+                    <option value="小白">小白</option>
+                    <option value="陳翎">陳翎</option>
+                    <option value="曹家溱">曹家溱</option>
+                  </select>
+                  <div class="operator-segmented" aria-label="選擇輸入人">
+                    <button type="button" data-operator-value="店長">雪</button>
+                    <button type="button" data-operator-value="雅婷">婷</button>
+                    <button type="button" data-operator-value="小白">白</button>
+                    <button type="button" data-operator-value="陳翎">陳</button>
+                    <button type="button" data-operator-value="曹家溱">曹</button>
+                  </div>
+                </div>
+
+                <div id="customer-fields-left" class="customer-fields">
+                  <div class="customer-identity-card">
+                    <div class="customer-avatar" aria-hidden="true">客</div>
+                    <div class="customer-identity-fields">
+                      <div class="form-row appointment-field">
+                        <label for="customer_name">姓名</label>
+                        <div class="name-control-wrap">
+                          <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
+                          <input type="hidden" id="pax_count" name="pax_count" value="1">
+                          <button type="button" id="pax_toggle" class="pax-toggle" aria-label="陪同人數" title="陪同人數（點一下循環：陪 → 1 → 2 → 3）">陪</button>
+                        </div>
+                      </div>
+                      <div class="form-row appointment-field">
+                        <label for="customer_phone">電話</label>
+                        <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-row appointment-field appointment-field--service">
+                    <label for="service_id">項目</label>
+                    <select id="service_id" name="service_id" style="display:none;">
+                      <option value="">-- 不選 --</option>
+                      <option value="剪髮">剪髮</option>
+                      <option value="染">染</option>
+                      <option value="燙">燙</option>
+                      <option value="染+燙">染+燙</option>
+                      <option value="頭皮護理">頭皮護理</option>
+                    </select>
+                    <div class="service-icon-buttons" aria-label="選擇項目">
+                      <button type="button" data-service-value="剪髮" title="剪髮"><img class="service-icon-img" src="icons/svc-cut-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="染" title="染"><img class="service-icon-img" src="icons/svc-dye-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="燙" title="燙"><img class="service-icon-img" src="icons/svc-perm-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="染+燙" title="染+燙"><img class="service-icon-img" src="icons/svc-dye-perm-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="頭皮護理" title="頭皮護理"><img class="service-icon-img" src="icons/svc-scalp-gpt.png" alt="" aria-hidden="true"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row appointment-field appointment-field--notes">
+                  <label for="notes">備註</label>
+                  <div id="last-visit-note" class="last-visit-note" hidden></div>
+                  <textarea id="notes" name="notes" rows="3" placeholder="請輸入備註資訊..."></textarea>
+                </div>
+              </div>
+
+              <div class="appointment-bottom-bar">
+                <div id="appointment-actions-anchor" class="appointment-actions-anchor">
+                  <div class="modal-actions appointment-actions">
+                    <button type="button" id="appointmentEditBtn" class="appointment-edit-btn">
+                      編輯
+                    </button>
+                    <button type="button" id="deleteBtn" style="display:none;">刪除</button>
+                    <button type="submit" id="submit-btn">儲存</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="modal-col settlement-col appointment-panel appointment-panel--settlement" id="settlement-col">
+              <div class="modal-section settlement-section">
+                <div class="settlement-sub-card settlement-sub-card--cut">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">剪髮</label>
+                    <span class="settlement-card-tag">CUT</span>
+                  </div>
+                  <div class="price-group">
+                    <input type="radio" name="cut_price" value="0" data-cost="0" style="display:none;">
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="450"
+                          data-cost="0"> 成人剪髮</span> <span class="price-val">$ 450</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="400"
+                          data-cost="0"> 大學剪髮</span> <span class="price-val">$ 400</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="350"
+                          data-cost="0"> 高中剪髮</span> <span class="price-val">$ 350</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="1100"
+                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$1100</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
+                          data-cost="0"> 剪髮+護髮</span> <span class="price-val">$ 900</span></label>
+                    <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
+                          type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
+                        class="price-val">$ 600</span></label>
+                    <label class="price-item price-item--custom">
+                      <span class="price-label"><input type="checkbox" id="cut_custom_enabled" class="custom-price-toggle"> 剪髮自訂</span>
+                      <span class="price-val custom-val-wrap">$<input type="number" id="cut_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="settlement-sub-card settlement-sub-card--extra">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">其他項目</label>
+                    <span class="settlement-card-tag">EXTRA</span>
+                  </div>
+                  <div class="price-group">
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="150" data-cost="0"> 洗髮</span> <span class="price-val">$ 150</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="1000" data-cost="270"> 染髮</span> <span class="price-val">$1000</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="1000" data-cost="270"> 漂髮</span> <span class="price-val">$1000</span></label>
+                    <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
+                          value="4000" data-cost="270"> 漂髮</span> <span class="price-val">$4000</span></label>
+                    <label class="price-item price-item--custom">
+                      <span class="price-label"><input type="checkbox" id="other_custom_enabled" class="custom-price-toggle"> 其他自訂</span>
+                      <span class="price-val custom-val-wrap">$ <input type="number" id="other_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="dye-color-wrap" class="settlement-row appointment-inline-field" style="display:none;">
+                  <label for="dye_color_input">染髮顏色紀錄</label>
+                  <input type="text" id="dye_color_input" name="dye_color_input" placeholder="請輸入色號/配方...">
+                </div>
+
+                <div id="material-cost-wrap" class="settlement-row appointment-inline-field" style="display:none;">
+                  <label for="custom_material_cost">材料費</label>
+                  <input type="number" id="custom_material_cost" name="custom_material_cost" min="0" inputmode="numeric"
+                    placeholder="請輸入材料費...">
+                </div>
+
+                <div class="settlement-sub-card settlement-sub-card--perm">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title">燙髮</label>
+                    <span class="settlement-card-tag">PERM</span>
+                  </div>
+                  <div class="price-group">
+                    <input type="radio" name="perm_price" value="0" data-cost="0" style="display:none;" checked>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="700"
+                          data-cost="0"></span> <span class="price-val">$ 700</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1200"
+                          data-cost="250"></span> <span class="price-val">$1200</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1600"
+                          data-cost="0"></span> <span class="price-val">$1600</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="1800"
+                          data-cost="250"></span> <span class="price-val">$1800</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="2600"
+                          data-cost="0"></span> <span class="price-val">$2600</span></label>
+                    <label class="price-item"><span class="price-label"><input type="radio" name="perm_price" value="3200"
+                          data-cost="0"></span> <span class="price-val">$3200</span></label>
+                    <label class="price-item price-item--custom">
+                      <span class="price-label"><input type="checkbox" id="perm_custom_enabled" class="custom-price-toggle"> 燙髮自訂</span>
+                      <span class="price-val custom-val-wrap">$ <input type="number" id="perm_custom" class="custom-price-input" value="0" min="0"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="settlement-sub-card settlement-sub-card--footer">
+                  <div class="settlement-card-heading">
+                    <label class="sub-card-title" for="retail_item">店販</label>
+                    <span class="settlement-card-tag">SHOP</span>
+                  </div>
+                  <div class="shop-sales-inputs">
+                    <input type="text" id="retail_item" name="retail_item" placeholder="品項名稱">
+                    <span class="shop-price-wrap">$ <input type="number" id="retail_price" name="retail_price" placeholder="0" min="0"></span>
+                    <select id="assistant_select" name="assistant_select">
+                      <option value="">-- 選助理 --</option>
+                      <option value="陳翎">陳翎</option>
+                      <option value="曹家溱">曹家溱</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="total-display appointment-total-summary">
+                <span class="total-label-text">總金額</span>
+                <span id="display-total">$0</span>
+                <div class="appointment-net-total">
+                  <span class="net-amount-text">入帳 <span id="display-net">$0</span></span>
+                  <button type="button" id="unsetPaidBtn" class="unset-paid-btn">重置</button>
+                </div>
+              </div>
+              <div id="last-visit-info-right" class="last-visit-info" hidden>上次消費：-</div>
+            </section>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="leaveModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button leave-close-button">&times;</span>
+        <h3 id="leaveModalTitle">設定排休</h3>
+        <p>您正在為 <b id="leaveModalResourceName"></b> 設定 <b id="leaveModalDate"></b> 的排休狀態。</p>
+        <form id="leaveForm" class="modal-form">
+          <input type="hidden" id="leaveResourceId">
+          <input type="hidden" id="leaveDate">
+          <div class="modal-section form-span-2">
+            <label for="leaveReason">排休原因 (會顯示在格子上)</label>
+            <input type="text" id="leaveReason" name="leaveReason" placeholder="例如：店休、特休、進修">
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="deleteLeaveBtn">取消排休</button>
+            <button type="submit" id="submitLeaveBtn">儲存設定</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="report-trigger-placeholder" hidden>
+      <button id="open-report-btn" type="button" class="report-trigger-btn">
+        報表
+      </button>
+    </div>
+    <div id="lookup-trigger-placeholder" hidden>
+      <button id="open-lookup-btn" type="button" class="report-trigger-btn">
+        預約
+      </button>
+    </div>
+    <div id="warnlist-trigger-placeholder" hidden>
+      <button id="open-warnlist-btn" type="button" class="report-trigger-btn">
+        警示
+      </button>
+    </div>
+    <div id="theme-trigger-placeholder" hidden>
+      <button id="open-theme-btn" type="button" class="report-trigger-btn">
+        主題
+      </button>
+    </div>
+
+    <!-- ====== 主題色設定 Modal ====== -->
+    <div id="themeModal" class="modal">
+      <div class="modal-content" style="max-width: 360px;">
+        <span class="close-button theme-close-button">&times;</span>
+        <h3 style="margin-top:0;">主題色設定</h3>
+        <div id="theme-color-rows"></div>
+
+        <!-- V2 霓虹版面體驗 Switch 開關 -->
+        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 16px 0 12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
+          <span style="font-weight:600; color:var(--date-card-text);">體驗 V2 霓虹版面</span>
+          <label class="switch-v2" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+            <input type="checkbox" id="v2-toggle-checkbox" style="opacity: 0; width: 0; height: 0;">
+            <span class="slider-v2" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:16px;">
+          <button type="button" id="theme-reset-btn" class="report-trigger-btn">恢復預設</button>
+          <button type="button" id="theme-apply-btn" class="report-trigger-btn">套用</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 警告名單 Modal ====== -->
+    <div id="warnlistModal" class="modal">
+      <div class="modal-content" style="max-width: 520px;">
+        <span class="close-button warnlist-close-button">&times;</span>
+        <h3 style="margin-top:0; color:#e65100;">⚠ 警示名單</h3>
+        <div class="warnlist-add-row">
+          <input type="tel" id="warn-phone" inputmode="numeric" autocomplete="off" placeholder="電話 09xx-xxx-xxx">
+          <input type="text" id="warn-note" placeholder="備註（如：請先付款）" style="flex:1;">
+          <button id="warn-add-btn" type="button">新增</button>
+        </div>
+        <div id="warnlist-items" style="margin-top: 12px; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+      <div class="modal-content" style="max-width: 700px;">
+        <span class="close-button report-close-button">&times;</span>
+        <h3 style="margin-top:0;">區間統計 (客數)</h3>
+        <div class="report-controls">
+          <label for="report-start" class="report-label">起日</label>
+          <input type="date" id="report-start">
+          <label for="report-end" class="report-label">迄日</label>
+          <input type="date" id="report-end">
+          <button id="fetch-report-btn" type="button">查詢</button>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 4px 0;">
+        <div id="report-result">
+          <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
+            請選擇起訖日期，點擊「查詢」。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lookupModal" class="modal">
+      <div class="modal-content lookup-modal-content">
+        <span class="close-button lookup-close-button">&times;</span>
+        <h3 style="margin-top:0;">&#x9810;&#x7D04;&#x67E5;&#x8A62;</h3>
+        <div class="lookup-controls">
+          <label for="lookup-phone" class="lookup-label">&#x96FB;&#x8A71;</label>
+          <input type="tel" id="lookup-phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
+          <label for="lookup-name" class="lookup-label">&#x59D3;&#x540D;</label>
+          <input type="text" id="lookup-name" autocomplete="off"
+            placeholder="&#x53EF;&#x8F38;&#x5165;&#x90E8;&#x5206;&#x59D3;&#x540D;">
+          <button id="fetch-lookup-btn" type="button">&#x67E5;&#x8A62;</button>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 8px 0;">
+        <div id="lookup-result" class="lookup-result">
+          <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
+            &#x8ACB;&#x8F38;&#x5165;&#x96FB;&#x8A71;&#x5F8C;&#x67E5;&#x8A62;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notes-section">
+      <div class="notes-container">
+        <div class="notes-header">
+          <h4>留言板</h4>
+          <div class="notes-meta"><span>未儲存</span></div>
+          <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
+        </div>
+        <textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
+
+    <script>
+      // 後端 Google Apps Script 網址
+      const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q/exec';
+
+      // 全域 escapeHtml（防 XSS）
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+      // 全域 showToast（跨 IIFE 共用）
+      function showToast(message, type = 'info', duration = 2000) {
+        let container = document.getElementById('toast-container');
+        if (!container) { container = document.createElement('div'); container.id = 'toast-container'; document.body.appendChild(container); }
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${type}`; toast.textContent = message;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
+      }
+      const RESOURCE_LIST = [
+        { id: '1', title: '店長' },
+        { id: '2', title: '雅婷' },
+        { id: '3', title: '小白' }
+      ];
+      const DESIGNER_NAME_BY_ID = {
+        '1': '店長',
+        '2': '雅婷',
+        '3': '小白'
+      };
+      const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
+      const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 480px)';
+
+      (function () {
+        function getDesignerNameById(id) {
+          const rid = String(id || '').trim();
+          if (!rid) return '';
+          if (DESIGNER_NAME_BY_ID[rid]) return DESIGNER_NAME_BY_ID[rid];
+          const res = Array.isArray(RESOURCE_LIST) ? RESOURCE_LIST.find(r => String(r.id) === rid) : null;
+          return res ? res.title : '';
+        }
+        let employeeLeaveData = [];
+        const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        let currentYmd = null;
+        let selectedDate = null;
+        let calendar;
+        let perResourceAxisTimer = null;
+        let mobileSelectedResourceId = null;
+        let displayTotal = 0;  // 全域變數儲存總金額
+
+        let appointmentModal, leaveModal, reportModal, lookupModal, warnlistModal;
+        let appointmentCloseButton, leaveCloseButton, reportCloseButton, lookupCloseButton, warnlistCloseButton;
+        let form, leaveForm, notesTextarea, phoneEl, customerFields;
+        let submitBtn, deleteBtn, eventIdInput, operatorSelect, assistantSelect, amountInput, deleteLeaveBtn, unsetPaidBtn;
+        let appointmentContent, appointmentActions, appointmentActionsAnchor, appointmentInfoCard;
+        let lastVisitInfo;
+        let lastVisitInfoRight;
+        let lastVisitLabelValue = '';
+        let lastVisitPhoneValue = '';
+        let lastVisitDesignerValue = '';
+
+        /* ====== API 請求優化：debounce + cache ====== */
+        function debounce(fn, ms) {
+          let timer;
+          return function (...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), ms); };
+        }
+
+        /* 簡易快取：key → { data, ts }，預設 5 分鐘 */
+        const _apiCache = {};
+        const API_CACHE_TTL = 5 * 60 * 1000;
+        function cachedFetch(url, ttl = API_CACHE_TTL) {
+          const now = Date.now();
+          const cached = _apiCache[url];
+          if (cached && (now - cached.ts) < ttl) return Promise.resolve(cached.data);
+          return fetch(url, { method: 'GET', mode: 'cors' }).then(r => r.json()).then(data => {
+            _apiCache[url] = { data, ts: Date.now() };
+            return data;
+          });
+        }
+        /* 寫入操作後，清除相關快取 */
+        function invalidateCache(keyword) {
+          Object.keys(_apiCache).forEach(k => { if (k.includes(keyword)) delete _apiCache[k]; });
+        }
+
+        /* 防止同一個 action 重複併發：回傳進行中的 Promise */
+        const _inflightRequests = {};
+        function deduplicatedFetch(url) {
+          if (_inflightRequests[url]) return _inflightRequests[url];
+          _inflightRequests[url] = cachedFetch(url).finally(() => { delete _inflightRequests[url]; });
+          return _inflightRequests[url];
+        }
+
+        /* 主題已統一為單一預設樣式；清除舊版三態切換殘留 */
+        try { localStorage.removeItem('modal-theme'); } catch (e) {}
+
+        /* 自訂金額 focus 時全選，方便直接覆蓋輸入 */
+        document.addEventListener('focusin', function (e) {
+          if (e.target.classList.contains('custom-price-input')) e.target.select();
+        });
+        /* 自訂金額 blur 時，空值歸零 */
+        document.addEventListener('focusout', function (e) {
+          if (e.target.classList.contains('custom-price-input') && !e.target.value) e.target.value = '0';
+        });
+
+        const CUSTOM_PRICE_FIELDS = [
+          { toggleId: 'cut_custom_enabled', inputId: 'cut_custom' },
+          { toggleId: 'other_custom_enabled', inputId: 'other_custom' },
+          { toggleId: 'perm_custom_enabled', inputId: 'perm_custom' }
+        ];
+
+        function syncCustomPriceField(field, shouldFocus) {
+          const toggle = document.getElementById(field.toggleId);
+          const input = document.getElementById(field.inputId);
+          if (!toggle || !input) return;
+          input.disabled = !toggle.checked;
+          if (!toggle.checked) input.value = '0';
+          if (toggle.checked && shouldFocus) input.focus();
+        }
+
+        function syncCustomPriceFields(shouldFocus) {
+          CUSTOM_PRICE_FIELDS.forEach(field => syncCustomPriceField(field, shouldFocus));
+        }
+
+        function resetCustomPriceFields() {
+          CUSTOM_PRICE_FIELDS.forEach(field => {
+            const toggle = document.getElementById(field.toggleId);
+            const input = document.getElementById(field.inputId);
+            if (toggle) toggle.checked = false;
+            if (input) {
+              input.value = '0';
+              input.disabled = true;
+            }
+          });
+        }
+
+        function getEnabledCustomPrice(inputId) {
+          const field = CUSTOM_PRICE_FIELDS.find(item => item.inputId === inputId);
+          const toggle = field ? document.getElementById(field.toggleId) : null;
+          const input = document.getElementById(inputId);
+          if (!toggle?.checked || !input) return 0;
+          return parseInt(input.value, 10) || 0;
+        }
+        /* 輸入人/助理 select：有值時文字變深色，空值時保持淺色 */
+        document.addEventListener('change', function (e) {
+          if (e.target.id === 'operator_select' || e.target.id === 'assistant_select') {
+            e.target.style.color = e.target.value ? '' : '';
+            e.target.classList.toggle('has-value', !!e.target.value);
+          }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const calendarEl = document.getElementById('calendar');
+          if (calendarEl && isMobileLayout()) {
+            mobileSelectedResourceId = ensureMobileResourceId();
+            calendarEl.setAttribute('data-mobile-resource', mobileSelectedResourceId);
+          }
+          appointmentModal = document.getElementById('appointmentModal');
+          leaveModal = document.getElementById('leaveModal');
+          reportModal = document.getElementById('reportModal');
+          lookupModal = document.getElementById('lookupModal');
+          warnlistModal = document.getElementById('warnlistModal');
+
+          form = document.getElementById('appointmentForm');
+          leaveForm = document.getElementById('leaveForm');
+          notesTextarea = document.getElementById('notes-content');
+          phoneEl = document.getElementById('customer_phone');
+          customerFields = document.getElementById('customer-fields-left');
+          submitBtn = document.getElementById('submit-btn');
+          deleteBtn = document.getElementById('deleteBtn');
+          eventIdInput = document.getElementById('event_id');
+          operatorSelect = document.getElementById('operator_select');
+          assistantSelect = document.getElementById('assistant_select');
+          amountInput = document.getElementById('amount_input');
+          unsetPaidBtn = document.getElementById('unsetPaidBtn');
+          lastVisitInfo = document.getElementById('last-visit-info');
+          lastVisitInfoRight = document.getElementById('last-visit-info-right');
+          appointmentContent = appointmentModal ? appointmentModal.querySelector('.modal-content') : null;
+          appointmentActions = document.querySelector('#appointmentForm .modal-actions');
+          appointmentActionsAnchor = document.getElementById('appointment-actions-anchor');
+          appointmentInfoCard = document.getElementById('appointment-info-card');
+
+          appointmentCloseButton = appointmentModal ? appointmentModal.querySelector('.close-button') : null;
+          leaveCloseButton = leaveModal ? leaveModal.querySelector('.close-button') : null;
+          reportCloseButton = reportModal ? reportModal.querySelector('.close-button') : null;
+          lookupCloseButton = lookupModal ? lookupModal.querySelector('.close-button') : null;
+          warnlistCloseButton = warnlistModal ? warnlistModal.querySelector('.close-button') : null;
+
+          deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
+
+          function setAppointmentModalMode(mode) {
+            if (!appointmentModal) return;
+            appointmentModal.classList.toggle('is-create', mode === 'create');
+            appointmentModal.classList.toggle('is-edit', mode === 'edit');
+            appointmentModal.classList.toggle('is-blocked', mode === 'blocked');
+          }
+
+          // 既有預約彈窗：把左側「預約資訊」欄位鎖成唯讀（不含右側結帳區/金額/重置/刪除/儲存）。
+          // 底部三顆按鈕「編輯 / 刪除預約 / 儲存」固定並排常駐（不依唯讀狀態切換可見性）；
+          // 「編輯」鈕負責解鎖欄位，解鎖後（!on）變灰示意已可編輯。
+          function setAppointmentReadonly(on) {
+            if (!appointmentModal) return;
+            appointmentModal.classList.toggle('is-readonly', !!on);
+            const editBtn = document.getElementById('appointmentEditBtn');
+            const isEdit = appointmentModal.classList.contains('is-edit');
+            // 編輯鈕只在「既有預約（is-edit）」模式顯示；新增模式不需要。
+            if (editBtn) {
+              editBtn.style.display = isEdit ? 'inline-flex' : 'none';
+              editBtn.classList.toggle('is-unlocked', isEdit && !on);
+              editBtn.disabled = isEdit && !on;
+            }
+            // 刪除/儲存：既有預約模式常駐顯示；新增模式維持原本（由 placeAppointmentActions 控制 is-create 樣式）。
+            if (submitBtn) submitBtn.style.display = 'inline-block';
+            if (deleteBtn) deleteBtn.style.display = isEdit ? 'inline-block' : 'none';
+            syncVisualAppointmentControls();
+          }
+
+          function syncOperatorRequired() {
+            if (!operatorSelect) return;
+            // 輸入人只在新增預約時必填；既有預約結帳/更新不要求重新選。
+            operatorSelect.required = !(eventIdInput && eventIdInput.value);
+          }
+
+          function syncAssistantRequired() {
+            if (!assistantSelect) return;
+            // 店販助理一律非必填：儲存預約時不選助理也能通過驗證（使用者要求）。
+            assistantSelect.required = false;
+          }
+
+          function placeAppointmentActions(mode) {
+            if (!appointmentActions) return;
+            setAppointmentModalMode(mode);
+            if (appointmentActionsAnchor) appointmentActionsAnchor.appendChild(appointmentActions);
+          }
+
+          function formatAppointmentWhen(dateObj) {
+            const dt = dateObj instanceof Date ? dateObj : new Date(dateObj);
+            if (isNaN(dt.getTime())) return '請選擇時間';
+            const parts = new Intl.DateTimeFormat('zh-TW', {
+              timeZone: 'Asia/Taipei',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              weekday: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }).formatToParts(dt).reduce((acc, part) => {
+              acc[part.type] = part.value;
+              return acc;
+            }, {});
+            const weekday = parts.weekday && parts.weekday.startsWith('週') ? parts.weekday : `週${parts.weekday || ''}`;
+            return `${parts.year}.${parts.month}.${parts.day}（${weekday}）· ${parts.hour}:${parts.minute}`;
+          }
+
+          function setAppointmentHeader(mode, startDate) {
+            const titleEl = document.getElementById('appointment-modal-title');
+            const whenEl = document.getElementById('appointment-modal-when');
+            if (titleEl) titleEl.textContent = mode === 'blocked' ? '設定不約時段' : (mode === 'edit' ? '編輯預約' : '新增預約');
+            if (whenEl) whenEl.textContent = formatAppointmentWhen(startDate);
+          }
+
+          function syncCustomerAvatar() {
+            const avatar = document.querySelector('#appointmentModal .customer-avatar');
+            const name = document.getElementById('customer_name')?.value.trim();
+            if (avatar) avatar.textContent = name ? name.charAt(0) : '客';
+          }
+
+          function syncOperatorButtons() {
+            const current = operatorSelect ? operatorSelect.value : '';
+            document.querySelectorAll('#appointmentModal [data-operator-value]').forEach(btn => {
+              const selected = btn.dataset.operatorValue === current;
+              btn.classList.toggle('is-on', selected);
+              btn.style.display = '';
+            });
+          }
+
+          function syncServiceButtons() {
+            const current = document.getElementById('service_id')?.value || '';
+            document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
+              const selected = btn.dataset.serviceValue === current;
+              btn.classList.toggle('is-on', selected);
+              btn.style.display = '';
+            });
+          }
+
+          // 陪同人數單顆循環鈕：pax_count 存「總人數」(1~4)；按鈕顯示陪同數(pax-1)，
+          // pax=1 顯示「陪」(只有本人)，pax=2/3/4 顯示 1/2/3。
+          function syncPaxToggle() {
+            const input = document.getElementById('pax_count');
+            const btn = document.getElementById('pax_toggle');
+            if (!input || !btn) return;
+            let pax = parseInt(input.value, 10);
+            if (!(pax >= 1 && pax <= 4)) pax = 1;
+            input.value = String(pax);
+            btn.textContent = pax === 1 ? '陪' : String(pax - 1);
+            btn.classList.toggle('is-on', pax > 1);
+          }
+
+          function syncDurationTooltip() {
+            const durationInput = document.getElementById('duration_select');
+            const tooltip = document.getElementById('duration_tooltip');
+            if (durationInput && tooltip) {
+              const val = Number(durationInput.value) || 30;
+              tooltip.textContent = `${val} 分鐘`;
+              const min = Number(durationInput.min) || 15;
+              const max = Number(durationInput.max) || 60;
+              const percent = ((val - min) / (max - min)) * 100;
+              tooltip.style.left = `calc(${percent}% + (${12 - percent * 0.24}px))`;
+            }
+          }
+
+          function syncVisualAppointmentControls() {
+            syncCustomerAvatar();
+            syncOperatorButtons();
+            syncServiceButtons();
+            syncPaxToggle();
+            syncDurationTooltip();
+          }
+
+          function installAppointmentVisualControls() {
+            const durationInput = document.getElementById('duration_select');
+            if (durationInput) {
+              durationInput.addEventListener('input', syncDurationTooltip);
+            }
+            document.querySelectorAll('#appointmentModal [data-duration-step]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!durationInput) return;
+                const step = Number(btn.dataset.durationStep) || 5;
+                const min = Number(durationInput.min) || 5;
+                const current = Number(durationInput.value) || min;
+                durationInput.value = String(Math.max(min, current + step));
+                durationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                durationInput.dispatchEvent(new Event('change', { bubbles: true }));
+              });
+            });
+
+            document.querySelectorAll('#appointmentModal [data-operator-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!operatorSelect) return;
+                const value = btn.dataset.operatorValue || '';
+                const canToggleOff = appointmentModal?.classList.contains('is-create');
+                operatorSelect.value = canToggleOff && operatorSelect.value === value ? '' : value;
+                operatorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                syncOperatorButtons();
+              });
+            });
+
+            const serviceSelect = document.getElementById('service_id');
+            document.querySelectorAll('#appointmentModal [data-service-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!serviceSelect) return;
+                serviceSelect.value = serviceSelect.value === btn.dataset.serviceValue ? '' : (btn.dataset.serviceValue || '');
+                serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                syncServiceButtons();
+              });
+            });
+
+            const paxInput = document.getElementById('pax_count');
+            document.getElementById('pax_toggle')?.addEventListener('click', () => {
+              if (!paxInput) return;
+              let pax = parseInt(paxInput.value, 10);
+              if (!(pax >= 1 && pax <= 4)) pax = 1;
+              pax = pax >= 4 ? 1 : pax + 1;  // 陪(1) → 1(2) → 2(3) → 3(4) → 歸零回陪(1)
+              paxInput.value = String(pax);
+              syncPaxToggle();
+            });
+
+            document.getElementById('customer_name')?.addEventListener('input', syncCustomerAvatar);
+            operatorSelect?.addEventListener('change', syncOperatorButtons);
+            serviceSelect?.addEventListener('change', syncServiceButtons);
+
+            // 「編輯」鈕：解鎖左側預約資訊欄位
+            document.getElementById('appointmentEditBtn')?.addEventListener('click', () => {
+              setAppointmentReadonly(false);
+            });
+
+            syncVisualAppointmentControls();
+          }
+
+          installAppointmentVisualControls();
+
+          async function fetchDailyNote(dStr) {
+            const meta = document.querySelector('.notes-meta span');
+            const notesTextarea = document.getElementById('notes-content');
+            notesTextarea.value = '';
+            notesTextarea.placeholder = '留言載入中...';
+            meta.textContent = '載入中...';
+            try {
+              const url = APPS_SCRIPT_WEB_APP_URL + '?action=getNotes&date=' + encodeURIComponent(dStr);
+              const j = await deduplicatedFetch(url);
+              notesTextarea.value = j.content || '';
+              meta.textContent = '已載入';
+            } catch (e) {
+              meta.textContent = '載入失敗';
+              console.error("讀取留言失敗:", e);
+            } finally {
+              notesTextarea.placeholder = '請輸入備註資訊...';
+            }
+          }
+          const _debouncedFetchNote = debounce(fetchDailyNote, 300);
+
+          initializeCalendar();
+          fetchAllCloudData();
+          bindEventListeners();
+
+          function initializeCalendar() {
+            calendar = new FullCalendar.Calendar(calendarEl, {
+              schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+              locale: 'zh-tw',
+              timeZone: 'local',
+              initialView: 'resourceTimeGridDay',
+              headerToolbar: false,
+              firstDay: 2,
+              hiddenDays: [1],
+              buttonText: { today: '今', dayGridMonth: '月', resourceTimeGridDay: '日', resourceTimeGridWeek: '週' },
+              allDaySlot: false,
+              slotMinTime: '12:00:00',
+              slotMaxTime: '21:00:00',
+              slotDuration: '00:15:00',
+              slotLabelInterval: '00:15:00',
+              slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+              dayHeaderContent: function (arg) {
+                const date = arg.date;
+                const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
+                return weekdayMap[date.getDay()];
+              },
+              displayEventTime: false,
+              height: 'auto',
+              expandRows: false,
+              handleWindowResize: true,
+              businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
+              resources: RESOURCE_LIST,
+              events: function (info, successCallback, failureCallback) {
+                const start = ymd(info.start);
+                const end = ymd(info.end);
+                const url = APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + start + '&end=' + end;
+                deduplicatedFetch(url).then(data => {
+                  successCallback(Array.isArray(data) ? data : []);
+                }).catch(failureCallback);
+              },
+              views: {
+                resourceTimeGridWeek: { hiddenDays: [1] },
+                dayGridMonth: { eventDisplay: 'auto', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false, dayMaxEventRows: 3 }
+              },
+              selectable: true,
+              dateClick: function (info) {
+                if (info.view.type === 'dayGridMonth') {
+                  calendar.changeView('resourceTimeGridDay', info.date);
+                  return;
+                }
+                if (info.view.type === 'resourceTimeGridDay' || info.view.type === 'resourceTimeGridWeek') {
+                  if (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 1024px)').matches)) return;
+                  openApptModalForCreate(info.date, info.resource);
+                }
+              },
+              eventClick: function (info) {
+                info.jsEvent.preventDefault();
+                info.jsEvent.stopPropagation();
+                openApptModalForEdit(info.event);
+              },
+              dayCellDidMount: function (arg) {
+                if (arg.view.type !== 'dayGridMonth') return;
+                const currentMonth = arg.view.currentStart.getMonth();
+                const cellMonth = arg.date.getMonth();
+                if (cellMonth !== currentMonth) return;
+                const d = arg.date.getDay();
+                if (d === 4) arg.el.classList.add('leave-boss');
+                if (d === 2) arg.el.classList.add('leave-xiaobai');
+                if (d === 0) arg.el.classList.add('leave-yatting');
+              },
+              selectLongPressDelay: 250,
+              datesSet: function (info) {
+                updateToolbarTitle(info);
+                updateDateScroller(info);
+                applyMobileResourceVisibility(info);
+                paintMondayClosed(info);
+                paintEmployeeLeave();
+                syncFullyBookedButtons();
+                schedulePerResourceTimeAxis(80);
+                // 更新 currentYmd
+                currentYmd = ymd(info.start);
+
+                // 在日視圖時,同步 selectedDate
+                if (info.view && info.view.type === 'resourceTimeGridDay') {
+                  selectedDate = new Date(info.view.currentStart);
+                  selectedDate.setHours(12, 0, 0, 0);
+                }
+
+                _debouncedFetchNote(currentYmd);
+              },
+              resourceLabelContent: function (arg) {
+                const viewType = arg.view?.type || calendar?.view?.type;
+                const isDayView = viewType === 'resourceTimeGridDay';
+                const isWeekView = viewType === 'resourceTimeGridWeek';
+                const nameText = (arg?.resource?.title ?? '').trim();
+
+                if (!isDayView && !isWeekView) {
+                  return { html: '' === nameText ? '' : escapeHtml(nameText) };
+                }
+
+                const nodes = [];
+
+                if (nameText) {
+                  const wt = document.createElement('div');
+                  wt.className = 'wt-t8';
+                  const arrow = document.createElement('span');
+                  arrow.className = 'arrow';
+                  arrow.textContent = '▸▸';
+                  const b = document.createElement('b');
+                  b.textContent = nameText;
+                  const en = document.createElement('span');
+                  en.className = 'en';
+                  en.textContent = 'STYLIST';
+                  wt.appendChild(arrow);
+                  wt.appendChild(b);
+                  wt.appendChild(en);
+                  nodes.push(wt);
+                }
+
+                if (isDayView) {
+                  const btnGroup = document.createElement('div');
+                  btnGroup.className = 'header-button-group';
+
+                  const leaveIconButton = document.createElement('button');
+                  leaveIconButton.type = 'button';
+                  leaveIconButton.className = 'leave-icon-button';
+                  leaveIconButton.innerHTML = iconSvg('ic-palm');
+                  leaveIconButton.title = '排休';
+                  btnGroup.appendChild(leaveIconButton);
+                  leaveIconButton.addEventListener('click', function (event) {
+                    event.preventDefault(); event.stopPropagation();
+                    setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
+                  });
+
+                  const dStr = ymd(calendar.view.currentStart);
+                  const isFB = Array.isArray(employeeLeaveData) && employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
+                  const fbBtn = document.createElement('button');
+                  fbBtn.type = 'button';
+                  fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
+                  fbBtn.dataset.resourceId = String(arg.resource.id);
+                  fbBtn.innerHTML = iconSvg(isFB ? 'ic-calban-on' : 'ic-calchk');
+                  fbBtn.title = isFB ? '已約滿' : '約滿';
+                  btnGroup.appendChild(fbBtn);
+
+                  fbBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const date = ymd(calendar.view.currentStart);
+                    const resourceId = arg.resource.id;
+                    try {
+                      if (fbBtn.classList.contains('fb-active')) {
+                        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteLeave', resourceId, date }) });
+                        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+                        if (Array.isArray(employeeLeaveData)) {
+                          const i = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId && l.reason === '已約滿');
+                          if (i !== -1) employeeLeaveData.splice(i, 1);
+                        }
+                        fbBtn.classList.remove('fb-active'); fbBtn.innerHTML = iconSvg('ic-calchk'); fbBtn.title = '約滿';
+                      } else {
+                        const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveLeave', resourceId, date, reason: '已約滿' }) });
+                        const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
+                        if (Array.isArray(employeeLeaveData)) employeeLeaveData.push({ date, resourceId, reason: '已約滿' });
+                        fbBtn.classList.add('fb-active'); fbBtn.innerHTML = iconSvg('ic-calban-on'); fbBtn.title = '已約滿';
+                      }
+                      invalidateCache('getLeave');
+                      paintEmployeeLeave(); syncFullyBookedButtons();
+                    } catch (err) { alert('切換約滿失敗：' + err.message); }
+                  });
+
+                  nodes.push(btnGroup);
+                }
+                return { domNodes: nodes };
+              },
+              resourceLabelDidMount: function (arg) {
+                const cushionEl = (arg.el && arg.el.querySelector) ? arg.el.querySelector('.fc-col-header-cell-cushion') : null;
+                const hostEl = cushionEl || arg.el;
+                if (!hostEl) return;
+                hostEl.style.position = 'relative';
+                hostEl.style.overflow = 'visible';
+                hostEl.classList.add('resource-cushion');
+
+                const rid = String(arg?.resource?.id ?? '');
+                const headerBgByRid = { '1': 'var(--resource-col-1-bg)', '2': 'var(--resource-col-2-bg)', '3': 'var(--resource-col-3-bg)' };
+                if (headerBgByRid[rid]) {
+                  hostEl.dataset.resourceId = rid;
+                  if (arg.el && arg.el !== hostEl) arg.el.dataset.resourceId = rid;
+                }
+              },
+              select: function (info) { openApptModalForCreate(info.start, info.resource); },
+              eventContent: function (arg) {
+                const ep = arg.event.extendedProps || {};
+                const svcMap = {
+                  '剪髮': ['剪'],
+                  '染': ['染'],
+                  '燙': ['燙'],
+                  '染+燙': ['燙', '染'],
+                  '頭皮護理': ['護'],
+                  // 保留相容性
+                  '剪+染': ['染'],
+                  '剪+燙': ['燙'],
+                  '剪+染+燙': ['染', '燙'],
+                  '剪+頭皮護理': ['護']
+                };
+                if (ep.appointment_type === 'blocked') {
+                  const dn = decodeNotes(ep.notes);
+                  const blockedText = [dn.lastVisit, dn.free].filter(Boolean).join(' / ');
+                  return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${escapeHtml(blockedText)}</span></div>` };
+                }
+                const svcList = svcMap[ep.service_id] || ['預'];
+                const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
+                const safeTrim = (v) => (v != null ? String(v).trim() : '');
+                const decodedNotes = decodeNotes(ep.notes);
+                const name = safeTrim(ep.customer_name) || safeTrim(decodedNotes.free);
+                const paxNum = parseInt(ep.pax, 10);
+                const paxExtra = (paxNum >= 2 && paxNum <= 4) ? (paxNum - 1) : 0;  // 陪同併卡：名字後面顯示 +1 / +2 / +3
+                const phone = safeTrim(ep.customer_phone);
+                const paidAmount = Number(ep.total_amount) || Number(ep.amount);  // 優先使用總金額，舊資料用入帳金額
+                const isPaid = ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0;
+                const currencyFormatter = new Intl.NumberFormat('zh-TW');
+
+                // [修改] 結帳後顯示: 金額
+                let amountLabel = '';
+                if (isPaid) {
+                  amountLabel = '$' + currencyFormatter.format(paidAmount);
+                }
+
+                const badgeText = svcList.join('');
+                const badgeKey = (svcList && svcList[0]) ? svcList[0] : '預';
+                const badgeCls = svcClassMap[badgeKey] || 'svc-default';
+                const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
+                const operator = safeTrim(ep.entered_by);
+                // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
+                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹', '吳佩珈': '珈' };
+                const operatorShort = operatorShortMap[operator] || operator;  // 沒對到就退回原字，避免漏顯示
+                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name"><span class="evt-name-text">${escapeHtml(name)}</span>${paxExtra > 0 ? `<span class="evt-pax">+${paxExtra}</span>` : ''}</span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>` };
+              },
+              eventClassNames: function (arg) {
+                const r = arg.event.getResources();
+                const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
+                const ep = arg.event.extendedProps || {};
+                if (ep.appointment_type === 'blocked') cls.push('blocked-time');
+                const paidAmount = Number(ep.amount);
+                if (ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0) cls.push('is-paid');
+                return cls;
+              },
+            });
+            calendar.render();
+          }
+
+          async function fetchAllCloudData() {
+            try {
+              const url = APPS_SCRIPT_WEB_APP_URL + '?action=getLeave';
+              employeeLeaveData = await deduplicatedFetch(url);
+              paintEmployeeLeave(); syncFullyBookedButtons();
+            } catch (error) { console.error('讀取雲端資料失敗:', error); }
+          }
+
+          function iconSvg(id) {
+            return '<svg viewBox="0 0 24 24" class="hdr-ico"><use href="#' + id + '"></use></svg>';
+          }
+
+          function syncFullyBookedButtons() {
+            try {
+              if (!calendar || !employeeLeaveData || calendar.view?.type !== 'resourceTimeGridDay') return;
+              const dStr = ymd(calendar.view.currentStart);
+              document.querySelectorAll('#calendar .fully-booked-button[data-resource-id]').forEach(btn => {
+                const rid = btn.dataset.resourceId;
+                const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
+                if (isFB) { btn.classList.add('fb-active'); btn.innerHTML = iconSvg('ic-calban-on'); btn.title = '已約滿'; } else { btn.classList.remove('fb-active'); btn.innerHTML = iconSvg('ic-calchk'); btn.title = '約滿'; }
+              });
+            } catch (e) { }
+          }
+
+          function showToast(message, type = 'info', duration = 2000) {
+            let container = document.getElementById('toast-container');
+            if (!container) { container = document.createElement('div'); container.id = 'toast-container'; document.body.appendChild(container); }
+            const toast = document.createElement('div');
+            toast.className = `toast toast--${type}`; toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('is-visible'));
+            window.setTimeout(() => { toast.classList.remove('is-visible'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); }, duration);
+          }
+
+          function normalizePhone(value) {
+            return String(value || '').replace(/\D/g, '').slice(0, 10);
+          }
+
+          // ===== 備註編碼：把「上次消費(唯讀)」與「自由備註(可編輯)」合併成單一 notes 字串 =====
+          // 後端 notes 欄位不變，前端用 sentinel 前綴 + 分隔符把兩段編在一起。
+          const LAST_VISIT_PREFIX = '【上次】';
+          const NOTES_SEP = '⟦⟧';   // 自訂分隔符，避免與使用者輸入衝突
+
+          // 解析既有 notes 字串 → { lastVisit, free }
+          // 新格式：【上次】<上次消費>⟦⟧<自由備註>
+          // 舊格式(已移除的 auto-fill 產物)：「上次：<日期> / <設計師> / <項目>」開頭、無 sentinel
+          //   → 視為唯讀上次消費,存檔時 encodeNotes 會升級成新格式;換行後的內容當自由備註。
+          // 其餘(無 sentinel、不以「上次：」開頭)：整段當自由備註,可編輯。
+          const OLD_LAST_VISIT_PREFIXES = ['上次：', '上次:'];   // 全形冒號優先,半形保險
+          function decodeNotes(raw) {
+            const s = (raw == null ? '' : String(raw));
+            if (s.startsWith(LAST_VISIT_PREFIX)) {
+              const rest = s.slice(LAST_VISIT_PREFIX.length);
+              const idx = rest.indexOf(NOTES_SEP);
+              if (idx >= 0) {
+                return { lastVisit: rest.slice(0, idx), free: rest.slice(idx + NOTES_SEP.length) };
+              }
+              return { lastVisit: rest, free: '' };
+            }
+            const oldPrefix = OLD_LAST_VISIT_PREFIXES.find(p => s.startsWith(p));
+            if (oldPrefix) {
+              const body = s.slice(oldPrefix.length);   // 去掉「上次：」前綴
+              const nl = body.indexOf('\n');
+              if (nl >= 0) {
+                // 第一行為上次消費,換行後的內容當自由備註(連同後續換行一併保留)
+                return { lastVisit: body.slice(0, nl).trim(), free: body.slice(nl + 1) };
+              }
+              return { lastVisit: body.trim(), free: '' };
+            }
+            return { lastVisit: '', free: s };
+          }
+
+          // 組合 → 單一 notes 字串。lastVisit 為空時只存自由備註(不加前綴)。
+          function encodeNotes(lastVisit, free) {
+            const lv = (lastVisit == null ? '' : String(lastVisit)).trim();
+            const fr = (free == null ? '' : String(free));
+            if (!lv) return fr;
+            return LAST_VISIT_PREFIX + lv + NOTES_SEP + fr;
+          }
+
+          // 更新表單裡的「上次消費」唯讀區塊
+          function setLastVisitNote(text) {
+            const el = document.getElementById('last-visit-note');
+            if (!el) return;
+            const t = (text == null ? '' : String(text)).trim();
+            el.dataset.raw = t;   // 存原始值供存檔重組，避免解析顯示文字
+            el.textContent = t ? `上次消費　${t}` : '';
+            el.hidden = !t;
+          }
+
+          function formatLastVisitLabel(rawStart) {
+            if (!rawStart) return null;
+            const normalized = String(rawStart || '').trim().replace(/\s+/g, 'T');
+            const parsed = new Date(normalized);
+            if (isNaN(parsed.getTime())) return String(rawStart).trim();
+            const pad = v => String(v).padStart(2, '0');
+            return `${parsed.getFullYear()}/${pad(parsed.getMonth() + 1)}/${pad(parsed.getDate())}`;
+          }
+
+
+
+          function updateLastVisitInfo(label, designerName) {
+            const text = label ? `上次消費：${label}${designerName ? `（設計師：${designerName}）` : ''}` : '';
+            if (lastVisitInfo) {
+              lastVisitInfo.textContent = text;
+              lastVisitInfo.hidden = !label;
+            }
+            if (lastVisitInfoRight) {
+              lastVisitInfoRight.textContent = text;
+              lastVisitInfoRight.hidden = !label;
+            }
+          }
+
+
+
+          function removeEventOptimistically(eventId) {
+            const ev = calendar.getEventById(String(eventId));
+            if (!ev) return false;
+            ev.remove(); return true;
+          }
+
+          function bindEventListeners() {
+            phoneEl.addEventListener('input', async (e) => {
+              let d = e.target.value.replace(/\D/g, '').slice(0, 10);
+              if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
+              else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+              else e.target.value = d;
+
+              // [警示名單] 當輸入滿 10 碼，檢查是否在警示名單中（射後不理，不阻擋下方歷史查詢，兩者並行）
+              if (d.length === 10) {
+                (async () => {
+                try {
+                  const warnRes = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=checkWarn&phone=${d}`, { method: 'GET', mode: 'cors' });
+                  const warnData = await warnRes.json();
+                  if (warnData && warnData.found) {
+                    // 顯示警示橫幅
+                    let banner = document.getElementById('warn-banner');
+                    if (!banner) {
+                      banner = document.createElement('div');
+                      banner.id = 'warn-banner';
+                      banner.className = 'warn-banner';
+                      const phoneRow = phoneEl.closest('.form-row');
+                      phoneRow.insertAdjacentElement('afterend', banner);
+                    }
+                    banner.innerHTML = `⚠ <strong>警示：</strong>${escapeHtml(warnData.note || '此客人列入警示名單')}`;
+                    banner.style.display = 'block';
+                  } else {
+                    const banner = document.getElementById('warn-banner');
+                    if (banner) banner.style.display = 'none';
+                  }
+                } catch (err) { console.error('警示名單查詢失敗:', err); }
+                })();
+              } else {
+                const banner = document.getElementById('warn-banner');
+                if (banner) banner.style.display = 'none';
+              }
+
+              // [CRM功能] 當輸入滿 10 碼且非編輯模式時，自動查詢歷史紀錄並追溯配方
+              if (d.length === 10 && !eventIdInput.value) {
+                try {
+                  // 客戶端快取：同一電話在本次使用中只查一次 GAS
+                  if (!window._crmCache) window._crmCache = {};
+                  let history;
+                  if (window._crmCache[d]) {
+                    history = window._crmCache[d];
+                  } else {
+                    showToast('查詢歷史紀錄中...', 'loading', 5000);
+                    const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${d}`, { method: 'GET', mode: 'cors' });
+                    history = await res.json();
+                    window._crmCache[d] = history;
+                  }
+                  if (history && history.customer_name) {
+                    // 1. 自動填入姓名（若目前為空）
+                    const nameInput = document.getElementById('customer_name');
+                    if (nameInput && !nameInput.value.trim()) {
+                      nameInput.value = history.customer_name;
+                    }
+                    // 2. 自動帶入染髮顏色並顯示區塊
+                    if (history.dye_color) {
+                      const dyeInput = document.getElementById('dye_color_input');
+                      const dyeWrap = document.getElementById('dye-color-wrap');
+                      if (dyeInput) dyeInput.value = history.dye_color;
+                      if (dyeWrap) dyeWrap.style.display = 'grid'; // 強制顯示區塊
+                    }
+                    // 3. 嘗試匹配剪髮分類（依剪髮金額發亮提示，不自動勾選）
+                    const histCut = parseInt(history.cut_price, 10);
+                    const histAmt = parseInt(history.amount, 10);
+                    if (Number.isFinite(histCut) && histCut > 0) {
+                      const radios = document.querySelectorAll('input[name="cut_price"]');
+                      radios.forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
+                        if (parseInt(r.value, 10) === histCut) {
+                          if (item) item.classList.add('price-item--suggested');
+                        }
+                      });
+                    } else if (Number.isFinite(histAmt) && histAmt > 0) {
+                      const radios = document.querySelectorAll('input[name="cut_price"]');
+                      radios.forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
+                        if (parseInt(r.value, 10) === histAmt) {
+                          if (item) item.classList.add('price-item--suggested');
+                        }
+                      });
+                    }
+                    // 4. 自動填入上次消費資訊到「唯讀」上次消費區塊（不再受備註是否為空限制，查到就一定顯示）
+                    {
+                      const lastDate = formatLastVisitLabel(history.start);
+                      const lastSvc = history.service_id || '';
+                      const lastDesigner = getDesignerNameById(history.employee_id);
+                      if (lastDate) {
+                        const parts = [lastDate];
+                        if (lastDesigner) parts.push(lastDesigner);
+                        if (lastSvc) parts.push(lastSvc);
+                        if (history.dye_color) parts.push(`色號:${history.dye_color}`);
+                        setLastVisitNote(parts.join(' / '));
+                      }
+                    }
+
+                    const lastVisitLabel = formatLastVisitLabel(history.start);
+                    if (lastVisitLabel) {
+                      lastVisitLabelValue = lastVisitLabel;
+                      lastVisitPhoneValue = normalizePhone(history.customer_phone || d);
+                      lastVisitDesignerValue = getDesignerNameById(history.employee_id);
+                      updateLastVisitInfo(lastVisitLabel, lastVisitDesignerValue);
+                    }
+                    showToast('已找到歷史紀錄並帶入', 'success', 2000);
+                  }
+                } catch (err) { console.error('CRM查詢失敗:', err); }
+              }
+            });
+
+            notesTextarea.addEventListener('input', () => document.querySelector('.notes-meta span').textContent = '未儲存');
+            document.getElementById('save-notes-btn').addEventListener('click', async () => {
+              const meta = document.querySelector('.notes-meta span'); meta.textContent = '儲存中...';
+              try {
+                await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveNotes', date: currentYmd || ymd(new Date()), content: notesTextarea.value }) });
+                invalidateCache('getNotes'); meta.textContent = '已儲存 ✓';
+              } catch (e) { meta.textContent = '儲存失敗 ❌'; }
+            });
+
+            leaveForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'saveLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value, reason: document.getElementById('leaveReason').value.trim() || '排休' }), mode: 'cors' });
+                const r = await res.json(); if (r.status !== 'success') throw new Error(r.message);
+                invalidateCache('getLeave'); invalidateCache('getEvents');
+                calendar.refetchEvents(); leaveModal.style.display = 'none'; fetchAllCloudData();
+              } catch (err) { alert('儲存排休失敗: ' + err.message); }
+            });
+
+            deleteLeaveBtn.addEventListener('click', async () => {
+              if (!confirm('確定要取消這筆排休嗎？')) return;
+              try {
+                await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteLeave', resourceId: document.getElementById('leaveResourceId').value, date: document.getElementById('leaveDate').value }), mode: 'cors' });
+                invalidateCache('getLeave'); invalidateCache('getEvents');
+                calendar.refetchEvents(); leaveModal.style.display = 'none'; fetchAllCloudData();
+              } catch (err) { alert('刪除排休失敗: ' + err.message); }
+            });
+
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const isEditing = !!eventIdInput.value;
+              const fd = new FormData(form);
+              const amountRaw = fd.get('amount_input');
+              const parsedAmount = parseInt(amountRaw, 10);
+              const amountValue = Number.isFinite(parsedAmount) ? String(Math.max(0, parsedAmount)) : '';
+
+              // 確保總金額計算最新
+              updateCalculatedTotal();
+
+              const payload = {
+                action: isEditing ? 'edit' : 'create',
+                id: fd.get('event_id') || undefined,
+                operator_name: fd.get('operator_select') || '',
+                employee_id: fd.get('employee_id'),
+                start: fd.get('start_time'),
+                appointment_type: fd.get('appointment_type'),
+                customer_name: fd.get('customer_name') || '',
+                customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
+                service_id: fd.get('service_id') || '',
+                cut_price: (document.querySelector('input[name="cut_price"]:checked')?.value) || '',
+                amount: amountValue,
+                total_amount: window.displayTotal,  // 新增總金額欄位
+                assistant_id: fd.get('assistant_select') || '',
+                notes: encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || ''),
+                duration: fd.get('duration_select') || 15,
+                // [新增] 染髮顏色傳送給後端
+                dye_color: document.getElementById('dye_color_input').value,
+                // [新增] 人數（陪同併卡，1~3）；後端「客數」統計依此計
+                pax: fd.get('pax_count') || 1
+              };
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
+              let saveOk = false;
+              try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+                const data = await res.json();
+                if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+                saveOk = true;
+
+                // 樂觀更新：立刻在行事曆上顯示，不等 refetch
+                const eventId = isEditing ? String(payload.id) : String(data.id || '_opt_' + Date.now());
+                const durationMin = parseInt(payload.duration, 10) || 15;
+                const startDt = new Date(payload.start);
+                const endDt = new Date(startDt.getTime() + durationMin * 60000);
+                const previousEnteredBy = isEditing ? (calendar.getEventById(eventId)?.extendedProps?.entered_by || '') : '';
+                if (isEditing) {
+                  const oldEv = calendar.getEventById(eventId);
+                  if (oldEv) oldEv.remove();
+                }
+                calendar.addEvent({
+                  id: eventId,
+                  resourceId: String(payload.employee_id),
+                  start: startDt,
+                  end: endDt,
+                  title: payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || ''),
+                  extendedProps: {
+                    customer_name: payload.customer_name,
+                    customer_phone: payload.customer_phone,
+                    service_id: payload.service_id,
+                    notes: payload.notes,
+                    appointment_type: payload.appointment_type,
+                    amount: payload.amount,
+                    cut_price: payload.cut_price,
+                    total_amount: payload.total_amount,
+                    assistant_id: payload.assistant_id,
+                    dye_color: payload.dye_color,
+                    pax: payload.pax,
+                    entered_by: payload.operator_name || previousEnteredBy
+                  }
+                });
+
+              } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
+              finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
+            });
+
+            deleteBtn.onclick = async function () {
+              const eventId = eventIdInput.value.trim();
+              if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
+              try {
+                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+                invalidateCache('getEvents');
+                if (removeEventOptimistically(eventId)) showToast('已刪除', 'success'); else calendar.refetchEvents();
+                appointmentModal.style.display = 'none';
+              } catch (err) { alert('❌ 刪除失敗'); }
+            };
+
+            if (appointmentCloseButton) appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
+            if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
+            if (reportCloseButton) reportCloseButton.onclick = () => reportModal.style.display = 'none';
+            if (lookupCloseButton) lookupCloseButton.onclick = () => lookupModal.style.display = 'none';
+            if (warnlistCloseButton) warnlistCloseButton.onclick = () => warnlistModal.style.display = 'none';
+            window.addEventListener('click', (e) => {
+              if (e.target === appointmentModal) appointmentModal.style.display = 'none';
+              if (e.target === leaveModal) leaveModal.style.display = 'none';
+              if (e.target === reportModal) reportModal.style.display = 'none';
+              if (e.target === lookupModal) lookupModal.style.display = 'none';
+              if (e.target === warnlistModal) warnlistModal.style.display = 'none';
+            });
+            window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
+
+            document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
+              radio.addEventListener('change', function () {
+                const isBlocked = this.value === 'blocked';
+                document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'grid';
+                document.getElementById('settlement-col').style.display = (!!eventIdInput.value && !isBlocked) ? 'block' : 'none';
+                document.getElementById('notes').placeholder = isBlocked ? '不約時段備註...' : '請輸入備註資訊...';
+                const nextMode = isBlocked ? 'blocked' : (eventIdInput.value ? 'edit' : 'create');
+                setAppointmentModalMode(nextMode);
+                // 使用者主動切換預約類型代表正在編輯，解除唯讀鎖定
+                setAppointmentReadonly(false);
+                setAppointmentHeader(nextMode, document.getElementById('start_time')?.value);
+                syncOperatorRequired();
+                syncAssistantRequired();
+
+                if (isBlocked) {
+                  amountInput.value = '';
+                  document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
+                  document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                  if (assistantSelect) {
+                    assistantSelect.value = '';
+                    assistantSelect.classList.remove('has-value');
+                  }
+                  syncVisualAppointmentControls();
+                  document.getElementById('material-cost-wrap').style.display = 'none';
+                  document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+                  document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+                  resetCustomPriceFields();
+                  document.getElementById('dye-color-wrap').style.display = 'none';
+                  updateCalculatedTotal();
+                  submitBtn.textContent = '設定不約時段';
+                } else {
+                  submitBtn.textContent = eventIdInput.value ? '更新預約' : '儲存預約';
+                }
+              });
+            });
+
+            // [新增] 監聽左右箭頭
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (prevBtn) prevBtn.addEventListener('click', () => {
+              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
+              calendar.prev();
+            });
+            if (nextBtn) nextBtn.addEventListener('click', () => {
+              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
+              calendar.next();
+            });
+
+            // [新增] 監聽染髮選項，顯示顏色輸入框
+            document.querySelectorAll('input[name="other_item"]').forEach(cb => {
+              cb.addEventListener('change', function () {
+                const label = this.parentElement.textContent;
+                if (label.includes('染髮')) {
+                  document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
+                }
+                updateCalculatedTotal();
+              });
+            });
+
+            syncCustomPriceFields(false);
+            document.querySelectorAll('.custom-price-toggle').forEach(toggle => {
+              toggle.addEventListener('change', function () {
+                const field = CUSTOM_PRICE_FIELDS.find(item => item.toggleId === this.id);
+                if (field) syncCustomPriceField(field, true);
+              });
+            });
+
+            const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], input[name="perm_price"], #retail_price, #bleach4000_cost, #cut_custom_enabled, #other_custom_enabled, #perm_custom_enabled, #cut_custom, #perm_custom, #other_custom');
+            priceInputs.forEach(input => {
+              input.addEventListener('change', updateCalculatedTotal);
+              if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
+            });
+
+            // 讓剪髮 / 燙髮的 radio 跟「其他項目」一樣支援「再點一次取消選取」(切回 value=0 的未選狀態)
+            ['cut_price', 'perm_price'].forEach(groupName => {
+              document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
+                if (radio.value === '0') return; // 隱藏的「未選」狀態本身不處理
+                const label = radio.closest('.price-item') || radio;
+                // 在 label 上記錄按下前的選中狀態(label 一定收得到 pointerdown，點到文字也算)
+                label.addEventListener('pointerdown', () => { radio.dataset.wasChecked = radio.checked ? '1' : '0'; });
+                radio.addEventListener('click', function () {
+                  if (this.dataset.wasChecked === '1') {
+                    const zero = document.querySelector(`input[name="${groupName}"][value="0"]`);
+                    if (zero) zero.checked = true;
+                    this.checked = false;
+                    updateCalculatedTotal();
+                  }
+                  this.dataset.wasChecked = '0';
+                });
+              });
+            });
+
+            const materialCostWrap = document.getElementById('material-cost-wrap');
+            const customMaterialCostInput = document.getElementById('custom_material_cost');
+            const syncMaterialCostUI = () => {
+              const otherItems = Array.from(document.querySelectorAll('input[name="other_item"]:checked')).map(i => i.parentElement.textContent.trim());
+              const isOtherCustom = getEnabledCustomPrice('other_custom') > 0;
+              const isPermCustom = getEnabledCustomPrice('perm_custom') > 0;
+              const hasTrigger = otherItems.some(label => label.includes('漂4000')) || isOtherCustom || isPermCustom;
+
+              if (materialCostWrap) materialCostWrap.style.display = hasTrigger ? 'grid' : 'none';
+            };
+            // 監聽所有可能觸發材料費顯示的欄位
+            document.querySelectorAll('input[name="other_item"], #other_custom_enabled, #perm_custom_enabled, #other_custom, #perm_custom').forEach(el => {
+              el.addEventListener('change', syncMaterialCostUI);
+              el.addEventListener('input', syncMaterialCostUI);
+            });
+            customMaterialCostInput?.addEventListener('input', updateCalculatedTotal);
+
+            if (unsetPaidBtn) {
+              unsetPaidBtn.addEventListener('click', function () {
+                if (!eventIdInput.value) return;
+                if (!confirm('要把這筆改回未結帳嗎？')) return;
+                document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+                document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+                document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
+                document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+                if (assistantSelect) {
+                  assistantSelect.value = '';
+                  assistantSelect.classList.remove('has-value');
+                }
+                amountInput.value = '';
+                resetCustomPriceFields();
+                document.getElementById('dye-color-wrap').style.display = 'none';
+                updateCalculatedTotal();
+                submitBtn.click();
+              });
+            }
+          }
+
+          function updateCalculatedTotal() {
+            let cutPrice = 0;
+            let chemTotal = 0;
+            let totalCost = 0;
+
+            let chemTriggerActive = false;
+            let defaultChemCost = 0;
+
+            const cut = document.querySelector('input[name="cut_price"]:checked');
+            if (cut) {
+              cutPrice = parseInt(cut.value, 10) || 0;
+              totalCost += parseInt(cut.dataset.cost || 0, 10);
+            }
+            // [新增] 剪髮自訂
+            cutPrice += getEnabledCustomPrice('cut_custom');
+
+            document.querySelectorAll('input[name="other_item"]:checked').forEach(item => {
+              const p = parseInt(item.value, 10) || 0;
+              let c = parseInt(item.dataset.cost || 0, 10) || 0;
+              const label = item.parentElement.textContent.trim();
+
+              if (label.includes('漂4000')) {
+                chemTriggerActive = true;
+                defaultChemCost += c; // 累計漂4000的預設成本
+              } else {
+                totalCost += c; // 染髮、洗髮或其他
+              }
+              chemTotal += p;
+            });
+            // [新增] 其他自訂
+            const oc = getEnabledCustomPrice('other_custom');
+            if (oc > 0) chemTriggerActive = true;
+            chemTotal += oc;
+
+            const permRadio = document.querySelector('input[name="perm_price"]:checked');
+            let permPrice = 0;
+            if (permRadio) {
+              permPrice = parseInt(permRadio.value, 10) || 0;
+              totalCost += parseInt(permRadio.dataset.cost || 0, 10) || 0;
+            }
+            // [新增] 燙髮自訂
+            const pc = getEnabledCustomPrice('perm_custom');
+            if (pc > 0) chemTriggerActive = true;
+            permPrice += pc;
+
+            // 處理統一材料費
+            const customMaterialVal = parseInt(document.getElementById('custom_material_cost').value, 10) || 0;
+            if (chemTriggerActive) {
+              if (customMaterialVal > 0) totalCost += customMaterialVal;
+              else totalCost += defaultChemCost;
+            }
+
+            const retailInput = document.getElementById('retail_price');
+            let retailVal = parseInt(retailInput?.value, 10) || 0;
+
+            const displayTotal = cutPrice + chemTotal + permPrice + retailVal;
+            const netAmount = displayTotal - totalCost;
+
+            document.getElementById('display-total').textContent = '$' + displayTotal;
+            document.getElementById('display-net').textContent = '$' + netAmount;
+            const finalAmount = netAmount > 0 ? netAmount : '';
+            document.getElementById('amount_input').value = finalAmount;
+
+            // 更新全域 displayTotal
+            window.displayTotal = displayTotal;
+
+            if (unsetPaidBtn && eventIdInput.value) {
+              const show = !document.querySelector('input[name="appointment_type"][value="blocked"]').checked && Number.isFinite(netAmount) && netAmount > 0;
+              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+            }
+            syncAssistantRequired();
+          }
+
+          function paintEmployeeLeave() {
+            document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
+            document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
+            if (!Array.isArray(employeeLeaveData)) return;
+            employeeLeaveData.forEach(leave => {
+              const targetColumn = document.querySelector(`#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`);
+              if (!targetColumn) return;
+              const frame = targetColumn.querySelector('.fc-timegrid-col-frame') || targetColumn;
+              if (leave.reason === '已約滿') {
+                const o = document.createElement('div'); o.className = 'fully-booked-outline'; frame.appendChild(o);
+                return;
+              }
+              const ov = document.createElement('div'); ov.className = 'closed-overlay leave-overlay';
+              const label = document.createElement('span'); label.className = 'overlay-label';
+              label.textContent = leave.reason?.includes('排休') ? '排休' : (leave.reason || '排休');
+              ov.appendChild(label); frame.appendChild(ov);
+            });
+          }
+
+          function openLeaveModal(date, resource) {
+            const dateStr = ymd(date);
+            const existingLeave = Array.isArray(employeeLeaveData) ? employeeLeaveData.find(l => l.date === dateStr && l.resourceId === resource.id) : null;
+            document.getElementById('leaveResourceId').value = resource.id;
+            document.getElementById('leaveDate').value = dateStr;
+            document.getElementById('leaveModalResourceName').textContent = resource.title;
+            document.getElementById('leaveModalDate').textContent = dateStr;
+            document.getElementById('leaveReason').value = existingLeave ? existingLeave.reason : resource.title + '排休';
+            deleteLeaveBtn.style.display = existingLeave ? 'inline-block' : 'none';
+            leaveModal.style.display = 'block';
+          }
+
+          function openApptModalForCreate(startDate, resource) {
+            if (!resource) return;
+            form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
+            syncOperatorRequired();
+            if (operatorSelect) operatorSelect.classList.remove('has-value');
+            if (assistantSelect) assistantSelect.classList.remove('has-value');
+            document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
+            document.getElementById('customer-fields-left').style.display = 'grid';
+            document.getElementById('settlement-col').style.display = 'none';
+            placeAppointmentActions('create');
+            setAppointmentReadonly(false); // 新增預約一律可直接編輯
+            /* 按鈕固定在主彈窗底部，由 appointment-actions-anchor 承接 */
+            if (appointmentContent) appointmentContent.style.maxWidth = '';
+            document.getElementById('notes').placeholder = '請輸入備註資訊.';
+            document.getElementById('employee_id').value = resource.id;
+
+            const isXiaobai = String(resource.id) === '3';
+            document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+
+            amountInput.value = '';
+            if (operatorSelect) operatorSelect.value = '';
+            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+            document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
+            document.getElementById('retail_item').value = ''; document.getElementById('retail_price').value = '';
+            if (assistantSelect) {
+              assistantSelect.value = '';
+              assistantSelect.classList.remove('has-value');
+            }
+            document.getElementById('material-cost-wrap').style.display = 'none';
+
+            resetCustomPriceFields();
+            document.getElementById('dye-color-wrap').style.display = 'none';
+            document.getElementById('dye_color_input').value = '';
+            document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
+            document.getElementById('pax_count').value = '1'; // 預設 1 人（form.reset 不會還原 hidden 的 value 屬性）
+            const warnBanner = document.getElementById('warn-banner');
+            if (warnBanner) warnBanner.style.display = 'none';
+
+            // [CRM功能] 清除上一次留下的建議發亮狀態
+            document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
+            updateLastVisitInfo('', '');
+            setLastVisitNote('');   // 新建時清空唯讀上次消費(form.reset 不會清 div)
+
+            updateCalculatedTotal();
+
+            const baseMin = startDate.getMinutes();
+            const baseHour = startDate.getHours();
+            populateTimeSelects(baseHour, baseMin);
+            updateHiddenStartTime(startDate);
+            setAppointmentHeader('create', startDate);
+            syncVisualAppointmentControls();
+            document.getElementById('hour_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader('create', document.getElementById('start_time').value);
+            };
+            document.getElementById('minute_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader('create', document.getElementById('start_time').value);
+            };
+            appointmentModal.style.display = 'block';
+          }
+
+          function openApptModalForEdit(event) {
+            form.reset();
+            const ep = event.extendedProps || {};
+            eventIdInput.value = event.id;
+            syncOperatorRequired();
+            deleteBtn.style.display = 'inline-block';
+            const rs = event.getResources();
+            document.getElementById('employee_id').value = (rs && rs[0] ? rs[0].id : '');
+            document.getElementById('customer_phone').value = ep.customer_phone || '';
+            document.getElementById('customer_name').value = ep.customer_name || '';
+            const normalizedEditPhone = normalizePhone(ep.customer_phone || '');
+            if (normalizedEditPhone && normalizedEditPhone === lastVisitPhoneValue && lastVisitLabelValue) {
+              updateLastVisitInfo(lastVisitLabelValue, lastVisitDesignerValue);
+            } else {
+              updateLastVisitInfo('', '');
+            }
+            const serviceSelect = document.getElementById('service_id');
+            if (serviceSelect) serviceSelect.value = ep.service_id || '';
+            // 回填人數（舊資料沒有 pax 就視為 1 人）
+            const paxCount = document.getElementById('pax_count');
+            if (paxCount) {
+              const p = parseInt(ep.pax, 10);
+              paxCount.value = String(p >= 1 && p <= 4 ? p : 1);
+            }
+            {
+              const decoded = decodeNotes(ep.notes);
+              setLastVisitNote(decoded.lastVisit);
+              document.getElementById('notes').value = decoded.free;
+            }
+            if (assistantSelect) {
+              assistantSelect.value = ep.assistant_id || '';
+              assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
+            }
+            if (operatorSelect) {
+              // 還原當初輸入人：後端 entered_by 存的是輸入人全名（店長/雅婷/小白/陳翎/洪苡芳/曹家溱），
+              // 與 operatorSelect 的 option value 及項目鈕 data-operator-value 完全一致，可直接回填。
+              const enteredBy = (ep.entered_by != null ? String(ep.entered_by) : '').trim();
+              operatorSelect.value = enteredBy;
+              operatorSelect.classList.toggle('has-value', !!operatorSelect.value);
+            }
+            amountInput.value = ep.amount !== undefined ? ep.amount : '';
+
+            // [新增] 回填染髮顏色
+            const dyeInput = document.getElementById('dye_color_input');
+            if (dyeInput) dyeInput.value = ep.dye_color || '';
+            if (ep.dye_color) document.getElementById('dye-color-wrap').style.display = 'grid';
+            else document.getElementById('dye-color-wrap').style.display = 'none';
+
+            const isBlocked = ep.appointment_type === 'blocked';
+            document.querySelector(`input[name="appointment_type"][value="${isBlocked ? 'blocked' : 'normal'}"]`).checked = true;
+            document.getElementById('customer-fields-left').style.display = isBlocked ? 'none' : 'grid';
+            document.getElementById('settlement-col').style.display = isBlocked ? 'none' : 'block';
+            placeAppointmentActions('edit');
+            setAppointmentModalMode(isBlocked ? 'blocked' : 'edit');
+            // 既有「一般預約」預設唯讀，按「編輯」鈕才解鎖；不約時段維持現狀可直接操作。
+            setAppointmentReadonly(!isBlocked);
+            syncVisualAppointmentControls();
+            if (appointmentContent) appointmentContent.style.maxWidth = '';
+
+            const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
+            document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+
+            // Reset billing default
+            document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
+            document.querySelectorAll('input[name="other_item"]').forEach(c => c.checked = false);
+            document.querySelectorAll('input[name="perm_price"][value="0"]').forEach(r => r.checked = true);
+            document.getElementById('material-cost-wrap').style.display = 'none';
+            resetCustomPriceFields();
+
+            // 回填剪髮金額（舊資料沒有就保留預設 0）
+            if (ep.cut_price) {
+              const cutRadio = document.querySelector(`input[name="cut_price"][value="${ep.cut_price}"]`);
+              if (cutRadio) {
+                cutRadio.checked = true;
+                // 若選中的項目在折疊區內，自動展開
+                const detailsParent = cutRadio.closest('details.more-options-details');
+                if (detailsParent) detailsParent.open = true;
+              }
+            }
+
+            updateCalculatedTotal();
+
+            if (ep.amount || ep.total_amount) {
+              const totalAmt = ep.total_amount || ep.amount;
+              amountInput.value = ep.amount || '';
+              document.getElementById('display-net').textContent = '$' + (ep.amount || 0);
+              document.getElementById('display-total').textContent = '$' + totalAmt;
+              window.displayTotal = totalAmt;  // 設置全域總金額
+            }
+            syncAssistantRequired();
+            if (unsetPaidBtn && eventIdInput.value) {
+              const show = !isBlocked && Number.isFinite(Number(amountInput.value)) && Number(amountInput.value) > 0;
+              unsetPaidBtn.style.display = show ? 'inline-flex' : 'none';
+            }
+
+            // 計算並回填時長
+            if (event.start && event.end) {
+              const dur = Math.round((event.end - event.start) / 60000);
+              const durSelect = document.getElementById('duration_select');
+              durSelect.value = dur;
+            }
+
+            submitBtn.textContent = '儲存';
+            const startDate = event.start;
+            const startMinute = startDate.getMinutes();
+            const startHour = startDate.getHours();
+            populateTimeSelects(startHour, startMinute);
+            updateHiddenStartTime(startDate);
+            setAppointmentHeader(isBlocked ? 'blocked' : 'edit', startDate);
+            document.getElementById('hour_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader(isBlocked ? 'blocked' : 'edit', document.getElementById('start_time').value);
+            };
+            document.getElementById('minute_select').onchange = function () {
+              updateHiddenStartTime(startDate);
+              setAppointmentHeader(isBlocked ? 'blocked' : 'edit', document.getElementById('start_time').value);
+            };
+
+            // [CRM功能] 結帳時也提示「上一次來店剪髮價位」(實心橘高亮，不自動勾選)。
+            // 先清掉殘留高亮(form.reset 不會清 class)，避免上一筆帶過來；只針對一般預約。
+            document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
+            if (!isBlocked) {
+              const editPhone = normalizePhone(ep.customer_phone || '');
+              if (editPhone.length === 10) {
+                // 射後不理，不阻擋彈窗開啟；沿用 create 流程的 _crmCache 快取
+                (async () => {
+                  try {
+                    if (!window._crmCache) window._crmCache = {};
+                    let history;
+                    if (window._crmCache[editPhone]) {
+                      history = window._crmCache[editPhone];
+                    } else {
+                      const res = await fetch(`${APPS_SCRIPT_WEB_APP_URL}?action=getLastVisit&phone=${editPhone}`, { method: 'GET', mode: 'cors' });
+                      history = await res.json();
+                      window._crmCache[editPhone] = history;
+                    }
+                    // 與新增流程完全相同的高亮邏輯：取最近一次非零剪髮價，標對應 cut_price 選項
+                    const histCut = parseInt(history && history.cut_price, 10);
+                    if (Number.isFinite(histCut) && histCut > 0) {
+                      document.querySelectorAll('input[name="cut_price"]').forEach(r => {
+                        const item = r.closest('.price-item');
+                        if (item) item.classList.remove('price-item--suggested');
+                        if (parseInt(r.value, 10) === histCut && item) {
+                          item.classList.add('price-item--suggested');
+                        }
+                      });
+                    }
+                  } catch (err) { console.error('CRM查詢失敗(結帳上次剪髮價):', err); }
+                })();
+              }
+            }
+
+            appointmentModal.style.display = 'block';
+          }
+
+          function toTaipeiIsoForApi(dateObj) {
+            const dt = dateObj instanceof Date ? dateObj : new Date(dateObj);
+            if (isNaN(dt.getTime())) return '';
+            const parts = new Intl.DateTimeFormat('sv-SE', {
+              timeZone: 'Asia/Taipei',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            }).formatToParts(dt).reduce((acc, p) => {
+              acc[p.type] = p.value;
+              return acc;
+            }, {});
+            return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
+          }
+
+          function populateTimeSelects(hour, minute) {
+            const hourSel = document.getElementById('hour_select');
+            const minSel = document.getElementById('minute_select');
+            hourSel.innerHTML = '';
+            minSel.innerHTML = '';
+            for (let h = 12; h <= 20; h++) {
+              const opt = document.createElement('option');
+              opt.value = h;
+              opt.textContent = String(h).padStart(2, '0');
+              if (h === hour) opt.selected = true;
+              hourSel.appendChild(opt);
+            }
+            for (let m = 0; m < 60; m += 5) {
+              const opt = document.createElement('option');
+              opt.value = m;
+              opt.textContent = String(m).padStart(2, '0');
+              if (m === minute) opt.selected = true;
+              minSel.appendChild(opt);
+            }
+          }
+
+          function updateHiddenStartTime(baseDate) {
+            const selectedHour = parseInt(document.getElementById('hour_select').value, 10);
+            const selectedMinute = parseInt(document.getElementById('minute_select').value, 10);
+            const dt = new Date(baseDate.getTime());
+            dt.setHours(selectedHour, selectedMinute, 0, 0);
+            document.getElementById('start_time').value = toTaipeiIsoForApi(dt);
+          }
+
+          function schedulePerResourceTimeAxis(delayMs = 0) {
+            if (perResourceAxisTimer) window.clearTimeout(perResourceAxisTimer);
+            perResourceAxisTimer = window.setTimeout(renderPerResourceTimeAxis, delayMs);
+          }
+          function resetCalendarHorizontalScroll() {
+            const scrollers = document.querySelectorAll('#calendar .fc-scroller');
+            scrollers.forEach(s => { if (s && s.scrollWidth > s.clientWidth) s.scrollLeft = 0; });
+          }
+          function renderPerResourceTimeAxis() {
+            document.querySelectorAll('#calendar .per-resource-time-axis').forEach(n => n.remove());
+            if (!calendar || calendar.view?.type !== 'resourceTimeGridDay') return;
+            resetCalendarHorizontalScroll();
+            const laneCells = Array.from(document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time]'));
+            if (!laneCells.length) return;
+            const byTime = new Map();
+            laneCells.forEach(cell => { const t = cell.getAttribute('data-time'); if (!byTime.has(t)) byTime.set(t, cell); });
+            const labelInfos = Array.from(byTime.entries()).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([t, cell]) => {
+              const text = String(t).slice(0, 5); const minute = parseInt(String(t).slice(3, 5), 10);
+              return { text, kind: (minute === 0 || minute === 30 ? 'major' : 'minor') };
+            });
+            const frames = Array.from(document.querySelectorAll('#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id] .fc-timegrid-col-frame'));
+            frames.forEach(frame => {
+              const axis = document.createElement('div'); axis.className = 'per-resource-time-axis';
+              labelInfos.forEach((info, index) => {
+                const item = document.createElement('div'); item.className = `per-resource-time-item ${info.kind === 'major' ? 'is-major' : 'is-minor'}`;
+                item.textContent = info.text;
+                // 純 CSS 方式精準對齊每個時間格的中間點
+                item.style.top = `calc((${index} + 0.5) * var(--time-row-height))`;
+                axis.appendChild(item);
+              });
+              frame.appendChild(axis);
+            });
+          }
+
+          function ensureDateScroller() {
+            const cal = document.getElementById('calendar'); if (!cal) return null;
+            let scroller = cal.querySelector('.fc-date-scroller');
+            if (scroller) return scroller;
+            const toolbar = cal.querySelector('.fc-header-toolbar');
+            const viewHarness = cal.querySelector('.fc-view-harness');
+            scroller = document.createElement('div'); scroller.className = 'fc-date-scroller';
+            scroller.innerHTML = `
+              <div class="date-row">
+                <div class="date-left-col">
+                  <div class="date-label">
+                    <div class="date-stack">
+                      <span class="date-header-ghost" aria-hidden="true"></span>
+                      <span class="date-header-month"></span>
+                      <span class="date-header-weekday"></span>
+                    </div>
+                  </div>
+                  <div class="date-controls-row">
+                    <div class="date-toggle">
+                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
+                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
+                    <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
+                    </div>
+                    <div class="nav-arrows">
+                      <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                      <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                    </div>
+                  </div>
+                  <div class="mobile-resource-toggle"></div>
+                </div>
+                <div class="date-strip"></div>
+              </div>`;
+            if (toolbar) toolbar.insertAdjacentElement('afterend', scroller);
+            else if (viewHarness) viewHarness.insertAdjacentElement('beforebegin', scroller);
+            else cal.prepend(scroller);
+            const reportBtn = document.getElementById('open-report-btn');
+            if (reportBtn) scroller.querySelector('.date-toggle').appendChild(reportBtn);
+            const lookupBtn = document.getElementById('open-lookup-btn');
+            if (lookupBtn) scroller.querySelector('.date-toggle').appendChild(lookupBtn);
+            const warnlistBtn = document.getElementById('open-warnlist-btn');
+            if (warnlistBtn) scroller.querySelector('.date-toggle').appendChild(warnlistBtn);
+            const themeBtn = document.getElementById('open-theme-btn');
+            if (themeBtn) scroller.querySelector('.date-toggle').appendChild(themeBtn);
+            ensureMobileResourceToggle(scroller);
+            return scroller;
+          }
+
+          function setDateHeaderParts(scroller, year, monthNum, dayNum, weekdayStr, isMonthView) {
+            if (!scroller) return;
+            const ghost = scroller.querySelector('.date-header-ghost');
+            const monthEl = scroller.querySelector('.date-header-month');
+            const wdEl = scroller.querySelector('.date-header-weekday');
+            const mm = String(monthNum).padStart(2, '0');
+            if (ghost) ghost.textContent = String(year);
+            if (isMonthView) {
+              if (monthEl) monthEl.textContent = `${mm} 月`;
+              if (wdEl) wdEl.textContent = '';
+            } else {
+              const dd = String(dayNum).padStart(2, '0');
+              if (monthEl) monthEl.textContent = `${mm} / ${dd}`;
+              if (wdEl) wdEl.textContent = weekdayStr || '';
+            }
+          }
+
+          function updateDateScroller(info) {
+            const cal = document.getElementById('calendar');
+            if (!cal || !info || !info.view) return;
+            cal.classList.add('is-date-scroller');
+            const scroller = ensureDateScroller(); if (!scroller) return; scroller.hidden = false;
+            ensureMobileResourceToggle(scroller);
+
+            // 根據視圖類型決定顯示日期（避免 selectedDate 與 view 不一致）
+            let activeDate = null;
+            if (info.view.type === 'resourceTimeGridDay') {
+              activeDate = new Date(info.view.currentStart);
+            } else if (info.view.type === 'dayGridMonth') {
+              // 月視圖：以 view.currentStart（該月第一天）為基準，避免顯示到其他月份
+              activeDate = new Date(info.view.currentStart);
+            }
+
+            // fallback: 使用 selectedDate 或 calendar.getDate()
+            if (!activeDate) {
+              if (selectedDate) activeDate = new Date(selectedDate);
+              else activeDate = new Date(calendar.getDate());
+            }
+            activeDate.setHours(12, 0, 0, 0);
+            const dateLocale = 'zh-TW';
+            const monthRaw = new Intl.DateTimeFormat(dateLocale, { month: 'numeric' }).format(activeDate);
+
+            // 更新顯示（重疊字：大型年份襯底 + 月/日前景 + 星期）
+            {
+              const _isMonth = !!(info.view && info.view.type === 'dayGridMonth');
+              const _wd = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(activeDate);
+              setDateHeaderParts(scroller, activeDate.getFullYear(), activeDate.getMonth() + 1, activeDate.getDate(), _wd, _isMonth);
+            }
+
+            syncDateToggleState(scroller, info.view.type); bindDateToggleActions(scroller);
+
+            const strip = scroller.querySelector('.date-strip');
+            const dates = []; const activeBase = new Date(activeDate); activeBase.setHours(12, 0, 0, 0);
+            if (activeBase.getDay() === 1) activeBase.setDate(activeBase.getDate() + 1);
+            const before = []; const after = [];
+            let cursor = new Date(activeBase);
+            while (before.length < 7) { cursor.setDate(cursor.getDate() - 1); if (cursor.getDay() === 1) continue; before.push(new Date(cursor)); }
+            cursor = new Date(activeBase);
+            while (after.length < 7) { cursor.setDate(cursor.getDate() + 1); if (cursor.getDay() === 1) continue; after.push(new Date(cursor)); }
+            dates.push(...before.reverse(), activeBase, ...after);
+
+            strip.innerHTML = '';
+            const currentKey = ymd(activeDate); const todayKey = ymd(new Date());
+            const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'narrow' });
+            dates.forEach(d => {
+              const dateKey = ymd(d);
+              const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'date-item';
+              if (dateKey === currentKey) btn.classList.add('is-active');
+              if (dateKey === todayKey) btn.classList.add('is-today');
+              btn.dataset.date = dateKey;
+              btn.innerHTML = `<span class="date-item-weekday">${weekdayFmt.format(d)}</span><span class="date-item-day">${d.getDate()}</span>`;
+              // 確保點擊會切換日期（支援滑動後的 click 與行動裝置）
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // quick visual feedback for debugging
+                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
+                console.log('date-item clicked', btn.dataset.date);
+                selectDateFromItem(btn);
+              });
+              // pointer/touch 支援，部分裝置會觸發 pointerdown/touchstart 而非 click
+              btn.addEventListener('pointerdown', (e) => {
+                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
+                console.log('date-item pointerdown', btn.dataset.date);
+                selectDateFromItem(btn);
+              });
+              btn.addEventListener('touchstart', (e) => {
+                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
+                console.log('date-item touchstart', btn.dataset.date);
+                selectDateFromItem(btn);
+              }, { passive: true });
+              strip.appendChild(btn);
+            });
+            enableDragScroll(strip); applyDateStripCurve(strip);
+            const active = strip.querySelector('.date-item.is-active');
+            if (active) {
+              if (strip.dataset.centerOnNextUpdate === '1') {
+                delete strip.dataset.centerOnNextUpdate;
+                const targetLeft = active.offsetLeft - (strip.clientWidth - active.clientWidth) / 2;
+                if (typeof strip.scrollTo === 'function') strip.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+                else strip.scrollLeft = Math.max(0, targetLeft);
+              } else active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+          }
+
+          function isMobileLayout() { return !!(window.matchMedia && window.matchMedia(MOBILE_RESOURCE_MEDIA_QUERY).matches); }
+          function ensureMobileResourceId() { return mobileSelectedResourceId || String(RESOURCE_LIST[0]?.id || '1'); }
+          function ensureMobileResourceToggle(scroller) {
+            if (!scroller) return; const wrap = scroller.querySelector('.mobile-resource-toggle'); if (!wrap || wrap.dataset.bound === '1') return;
+            wrap.dataset.bound = '1';
+            const allBtn = `<button type="button" class="resource-toggle-btn" data-resource-id="all">全部</button>`;
+            wrap.innerHTML = allBtn + RESOURCE_LIST.map(r => `<button type="button" class="resource-toggle-btn" data-resource-id="${r.id}">${r.title}</button>`).join('');
+            wrap.querySelectorAll('.resource-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
+              const rid = btn.dataset.resourceId; mobileSelectedResourceId = rid;
+              localStorage.setItem(MOBILE_RESOURCE_STORAGE_KEY, rid); applyMobileResourceVisibility(); schedulePerResourceTimeAxis(80);
+            }));
+          }
+          function applyMobileResourceVisibility(info) {
+            const cal = document.getElementById('calendar'); if (!cal) return;
+            const viewType = info?.view?.type || calendar?.view?.type || '';
+            const shouldShowSingle = (viewType === 'resourceTimeGridDay' && isMobileLayout());
+            const scroller = cal.querySelector('.fc-date-scroller');
+            if (scroller) {
+              scroller.classList.toggle('is-mobile-resource', shouldShowSingle);
+              // 進入 ≤480 單一設計師模式時，把篩選列搬到卡片與行事曆表頭之間（只搬一次）
+              const toggleEl = document.querySelector('.mobile-resource-toggle');
+              if (shouldShowSingle && toggleEl && toggleEl.dataset.moved !== '1') {
+                const harness = cal.querySelector('.fc-view-harness') || scroller.nextSibling;
+                scroller.parentNode.insertBefore(toggleEl, harness);
+                toggleEl.dataset.moved = '1';
+              }
+              if (toggleEl) {
+                toggleEl.querySelectorAll('.resource-toggle-btn').forEach(btn => btn.classList.toggle('is-active', String(btn.dataset.resourceId) === String(ensureMobileResourceId())));
+              }
+            }
+            if (!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
+            else cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
+          }
+          function applyDateStripCurve(strip) {
+            /* 簡化版曲線效果 */
+            const items = Array.from(strip.querySelectorAll('.date-item'));
+            const activeIndex = items.findIndex(i => i.classList.contains('is-active'));
+            if (activeIndex === -1) return;
+            items.forEach((item, idx) => {
+              const dist = Math.abs(idx - activeIndex);
+              item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
+              item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
+              item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
+              item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.42, 1 - dist * 0.1)).toFixed(2));
+            });
+          }
+          function selectDateFromItem(item) {
+            if (!item || !item.dataset.date) return;
+            const parts = item.dataset.date.split('-').map(Number);
+            selectedDate = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
+            calendar.changeView('resourceTimeGridDay', item.dataset.date);
+            calendar.gotoDate(item.dataset.date);
+            // debug feedback
+            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) { }
+            try {
+              let dbg = document.getElementById('fc-debug-banner');
+              if (!dbg) {
+                dbg = document.createElement('div'); dbg.id = 'fc-debug-banner';
+                dbg.style.position = 'fixed'; dbg.style.right = '12px'; dbg.style.bottom = '12px'; dbg.style.padding = '6px 10px'; dbg.style.background = 'rgba(0,0,0,0.7)'; dbg.style.color = '#fff'; dbg.style.borderRadius = '6px'; dbg.style.zIndex = 99999; dbg.style.fontSize = '13px';
+                document.body.appendChild(dbg);
+              }
+              dbg.textContent = `Selected: ${item.dataset.date}`;
+              setTimeout(() => { try { dbg.textContent = ''; } catch (e) { } }, 2000);
+            } catch (e) { }
+            // 立即更新 header 顯示，避免視圖切換滯後時無反應感
+            try {
+              const sc = document.querySelector('.fc-date-scroller');
+              if (sc) {
+                const [y, m, d] = item.dataset.date.split('-').map(Number);
+                const _isMonth2 = !!(calendar && calendar.view && calendar.view.type === 'dayGridMonth');
+                const _wd2 = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(new Date(y, m - 1, d, 12));
+                setDateHeaderParts(sc, y, m, d, _wd2, _isMonth2);
+              }
+            } catch (e) { }
+            // 強制更新日期顯示
+            updateDateScroller({ view: calendar.view });
+          }
+          function syncDateToggleState(scroller, viewType) {
+            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
+              const isActive = viewType === btn.dataset.view;
+              btn.classList.toggle('is-active', isActive);
+            });
+          }
+          function bindDateToggleActions(scroller) {
+            if (!scroller || scroller.dataset.toggleBound === '1') return; scroller.dataset.toggleBound = '1';
+            scroller.querySelectorAll('.date-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
+              const view = btn.dataset.view;
+              if (view === 'resourceTimeGridDay') {
+                const today = new Date(); today.setHours(12, 0, 0, 0); selectedDate = today;
+                calendar.changeView(view, ymd(today)); calendar.gotoDate(today);
+              } else calendar.changeView(view, ymd(selectedDate));
+            }));
+          }
+          function enableDragScroll(strip) {
+            /* 簡化版拖曳邏輯 */
+            let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
+            strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
+            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
+            strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
+            strip.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
+            // touch support
+            strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
+            strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
+            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
+          }
+          function updateToolbarTitle(info) {
+            const el = document.querySelector('#calendar .fc-toolbar-title'); if (!el) return;
+            if (info.view.type === 'dayGridMonth') { el.classList.add('is-month-title'); el.textContent = info.view.title; }
+            else { el.classList.remove('is-month-title'); el.textContent = info.view.title; }
+          }
+          function paintMondayClosed(info) {
+            document.querySelectorAll('#calendar .closed-overlay:not(.leave-overlay)').forEach(n => n.remove());
+            const start = info.start, end = info.end;
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+              if (d.getDay() !== 1) continue;
+              const dateStr = ymd(d);
+              document.querySelectorAll(`#calendar .fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                const frame = col.querySelector('.fc-timegrid-col-frame') || col;
+                const ov = document.createElement('div'); ov.className = 'closed-overlay';
+                const label = document.createElement('span'); label.className = 'overlay-label'; label.textContent = '公休';
+                ov.appendChild(label); frame.appendChild(ov);
+              });
+            }
+          }
+        });
+
+        const openReportBtn = document.getElementById('open-report-btn');
+        const closeReportBtn = document.querySelector('.report-close-button');
+        const fetchReportBtn = document.getElementById('fetch-report-btn');
+        const reportResult = document.getElementById('report-result');
+        const repStart = document.getElementById('report-start');
+        const repEnd = document.getElementById('report-end');
+        const openLookupBtn = document.getElementById('open-lookup-btn');
+        const closeLookupBtn = document.querySelector('.lookup-close-button');
+        const fetchLookupBtn = document.getElementById('fetch-lookup-btn');
+        const lookupResult = document.getElementById('lookup-result');
+        const lookupPhone = document.getElementById('lookup-phone');
+        const lookupName = document.getElementById('lookup-name');
+
+        function escapeHtml(value) {
+          return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function formatLookupDate(dateLike) {
+          const raw = (dateLike instanceof Date) ? dateLike : String(dateLike || '').trim();
+          if (!raw) return '';
+          const parsed = new Date(raw);
+          if (isNaN(parsed.getTime())) return '';
+
+          const datePart = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            weekday: 'short'
+          }).format(parsed);
+          const timePart = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }).format(parsed);
+          return `${datePart} ${timePart}`;
+        }
+
+        function formatLookupDateByEvent(ev) {
+          if (calendar && ev && ev.id != null) {
+            const fcEv = calendar.getEventById(String(ev.id));
+            if (fcEv && fcEv.start instanceof Date) {
+              return formatLookupDate(fcEv.start);
+            }
+          }
+          return formatLookupDate(ev ? ev.start : '');
+        }
+
+        function getLookupDesignerName(ev) {
+          const ep = (ev && ev.extendedProps) ? ev.extendedProps : {};
+          const rid = String((ev && ev.resourceId) || ep.employee_id || '').trim();
+          return getDesignerNameById(rid) || rid || '未指定';
+        }
+
+        function renderLookupResult(events, phoneQuery, nameQuery) {
+          if (!lookupResult) return;
+          if (!events.length) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u7121\u7B26\u5408\u7684\u9810\u7D04\u8CC7\u6599</div>';
+            return;
+          }
+
+          const now = Date.now();
+          const items = events.map(ev => {
+            const startTs = new Date(ev.start).getTime();
+            return { ev, startTs, isPast: Number.isFinite(startTs) && startTs < now };
+          });
+          // items.sort((a, b) => (a.startTs || 0) - (b.startTs || 0)); // Old sort: ascending
+          items.sort((a, b) => (b.startTs || 0) - (a.startTs || 0)); // New sort: descending (newest first)
+
+          const finalList = items; // Show all items
+          const headline = `\u5171 ${events.length} \u7B46\uFF0C\u986F\u793A ${finalList.length} \u7B46\uFF08\u6309\u6642\u9593\u5012\u5E8F\uFF09`;
+          const keywordText = `\u95DC\u9375\u5B57\uFF1A${phoneQuery ? `\u96FB\u8A71 ${phoneQuery}` : ''}${phoneQuery && nameQuery ? ' / ' : ''}${nameQuery ? `\u59D3\u540D ${nameQuery}` : ''}`;
+          const rows = finalList.map(({ ev, isPast }) => {
+            const ep = ev.extendedProps || {};
+            const designer = getLookupDesignerName(ev);
+            const service = ep.service_id || '\u672A\u586B\u5BEB\u670D\u52D9';
+            const customer = ep.customer_name || '\u672A\u586B\u5BEB\u59D3\u540D';
+            const phone = ep.customer_phone || '-';
+            const when = formatLookupDateByEvent(ev);
+            const status = isPast ? '\u904E\u53BB' : '\u9810\u7D04';
+            const price = Number(ep.total_amount || ep.amount || 0);
+            const priceHtml = price > 0 ? `&nbsp;<span class="lookup-price">$${price.toLocaleString()}</span>` : '';
+            return `
+              <button type="button" class="lookup-item${isPast ? ' is-past' : ''}" data-event-id="${escapeHtml(ev.id)}" data-start="${escapeHtml(ev.start)}">
+                <div class="lookup-item-top">
+                  <span class="lookup-time">${escapeHtml(when)}</span>
+                  <span class="lookup-status">${status}</span>
+                </div>
+                <div class="lookup-designer">\u8A2D\u8A08\u5E2B\uFF1A${escapeHtml(designer)}</div>
+                <div class="lookup-item-main">${escapeHtml(customer)} <span class="lookup-phone">${escapeHtml(phone)}</span></div>
+                <div class="lookup-item-sub">\u670D\u52D9\uFF1A${escapeHtml(service)}${priceHtml}</div>
+              </button>
+            `;
+          }).join('');
+
+          lookupResult.innerHTML = `
+            <div class="lookup-summary">${escapeHtml(headline)}<br>${escapeHtml(keywordText)}</div>
+            <div class="lookup-list">${rows}</div>
+          `;
+
+          lookupResult.querySelectorAll('.lookup-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const eventId = String(btn.dataset.eventId || '').trim();
+              const startIso = String(btn.dataset.start || '').trim();
+              if (startIso && calendar) {
+                const dt = new Date(startIso);
+                if (!isNaN(dt.getTime())) {
+                  selectedDate = new Date(dt.getTime());
+                  selectedDate.setHours(12, 0, 0, 0);
+                  calendar.changeView('resourceTimeGridDay', dt);
+                  calendar.gotoDate(dt);
+                }
+              }
+              if (lookupModal) lookupModal.style.display = 'none';
+              window.setTimeout(() => {
+                const ev = calendar && eventId ? calendar.getEventById(eventId) : null;
+                if (ev) openApptModalForEdit(ev);
+              }, 220);
+            });
+          });
+        }
+
+        function renderLookupResultPlain(events, phoneQuery) {
+          if (!lookupResult) return;
+          if (!Array.isArray(events) || !events.length) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u7121\u7B26\u5408\u7684\u9810\u7D04\u8CC7\u6599</div>';
+            return;
+          }
+          const rows = events.map(ev => {
+            const ep = ev.extendedProps || {};
+            const when = formatLookupDate(ev.start) || String(ev.start || '');
+            const designer = getLookupDesignerName(ev);
+            const price = Number(ep.total_amount || ep.amount || 0);
+            const priceHtml = price > 0 ? `&nbsp;<span class="lookup-price">$${price.toLocaleString()}</span>` : '';
+            return `
+              <div class="lookup-item is-past">
+                <div class="lookup-item-top">
+                  <span class="lookup-time">${escapeHtml(when)}</span>
+                  <span class="lookup-status">\u9810\u7D04</span>
+                </div>
+                <div class="lookup-designer">\u8A2D\u8A08\u5E2B\uFF1A${escapeHtml(designer)}</div>
+                <div class="lookup-item-main">${escapeHtml(ep.customer_name || '-')}&nbsp;<span class="lookup-phone">${escapeHtml(ep.customer_phone || '-')}</span></div>
+                <div class="lookup-item-sub">\u670D\u52D9\uFF1A${escapeHtml(ep.service_id || '-')}${priceHtml}</div>
+              </div>
+            `;
+          }).join('');
+          lookupResult.innerHTML = `
+            <div class="lookup-summary">\u5171 ${events.length} \u7B46 \uFF5C \u96FB\u8A71 ${escapeHtml(phoneQuery || '')}</div>
+            <div class="lookup-list">${rows}</div>
+          `;
+        }
+
+        function renderLookupResultSafely(events, phoneQuery, nameQuery) {
+          try {
+            renderLookupResult(events, phoneQuery, nameQuery);
+          } catch (err) {
+            console.error('renderLookupResult failed, fallback to plain renderer:', err);
+            renderLookupResultPlain(events, phoneQuery);
+          }
+        }
+
+        async function runLookupSearch() {
+          if (!lookupResult) return;
+          const phoneDigits = String(lookupPhone?.value || '').replace(/\D/g, '');
+          if (!phoneDigits) {
+            lookupResult.innerHTML = '<div class="lookup-empty">\u8ACB\u8F38\u5165\u96FB\u8A71</div>';
+            return;
+          }
+
+          lookupResult.innerHTML = '<div style="text-align:center; padding:16px;">\u8CC7\u6599\u67E5\u8A62\u4E2D...</div>';
+          const phoneMatch = (value) => {
+            const d = String(value || '').replace(/\D/g, '');
+            if (!d) return false;
+            return d.includes(phoneDigits) || phoneDigits.includes(d);
+          };
+          let searchErr = null;
+          try {
+            const params = new URLSearchParams({
+              action: 'searchAppointments',
+              includePast: '1',
+              limit: '120'
+            });
+            params.set('phone', phoneDigits);
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + '?' + params.toString(), { method: 'GET', mode: 'cors' });
+            const raw = await res.json();
+            if (!Array.isArray(raw) && raw && raw.status === 'error') {
+              throw new Error(raw.message || 'searchAppointments failed');
+            }
+            const events = Array.isArray(raw) ? raw : (Array.isArray(raw?.events) ? raw.events : []);
+            renderLookupResultSafely(events, phoneDigits, '');
+            return;
+          } catch (err) {
+            searchErr = err;
+            console.error('searchAppointments failed:', err);
+            try {
+              const r2 = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getEvents', { method: 'GET', mode: 'cors' });
+              const all = await r2.json();
+              const events = Array.isArray(all) ? all.filter(ev => {
+                const ep = ev.extendedProps || {};
+                if (String(ep.appointment_type || '').toLowerCase() === 'blocked') return false;
+                return phoneMatch(ep.customer_phone);
+              }) : [];
+              renderLookupResultSafely(events, phoneDigits, '');
+            } catch (err2) {
+              console.error('lookup fallback getEvents failed:', err2);
+              lookupResult.innerHTML = '<div class="lookup-empty">\u67E5\u8A62\u5931\u6557\uFF0C\u8ACB\u7A0D\u5F8C\u518D\u8A66</div>';
+            }
+          }
+        }
+
+        function initReportDateRange() {
+          const pad2 = (n) => String(n).padStart(2, '0');
+          const now = new Date();
+          if (!repStart.value) repStart.value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-01`;
+          if (!repEnd.value) repEnd.value = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+        }
+        if (openReportBtn) openReportBtn.addEventListener('click', () => { reportModal.style.display = 'block'; initReportDateRange(); });
+        if (closeReportBtn) closeReportBtn.addEventListener('click', () => reportModal.style.display = 'none');
+        if (openLookupBtn) openLookupBtn.addEventListener('click', () => {
+          if (!lookupModal) lookupModal = document.getElementById('lookupModal');
+          if (lookupModal) lookupModal.style.display = 'block';
+          if (lookupResult) lookupResult.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:20px;">\u8ACB\u8F38\u5165\u96FB\u8A71\u5F8C\u67E5\u8A62</div>';
+          if (lookupName) lookupName.value = '';
+          if (lookupPhone) {
+            lookupPhone.value = '';
+            lookupPhone.focus();
+          }
+        });
+        if (closeLookupBtn) closeLookupBtn.addEventListener('click', () => { if (lookupModal) lookupModal.style.display = 'none'; });
+        if (fetchLookupBtn) fetchLookupBtn.addEventListener('click', runLookupSearch);
+        [lookupPhone, lookupName].forEach(el => {
+          if (!el) return;
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              runLookupSearch();
+            }
+          });
+        });
+        if (lookupPhone) {
+          lookupPhone.addEventListener('input', (e) => {
+            let d = String(e.target.value || '').replace(/\D/g, '').slice(0, 10);
+            if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
+            else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+            else e.target.value = d;
+          });
+        }
+        if (fetchReportBtn) fetchReportBtn.addEventListener('click', async () => {
+          const start = repStart.value; const end = repEnd.value;
+          if (!start || !end) { reportResult.innerHTML = '<div style="color:var(--md3-error); text-align:center;">請選擇起訖日期</div>'; return; }
+          reportResult.innerHTML = '<div style="text-align:center;">⏳ 資料計算中...</div>';
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + `?action=getReport&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`);
+            renderReport(await res.json());
+          } catch (e) { reportResult.innerHTML = '<div style="color:var(--md3-error); text-align:center;">❌ 讀取失敗</div>'; }
+        });
+
+        function renderReport(data) {
+          if (!data || (!Object.keys(data.designers).length && !Object.keys(data.assistants).length)) {
+            reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:var(--md3-on-surface-variant);">該區間尚無預約資料</div>'; return;
+          }
+          let html = '';
+          html += `<h4 style="margin-top:0; border-left:4px solid var(--md3-primary); padding-left:10px;">設計師業績 (40%)</h4>`;
+          html += `<table class="report-table" style="margin-bottom:20px;"><thead><tr><th width="18%">設計師</th><th width="10%">客數</th><th width="9%">剪</th><th width="9%">燙</th><th width="9%">染</th><th width="22%">總金額</th><th width="23%">業績抽成</th></tr></thead><tbody>`;
+          const designerMap = { '1': '店長', '2': '雅婷', '3': '小白' };
+          for (const [id, info] of Object.entries(data.designers)) {
+            const commission = Math.round((info.totalAmount || 0) * 0.4);
+            html += `<tr><td style="text-align:center; font-weight:bold;">${designerMap[id] || id}</td><td class="num-cell">${info.count || 0}</td><td class="num-cell">${info.cutCount || info.count || 0}</td><td class="num-cell">${info.permCount || 0}</td><td class="num-cell">${info.dyeCount || 0}</td><td class="num-cell">$${(info.totalAmount || 0).toLocaleString()}</td><td class="num-cell" style="color:var(--md3-primary); font-weight:bold;">$${commission.toLocaleString()}</td></tr>`;
+          }
+          html += `</tbody></table>`;
+          html += `<h4 style="margin-top:0; border-left:4px solid #e65100; padding-left:10px;">助理洗頭業績 (超過300顆, 每顆$20)</h4>`;
+          html += `<table class="report-table"><thead><tr><th width="30%">助理姓名</th><th width="30%">洗頭數</th><th width="40%">業績獎金</th></tr></thead><tbody>`;
+          for (const [name, info] of Object.entries(data.assistants)) {
+            if (!name || name === 'undefined') continue;
+            const excess = Math.max(0, (info.washCount || 0) - 300);
+            html += `<tr><td style="text-align:center; font-weight:bold;">${name}</td><td class="num-cell">${info.washCount || 0} <span style="font-size:0.8em; color:var(--md3-on-surface-variant);">(超額 ${excess})</span></td><td class="num-cell" style="color:#e65100; font-weight:bold;">$${(excess * 20).toLocaleString()}</td></tr>`;
+          }
+          html += `</tbody></table>`;
+          reportResult.innerHTML = html;
+        }
+      })();
+
+      // ====== 警示名單管理 ======
+      (function () {
+        const openBtn = document.getElementById('open-warnlist-btn');
+        const modal = document.getElementById('warnlistModal');
+        const closeBtn = document.querySelector('.warnlist-close-button');
+        const addBtn = document.getElementById('warn-add-btn');
+        const phoneInput = document.getElementById('warn-phone');
+        const noteInput = document.getElementById('warn-note');
+        const listContainer = document.getElementById('warnlist-items');
+
+        async function loadWarnList() {
+          listContainer.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:12px;">載入中...</div>';
+          try {
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL + '?action=getWarnList', { method: 'GET', mode: 'cors' });
+            const data = await res.json();
+            if (!data || !data.list || data.list.length === 0) {
+              listContainer.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:12px;">目前沒有警示名單</div>';
+              return;
+            }
+            listContainer.innerHTML = data.list.map(item => `
+              <div class="warnlist-item">
+                <div class="warnlist-item-info">
+                  <span class="warnlist-phone">${escapeHtml(item.phone)}</span>
+                  <span class="warnlist-note">${escapeHtml(item.note || '')}</span>
+                </div>
+                <button type="button" class="warnlist-delete-btn" data-phone="${escapeHtml(item.phone)}">刪除</button>
+              </div>
+            `).join('');
+            listContainer.querySelectorAll('.warnlist-delete-btn').forEach(btn => {
+              btn.addEventListener('click', async function () {
+                const phone = this.dataset.phone;
+                if (!confirm(`確定要從警示名單移除 ${phone} 嗎？`)) return;
+                try {
+                  await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteWarn', phone }) });
+                  loadWarnList();
+                } catch (err) { alert('刪除失敗: ' + err.message); }
+              });
+            });
+          } catch (err) {
+            listContainer.innerHTML = '<div style="text-align:center; color:#ff5252; padding:12px;">載入失敗</div>';
+          }
+        }
+
+        if (openBtn) openBtn.addEventListener('click', () => {
+          modal.style.display = 'block';
+          loadWarnList();
+        });
+
+        if (addBtn) addBtn.addEventListener('click', async () => {
+          const phone = (phoneInput.value || '').replace(/\D/g, '');
+          const note = noteInput.value.trim();
+          if (!phone || phone.length < 9) { alert('請輸入正確的電話號碼'); return; }
+          if (!note) { alert('請輸入備註'); return; }
+          try {
+            addBtn.disabled = true;
+            addBtn.textContent = '儲存中...';
+            const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'addWarn', phone, note }) });
+            const result = await res.json();
+            if (result.status === 'success') {
+              phoneInput.value = ''; noteInput.value = '';
+              showToast('已新增至警示名單', 'success', 2000);
+              loadWarnList();
+            } else {
+              alert('新增失敗: ' + (result.message || '未知錯誤'));
+            }
+          } catch (err) { alert('新增失敗: ' + err.message); }
+          finally { addBtn.disabled = false; addBtn.textContent = '新增'; }
+        });
+
+        // 電話輸入格式化
+        if (phoneInput) phoneInput.addEventListener('input', (e) => {
+          let d = String(e.target.value || '').replace(/\D/g, '').slice(0, 10);
+          if (d.length >= 7) e.target.value = d.replace(/^(\d{4})(\d{3})(\d{0,3}).*$/, (_, a, b, c) => c ? `${a}-${b}-${c}` : `${a}-${b}`);
+          else if (d.length >= 5) e.target.value = d.replace(/^(\d{4})(\d{0,3}).*$/, '$1-$2');
+          else e.target.value = d;
+        });
+      })();
+
+      // ====== 主題色設定（可在網頁上隨時改主色，存在本機 localStorage） ======
+      (function () {
+        const openBtn = document.getElementById('open-theme-btn');
+        const modal = document.getElementById('themeModal');
+        if (!openBtn || !modal) return;
+        const closeBtn = modal.querySelector('.theme-close-button');
+        const rowsEl = document.getElementById('theme-color-rows');
+        const resetBtn = document.getElementById('theme-reset-btn');
+        const applyBtn = document.getElementById('theme-apply-btn');
+        const CONFIG = window.THEME_COLOR_KEYS || [];
+        const PARAMS = window.THEME_PARAM_KEYS || [];
+
+        // color input 只吃 #rrggbb；把目前生效色（自訂優先，否則 styles.css 預設）轉成 hex
+        function toHex(v) {
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
+          const ctx = document.createElement('canvas').getContext('2d');
+          ctx.fillStyle = v || '#000000';
+          return ctx.fillStyle;
+        }
+        function currentColor(varName) {
+          return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
+
+        // 每個顏色一列：標籤 + 取色器；改色即時套用並存檔
+        function buildRows() {
+          rowsEl.innerHTML = '';
+          CONFIG.forEach((c) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 4px; border-bottom:1px solid var(--line-soft); font-size:15px;';
+            const span = document.createElement('span');
+            span.textContent = c.label;
+            const ctrl = document.createElement('span');
+            ctrl.style.cssText = 'display:flex; align-items:center; gap:8px;';
+            // HEX 文字框（顯示/可手動輸入色碼）
+            const hex = document.createElement('input');
+            hex.type = 'text';
+            hex.maxLength = 7;
+            hex.spellcheck = false;
+            hex.value = toHex(currentColor(c.var));
+            hex.style.cssText = 'width:84px; padding:5px 8px; font-family:monospace; font-size:13px; text-align:center; border:1px solid var(--line); border-radius:0; background:#fffdf8;';
+            // 取色器色塊
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = toHex(currentColor(c.var));
+            input.style.cssText = 'width:46px; height:30px; border:1px solid var(--line); border-radius:0; background:none; padding:0; cursor:pointer;';
+            // 色塊 ↔ HEX 雙向同步；選色/改碼都先不套用，按「套用」才生效
+            input.addEventListener('input', () => { hex.value = input.value; });
+            hex.addEventListener('input', () => {
+              let v = hex.value.trim();
+              if (v && v[0] !== '#') v = '#' + v;
+              if (/^#[0-9a-fA-F]{6}$/.test(v)) input.value = v.toLowerCase();
+            });
+            ctrl.appendChild(hex);
+            ctrl.appendChild(input);
+            row.appendChild(span);
+            row.appendChild(ctrl);
+            rowsEl.appendChild(row);
+          });
+          // 推導參數：每個一列（標籤 + 數值 + 滑桿）；拖動先不套用，按「套用」才生效
+          PARAMS.forEach((p) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 4px; border-bottom:1px solid var(--line-soft); font-size:15px;';
+            const span = document.createElement('span');
+            span.textContent = p.label;
+            const ctrl = document.createElement('span');
+            ctrl.style.cssText = 'display:flex; align-items:center; gap:8px;';
+            const valSpan = document.createElement('span');
+            valSpan.style.cssText = 'min-width:40px; text-align:right; font-family:monospace; font-size:13px;';
+            const range = document.createElement('input');
+            range.type = 'range';
+            range.min = p.min; range.max = p.max; range.step = p.step;
+            const cur = parseFloat(currentColor(p.var));
+            range.value = isNaN(cur) ? p.min : cur;
+            range.style.cssText = 'width:120px; accent-color: var(--brand);';
+            valSpan.textContent = range.value + p.unit;
+            range.addEventListener('input', () => { valSpan.textContent = range.value + p.unit; });
+            ctrl.appendChild(valSpan);
+            ctrl.appendChild(range);
+            row.appendChild(span);
+            row.appendChild(ctrl);
+            rowsEl.appendChild(row);
+          });
+        }
+
+        // 按「套用」才把所有取色器的值一次寫進 CSS 變數並存檔
+        if (applyBtn) applyBtn.addEventListener('click', () => {
+          const colorInputs = rowsEl.querySelectorAll('input[type="color"]');
+          CONFIG.forEach((c, i) => {
+            const v = colorInputs[i] && colorInputs[i].value;
+            if (!v) return;
+            document.documentElement.style.setProperty(c.var, v);
+            try { localStorage.setItem(c.key, v); } catch (e) {}
+          });
+          const ranges = rowsEl.querySelectorAll('input[type="range"]');
+          PARAMS.forEach((p, i) => {
+            const r = ranges[i];
+            if (!r) return;
+            const val = r.value + p.unit;
+            document.documentElement.style.setProperty(p.var, val);
+            try { localStorage.setItem(p.key, val); } catch (e) {}
+          });
+          if (typeof showToast === 'function') showToast('已套用主題色', 'success', 1500);
+          modal.style.display = 'none';
+        });
+
+        openBtn.addEventListener('click', () => { buildRows(); modal.style.display = 'block'; });
+        if (closeBtn) closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        // 不做「點外面關閉」：取色器是系統視窗，選完色回來的點擊會誤關彈窗
+
+        if (resetBtn) resetBtn.addEventListener('click', () => {
+          CONFIG.forEach((c) => {
+            document.documentElement.style.removeProperty(c.var);
+            try { localStorage.removeItem(c.key); } catch (e) {}
+          });
+          PARAMS.forEach((p) => {
+            document.documentElement.style.removeProperty(p.var);
+            try { localStorage.removeItem(p.key); } catch (e) {}
+          });
+          buildRows();
+        });
+      })();
+    </script>
+    <!-- ====== V2 新舊版體驗切換 JS ====== -->
+    <!-- ====== V2 新舊版體驗切換 JS ====== -->
+    <script>
+      (function() {
+        const v2Checkbox = document.getElementById('v2-toggle-checkbox');
+        if (!v2Checkbox) return;
+
+        // 讀取快取狀態
+        const isV2Stored = localStorage.getItem('preview-v2') === 'true';
+        v2Checkbox.checked = isV2Stored;
+
+        // 如果快取為 true，則為 body 加上新版 class
+        if (isV2Stored) {
+          document.body.classList.add('preview-v2');
+        }
+
+        // 監聽 Checkbox 變更
+        v2Checkbox.addEventListener('change', function() {
+          const isChecked = this.checked;
+          // 先同步為 body 加上/移除類別
+          if (isChecked) {
+            document.body.classList.add('preview-v2');
+          } else {
+            document.body.classList.remove('preview-v2');
+          }
+          // 儲存狀態至 localStorage
+          localStorage.setItem('preview-v2', isChecked ? 'true' : 'false');
+          // 延遲 80 毫秒重新整理，確保 localStorage 寫入完成並順利重繪日曆
+          setTimeout(function() {
+            window.location.reload();
+          }, 80);
+        });
+      })();
+    </script>
+</body>
+
+</html>

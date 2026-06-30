@@ -1,0 +1,3781 @@
+/* 專案中文字型：先找本機字型，找不到才載入 fonts 內的 woff2。 */
+@font-face {
+  font-family: SweiSpringSugarCJKtc;
+  src:
+    local("Swei Spring Sugar CJKtc Regular"),
+    local("Swei Spring Sugar CJKtc-Regular"),
+    local("SweiSpringSugarCJKtc-Regular"),
+    local("獅尾四季春加糖 TC Regular"),
+    local("獅尾四季春加糖 TC"),
+    url("fonts/SweiSpringSugarCJKtc.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* 全站設計基礎：顏色、與主要尺寸都集中在這裡調整。 */
+:root {
+  --font-main: "SweiSpringSugarCJKtc", "Microsoft JhengHei", "PingFang TC",
+    /* 主要中文字型堆疊：先用本機字型，找不到才載 woff2 */
+    sans-serif;
+  --font-sans: var(--font-main);
+  /* 內文字型（=主字型） */
+  --font-display: var(--font-main);
+  /* 標題/大字字型（=主字型） */
+  --font-mono: "SweiSpringSugarCJKtc", "Cascadia Mono", monospace;
+  /* 等寬字型（數字、代碼用） */
+  --page-bg: #f4f0ea;
+  /* 頁面基底色（米白） */
+  --paper: #fffdf9;
+  /* 卡片白底 */
+  --paper-soft: #f9f4ee;
+  /* 次級淺米底 */
+  --paper-strong: #efe7de;
+  /* 較深米底 */
+  --ink: #27313a;
+  /* 主要文字色（深墨） */
+  --ink-soft: #61707a;
+  /* 次要文字色 */
+  --ink-faint: #89949b;
+  /* 最淡文字色 */
+  --line: #ded3c8;
+  /* 邊框線色 */
+  --line-soft: rgba(44, 49, 55, 0.1);
+  /* 淺分隔線（半透明） */
+  --brand: #69377e;
+  /* 品牌主色（紫）；全站品牌紫的唯一來源，改這一個全部跟著變 */
+  --brand-dark: color-mix(in srgb, var(--brand) 68%, black);
+  /* 品牌深紫（文字/hover），由主色推導 */
+  --brand-soft: color-mix(in srgb, var(--brand) 18%, white);
+  /* 品牌淺紫底，由主色推導 */
+  --danger: #c9433c;
+  /* 警示紅 */
+  --danger-soft: #f8dfdc;
+  /* 淺紅底 */
+  --success: #8a9824;
+  /* 成功綠（已結帳） */
+  --success-soft: #eef2c2;
+  /* 淺綠底 */
+  --paid: #8c9825;
+  /* 已結帳卡片主色（可在主題設定改）；卡片漸層由此推導 */
+  --warning: #ca6a2c;
+  /* 警告橘 */
+  --warning-soft: #f8e2d4;
+  /* 淺橘底 */
+  --blue: #cb99cc;
+  /* 店長代表色（藍） */
+  --peach: #e593af;
+  /* 雅婷代表色（橘） */
+  --slate: #8065a2;
+  /* 小白代表色（灰藍） */
+  --resource-col-alpha: 24%;
+  /* 欄底色濃度（可在主題設定調）；放 :root 才能被主題設定覆蓋 */
+  --card-grad-light: 78%;
+  /* 事件卡漸層淺端的主色佔比，越大越深（可在主題設定調） */
+  --md3-surface: var(--paper);
+  /* 以下為 Material 3 命名別名，值都接到上方色票/圓角 */
+  --md3-on-surface: var(--ink);
+  --md3-on-surface-variant: var(--ink-soft);
+  --md3-primary: var(--brand);
+  --md3-on-primary: #fff;
+  --md3-primary-container: var(--brand-soft);
+  --md3-outline: var(--ink-faint);
+  --md3-outline-variant: var(--line);
+  --md3-error: var(--danger);
+  --md3-error-container: var(--danger-soft);
+  --md3-surface-container-lowest: #fff;
+  --md3-surface-container-low: var(--paper-soft);
+  --md3-surface-container: #f3ece5;
+  --md3-surface-container-high: #ebe1d8;
+  --md3-surface-container-highest: #e1d6cb;
+}
+
+/* 基礎重設：統一盒模型，避免 padding 讓寬度計算跑掉。 */
+* {
+  box-sizing: border-box;
+}
+
+/* 頁面底色與全站字體；這份 CSS 不改 HTML，所以從 body 接管視覺。 */
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 32%),
+    radial-gradient(circle at 88% 8%, rgba(88, 168, 216, 0.18), transparent 34%),
+    linear-gradient(180deg, #f6f0ec 0%, #ece7e2 100%);
+  font-family: "Times New Roman", serif;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+  text-rendering: optimizelegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 表單元素一律繼承外層字型，不用瀏覽器預設 */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* 正式版返回入口：固定右下角，不參與排版。 */
+.preview-return-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  color: #ffffff;
+  text-decoration: none;
+  background: color-mix(in srgb, var(--brand) 76%, #27313a);
+  border: 1px solid color-mix(in srgb, var(--brand) 48%, #ffffff);
+  box-shadow: 0 8px 18px rgba(31, 24, 36, 0.22);
+}
+
+.preview-return-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(31, 24, 36, 0.28);
+}
+
+.preview-return-btn .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.preview-return-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* 關閉行動裝置點按的 300ms 延遲 */
+button {
+  touch-action: manipulation;
+}
+
+/* 互動元素統一過場動畫（背景/邊框/陰影/顏色/位移/透明度） */
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0, 0, 1),
+    color 180ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 180ms cubic-bezier(0.2, 0, 0, 1),
+    transform 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* 鍵盤操作時的聚焦外框（無障礙；滑鼠點不觸發） */
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  outline-offset: 2px;
+}
+
+/* 外層保留最小安全邊距，讓排程表接近全螢幕使用。 */
+#calendar-container {
+  width: 100%;
+  min-height: 100dvh;
+}
+
+/* 行事曆主面板：負責整體白底、圓角、邊框與陰影。 */
+#calendar {
+  /* 行事曆核心尺寸 */
+  --calendar-header-height: 218px;
+  /* 上方日期區高度 */
+  --time-row-height: clamp(40px, 3.5vw, 42px);
+  /* 每個時間格高度；隨視窗寬縮放：窄≥40px、寬≤42px */
+  --col-header-height: 44px;
+  /* 設計師表頭高度 */
+  --per-resource-time-axis-width: 78px;
+  /* 單日檢視左側時間軸寬度 */
+  --event-card-vertical-gap: 7px;
+  /* 預約卡上下間距 */
+  /* 格線 */
+  --calendar-line-color: rgba(78, 67, 58, 0.08);
+  /* 時間格線顏色 */
+  --calendar-line-width: 1px;
+  /* 時間格線粗細 */
+  /* 設計師欄底色（濃度 --resource-col-alpha 已移到 :root，方便主題設定覆蓋） */
+  --resource-col-1-bg: color-mix(in srgb, var(--blue) var(--resource-col-alpha), transparent);
+  /* 店長欄底色 */
+  --resource-col-2-bg: color-mix(in srgb, var(--peach) var(--resource-col-alpha), transparent);
+  /* 雅婷欄底色 */
+  --resource-col-3-bg: color-mix(in srgb, var(--slate) var(--resource-col-alpha), transparent);
+  /* 小白欄底色 */
+  /* 用餐時段 */
+  --meal-slot-bg-deep: rgba(164, 187, 80, 0.35);
+  /* 用餐時段標示色 */
+  /* 日期列 */
+  --date-card-bg: linear-gradient(180deg, #f8f3fd 0%, #efe7f8 100%);
+  --date-card-text: color-mix(in srgb, var(--brand) 45%, #333333);
+  --date-card-muted: color-mix(in srgb, var(--brand) 50%, #888888);
+  --date-item-active-bg: color-mix(in srgb, var(--brand) 55%, white);
+  --date-item-active-border: color-mix(in srgb, var(--brand) 55%, white);
+  --date-item-active-text: #FFFFFF;
+  --date-item-shadow: 0 4px 10px color-mix(in srgb, var(--brand) 16%, transparent), 0 1px 3px color-mix(in srgb, var(--brand) 12%, transparent);
+  position: relative;
+  width: 100% !important;
+  min-height: calc(100dvh - 20px);
+  margin: 0 auto;
+  overflow: visible;
+  background: #ffffff;
+  border: 1px solid rgba(122, 104, 91, 0.22);
+  border-radius: 0;
+  box-shadow: 0 14px 38px rgba(51, 42, 36, 0.15);
+}
+
+/* 右上角狗狗圖像當淡淡浮水印，不參與任何點擊。 */
+#calendar::after {
+  position: absolute;
+  top: 2px;
+  /* 離日曆容器頂端的距離，數字越大越往下 */
+  right: 100px;
+  /* 離右邊的距離，數字越大越往左 */
+  z-index: 2;
+  /* 疊層高低，越大越上層（壓在其他元素之上） */
+  /* 尺寸；clamp(最小, 隨視窗寬縮放, 最大)：視窗窄時不小於 110px、寬時不大於 170px、中間隨 11.5vw 縮放 */
+  width: clamp(110px, 11.5vw, 170px);
+  height: clamp(110px, 11.5vw, 170px);
+  pointer-events: none;
+  /* 滑鼠穿透，點不到（純裝飾，不擋下方點擊） */
+  content: "";
+  background-image: url("呆.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  /* 圖完整縮進框內、不裁切、不變形 */
+  filter: grayscale(1);
+  /* 轉成灰階（去彩色） */
+  opacity: 0.15;
+  /* 透明度，越小越淡（當淡浮水印用） */
+}
+
+/* ===== 頂部右側動作按鈕：報表 / 搜尋 / 警示（直排三顆，放在狗圖右側） =====
+   本區已整合原本散在兩處的樣式（舊段 + 後段覆蓋），衝突屬性一律採用後段最終值。 */
+
+/* 三顆按鈕共用外觀 */
+#calendar .fc-date-scroller .report-trigger-btn {
+  position: absolute;
+  /* 絕對定位，top/right 才生效 */
+  right: clamp(10px, 1.1vw, 16px);
+  /* 三顆共用的右邊距離，數字越大越往左 */
+  top: auto;
+  /* top 由各自的 #open-*-btn 設定 */
+  z-index: 8;
+  /* 疊層，壓在日曆內容上 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 圖示置中（後段值，覆蓋舊的 flex-start） */
+  gap: 0.45em;
+  /* 圖示與文字間距（文字已隱藏，留著無妨） */
+  /* 按鈕方塊大小，clamp(最小, 隨視窗縮放, 最大) */
+  width: clamp(26px, 2.2vw, 32px);
+  height: clamp(26px, 2.2vw, 32px);
+  min-width: 0;
+  /* 後段值，覆蓋舊的 5.4em */
+  padding: 0;
+  /* 後段值，覆蓋舊的 0.5em 0.95em */
+  color: color-mix(in srgb, var(--brand) 70%, white);
+  /* 圖示顏色（紫） */
+  background: rgba(255, 255, 255, 0.58);
+  /* 半透明白底（後段值，覆蓋舊的 0.28） */
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  /* 淡紫細框（由 --brand 推導） */
+  border-radius: 0;
+  /* 直角（0 = 不圓角；要圓改大） */
+  /* 投影 + 內側高光，做出浮起立體感（後段值，覆蓋舊的單層內陰影） */
+  box-shadow:
+    0 7px 16px color-mix(in srgb, color-mix(in srgb, var(--brand) 72%, black) 12%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  font-size: 0;
+  /* 後段值，覆蓋舊的 clamp(...)；圖示大小改由 ::before 控制 */
+  line-height: 1;
+}
+
+/* 四顆各自的垂直位置：每顆相差 38px（>按鈕高度），剛好垂直等距不重疊 */
+#calendar .fc-date-scroller #open-report-btn {
+  top: 12px;
+  /* 第1顆（報表）；每階 34px，按鈕 32px 故縫 2px */
+}
+
+#calendar .fc-date-scroller #open-lookup-btn {
+  top: 46px;
+  /* 第2顆（搜尋） */
+}
+
+#calendar .fc-date-scroller #open-warnlist-btn {
+  top: 80px;
+  /* 第3顆（警示） */
+}
+
+#calendar .fc-date-scroller #open-theme-btn {
+  top: 114px;
+  /* 第4顆（主題色） */
+}
+
+/* 按鈕圖示（Material Symbols 字型圖示，畫在 ::before） */
+#calendar .fc-date-scroller .report-trigger-btn::before {
+  display: block;
+  font-family: "Material Symbols Outlined";
+  font-size: clamp(17px, 1.6vw, 22px);
+  /* 圖示大小 */
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  content: "";
+  font-feature-settings: "liga";
+  font-variation-settings: "FILL" 0, "wght" 460, "GRAD" 0, "opsz" 28;
+}
+
+#calendar .fc-date-scroller #open-report-btn::before {
+  content: "monitoring";
+  /* 報表圖示 */
+}
+
+#calendar .fc-date-scroller #open-lookup-btn::before {
+  content: "search";
+  /* 搜尋圖示 */
+}
+
+#calendar .fc-date-scroller #open-warnlist-btn::before {
+  content: "warning";
+  /* 警示圖示 */
+}
+
+#calendar .fc-date-scroller #open-theme-btn::before {
+  content: "palette";
+  /* 主題色圖示 */
+}
+
+/* 舊版按鈕內的文字 / 圖示元素一律隱藏（現在改用 ::before 圖示） */
+#calendar .fc-date-scroller .report-trigger-btn .trb-ico,
+#calendar .fc-date-scroller .report-trigger-btn .trb-label {
+  display: none;
+}
+
+/* 滑鼠移上去：底色變淡紫、外框變深、文字變深、整顆往左挪 2px */
+#calendar .fc-date-scroller .report-trigger-btn:hover {
+  background: rgba(245, 238, 252, 0.78);
+  /* 後段值，覆蓋舊的 0.72 */
+  border-color: color-mix(in srgb, var(--brand) 34%, transparent);
+  color: color-mix(in srgb, var(--brand) 78%, white);
+  transform: translateX(-2px);
+}
+
+/* 視窗 ≤ 760px（手機）：按鈕略縮、右距與 top 用固定 px */
+@media (max-width: 760px) {
+  #calendar .fc-date-scroller .report-trigger-btn {
+    right: 8px;
+    width: 34px;
+    height: 34px;
+  }
+
+  #calendar .fc-date-scroller #open-report-btn {
+    top: 12px;
+  }
+
+  #calendar .fc-date-scroller #open-lookup-btn {
+    top: 48px;
+  }
+
+  #calendar .fc-date-scroller #open-warnlist-btn {
+    top: 84px;
+  }
+
+  #calendar .fc-date-scroller #open-theme-btn {
+    top: 120px;
+  }
+}
+
+/* 隱藏 FullCalendar 內建工具列，改用下方自訂日期列 */
+#calendar .fc-header-toolbar {
+  display: none;
+}
+
+/* 讓 FC 各層高度自動撐開，不要內部固定高度 */
+#calendar,
+#calendar .fc-view-harness,
+#calendar .fc-scroller,
+#calendar .fc-timegrid-slots table {
+  height: auto !important;
+}
+
+/* 放開 FC 捲動容器，避免雙重捲軸 */
+#calendar .fc-scroller {
+  overflow: visible !important;
+}
+
+/* 移除 FC 預設外框線 */
+#calendar .fc-scrollgrid {
+  border: 0 !important;
+}
+
+/* FC 表格改 separate 邊框、零間距，方便自訂格線 */
+#calendar table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* ==================== 5) Date Scroller(自訂日期列)==================== */
+
+/* 啟用自訂日期列時:隱藏套件原生標題 */
+#calendar.is-date-scroller .fc-toolbar-title {
+  display: none;
+}
+
+/* 日期列外卡:淡紫漸層、方角、柔陰影,高度隨寬度連續縮放 */
+#calendar .fc-date-scroller {
+  padding: clamp(3px, 0.67vw, 5px) clamp(15px, 1.26vw, 19px) clamp(10px, 1.26vw, 14px);
+  background: var(--date-card-bg);
+  border-radius: 0;
+  box-shadow: 0 8px 22px rgba(28, 39, 45, 0.08);
+  color: var(--date-card-text);
+  position: relative;
+  overflow: visible;
+  border: 1px solid #d4e1e6;
+  height: auto;
+  min-height: clamp(108px, 12vw, 150px);
+  box-sizing: border-box;
+}
+
+/* 日/週/月分段器 + 左右箭頭:同一橫列 */
+#calendar .fc-date-scroller .date-controls-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* 左右箭頭外層容器 */
+.nav-arrows {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 箭頭鈕:磨砂半透明方鈕、淺紫圖示 */
+.nav-btn {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  color: color-mix(in srgb, var(--brand) 58%, white);
+  border-radius: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 箭頭鈕 hover:提亮、放大 */
+.nav-btn:hover {
+  background: rgba(245, 238, 252, 0.92);
+  border-color: color-mix(in srgb, var(--brand) 36%, transparent);
+  color: color-mix(in srgb, var(--brand) 70%, white);
+  transform: scale(1.08);
+}
+
+/* 箭頭鈕 按下:縮小回饋 */
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+/* 箭頭鈕內的 Material Symbols 圖示字級 */
+.nav-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* 日期列主列:左欄(年月)+ 數字條 並排 */
+#calendar .fc-date-scroller .date-row {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  flex-wrap: nowrap;
+  height: 100%;
+}
+
+/* 左欄:年月標題 + 分段器,直向置中 */
+#calendar .fc-date-scroller .date-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 56px;
+  padding-left: 4px;
+  position: relative;
+}
+
+/* 屬於上方「報表/搜尋/警示」按鈕區：把左欄定位拿掉(覆蓋上一條的 relative)，
+   按鈕的 absolute 才會以更外層、整條寬的 .fc-date-scroller 為基準，貼到右上角狗圖那側；
+   左欄內的 .date-header-ghost 改靠自身 left 相對 scroller 定位，位置不受影響。 */
+#calendar .fc-date-scroller .date-left-col {
+  position: static;
+}
+
+/* 年月標題容器 */
+#calendar .fc-date-scroller .date-label {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+
+  letter-spacing: 0.06em;
+  flex: 0 0 auto;
+  padding: 0;
+  width: 100%;
+  padding-right: 0;
+  position: relative;
+}
+
+/* 重疊字堆疊:年份襯底 + 月日 + 星期,整塊以此字級等比縮放 */
+#calendar .fc-date-scroller .date-stack {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: clamp(22px, 3.2vw, 48px);
+  padding-top: 0.63em;
+  flex: 0 0 auto;
+}
+
+/* 疊字底層:大型淺紫年份襯底(虛實對比)*/
+#calendar .fc-date-scroller .date-header-ghost {
+  position: absolute;
+  top: 0;
+  left: -0.03em;
+  font-family: "Dela Gothic One", sans-serif;
+  font-size: 1.63em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--brand) 30%, white);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  line-height: 1;
+}
+
+/* 星期(如 Tue):柔紫、強光暈浮起,與底下數字分離 */
+#calendar .fc-date-scroller .date-header-weekday {
+  position: relative;
+  z-index: 3;
+  font-family: "Source Serif 4", serif;
+  font-size: 0.58em;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: color-mix(in srgb, var(--brand) 58%, black);
+  margin-top: -0.7em;
+  margin-left: 8.3em;
+  line-height: 1;
+  text-shadow:
+    0 0 0.27em rgba(255, 255, 255, 1),
+    0 0 0.55em rgba(255, 255, 255, 0.95),
+    0 0 0.55em rgba(255, 255, 255, 0.95),
+    0 0.18em 0.36em color-mix(in srgb, color-mix(in srgb, var(--brand) 58%, black) 50%, transparent);
+}
+
+/* 分段器軌道(日/週/月 與 手機篩選):磨砂玻璃凹槽 */
+#calendar .fc-date-scroller .date-toggle,
+#calendar .fc-date-scroller .mobile-resource-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12)),
+    color-mix(in srgb, var(--brand) 8%, transparent);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent),
+    0 1px 2px color-mix(in srgb, color-mix(in srgb, var(--brand) 72%, black) 6%, transparent);
+  flex: 0 0 auto;
+}
+
+/* 日/週/月 分段器:收合貼齊內容寬度 */
+#calendar .fc-date-scroller .date-toggle {
+  position: static;
+  left: auto;
+  bottom: auto;
+  top: auto;
+  transform: none;
+  margin: 0 0 0 0;
+  z-index: auto;
+  align-self: flex-start;
+}
+
+/* 手機版設計師篩選分段器:桌面隱藏 */
+#calendar .fc-date-scroller .mobile-resource-toggle {
+  display: none;
+}
+
+/* 被搬出卡片的手機篩選列:預設隱藏(僅 ≤480px 顯示)*/
+#calendar>.mobile-resource-toggle {
+  display: none;
+}
+
+/* 分段器內各按鈕:透明底、灰紫字,字級隨視窗縮放 */
+#calendar .fc-date-scroller .date-toggle-btn,
+#calendar .fc-date-scroller .resource-toggle-btn,
+#calendar>.mobile-resource-toggle .resource-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--date-card-muted);
+  font-size: clamp(10px, 1.1vw, 16px);
+  padding: 0.6em 0.92em;
+  border-radius: 0;
+  font-weight: 700;
+  padding-left: 4px;
+  padding-right: 10px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  min-width: 2.4em;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* 未選分段 hover:淡紫底浮現 */
+#calendar .fc-date-scroller .date-toggle-btn:not(.is-active):hover,
+#calendar .fc-date-scroller .resource-toggle-btn:not(.is-active):hover {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: color-mix(in srgb, var(--brand) 70%, white);
+}
+
+/* 設計師篩選按鈕:字級略小 */
+#calendar .fc-date-scroller .resource-toggle-btn,
+#calendar>.mobile-resource-toggle .resource-toggle-btn {
+  font-size: clamp(9px, 1.0vw, 15px);
+  padding: 0.5em 0.83em;
+}
+
+/* 報表/預約/警示:卡片最右側直立動作列 */
+#calendar .fc-date-scroller .date-action-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(5px, 0.5vw, 8px);
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: auto;
+  position: relative;
+  z-index: 3;
+  padding-right: 0;
+}
+
+/* 分段器選中段:紫色漸層浮起、上緣高光 */
+#calendar .fc-date-scroller .date-toggle-btn.is-active,
+#calendar .fc-date-scroller .resource-toggle-btn.is-active,
+#calendar>.mobile-resource-toggle .resource-toggle-btn.is-active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 45%, white) 0%, color-mix(in srgb, var(--brand) 68%, white) 100%);
+  color: #FFFFFF;
+  box-shadow:
+    0 2px 7px color-mix(in srgb, var(--brand) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transform: translateY(-0.5px);
+}
+
+/* 月日前景字(中紫):疊在年份襯底之上 */
+#calendar .fc-date-scroller .date-header-month {
+  font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", "Heiti TC", sans-serif;
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--brand) 80%, white);
+  position: relative;
+  z-index: 1;
+  margin-top: 0.21em;
+  margin-left: 1.68em;
+  line-height: 1;
+}
+
+/* 寬版(≥1025px):左欄上下撐開、分段器靠左下 */
+@media (min-width: 1025px) {
+  #calendar .fc-date-scroller .date-left-col {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  #calendar .fc-date-scroller .date-controls-row {
+    margin-bottom: -10px;
+    margin-left: -6px;
+  }
+}
+
+/* 數字條:可橫向拖曳捲動、隱藏捲軸、高度隨寬度縮放 */
+#calendar .fc-date-scroller .date-strip {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-top: 0;
+  padding: 2px 2px;
+  min-height: clamp(72px, 8.3vw, 100px);
+  justify-content: center;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x;
+  position: relative;
+  min-width: 0;
+}
+
+/* 數字條內的箭頭:靠右 */
+#calendar .fc-date-scroller .nav-arrows {
+  position: static;
+  transform: none;
+  margin: 0 0 0 auto;
+}
+
+/* 數字條:隱藏 webkit 捲軸 */
+#calendar .fc-date-scroller .date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* 數字條 拖曳中:游標改為抓取 */
+#calendar .fc-date-scroller .date-strip.is-dragging,
+#calendar .fc-date-scroller .date-strip.active {
+  cursor: grabbing;
+}
+
+/* 拖曳中:停用日期項點擊(避免誤觸)*/
+#calendar .fc-date-scroller .date-strip.is-dragging .date-item,
+#calendar .fc-date-scroller .date-strip.active .date-item {
+  pointer-events: none;
+}
+
+/* 數字條底部光暈(目前以 content:none 關閉)*/
+#calendar .fc-date-scroller .date-strip::before {
+  content: none;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  height: 34px;
+  border-radius: 0;
+  background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.25) 55%,
+      rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+/* 單一日期項:方角,以 CSS 變數做弧形排列(位移/縮放/透明度)*/
+#calendar .fc-date-scroller .date-item {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: clamp(30px, 4.3vw, 60px);
+  padding: 10px 5px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--date-card-text);
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  scroll-snap-align: start;
+  will-change: transform, opacity;
+  transform: translateY(var(--arc-offset, 0)) scale(var(--arc-scale, 1));
+  opacity: var(--arc-opacity, 1);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* 日期項 hover:上抬、淡紫底 */
+#calendar .fc-date-scroller .date-item:hover {
+  transform: translateY(calc(var(--arc-offset, 0) - 2px)) scale(var(--arc-scale, 1));
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+/* 日期項 focus:紫色外框 */
+#calendar .fc-date-scroller .date-item:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+/* 日期項:星期小字 */
+#calendar .fc-date-scroller .date-item-weekday {
+  font-size: clamp(9px, 1.1vw, 16px);
+  color: var(--date-card-muted);
+  letter-spacing: 0.16em;
+}
+
+/* 日期項:日期大數字(隨弧形縮放)*/
+#calendar .fc-date-scroller .date-item-day {
+  font-size: calc(clamp(22px, 3.2vw, 47px) * var(--arc-font-scale, 1));
+  font-weight: 700;
+
+  transition: font-size 0.25s ease;
+}
+
+/* 日期項 選取中:大卡外觀，但背景與邊框維持透明、無陰影 */
+body.preview-v2 #calendar .fc-date-scroller .date-item.is-active {
+  background: transparent; /* 背景設為透明，取消原本的紫色實心底色 */
+  border-color: transparent; /* 邊框設為透明，取消原本的紫色邊框線 */
+  color: var(--date-card-text); /* 繼承原本的字體顏色變數 */
+  box-shadow: none; /* 取消外圍卡片的投影效果 */
+  width: clamp(44px, 6.07vw, 88px); /* 卡片寬度：RWD 響應式，在 44px 到 88px 之間依視窗寬度縮放 */
+  height: clamp(56px, 7.76vw, 112px); /* 卡片高度：RWD 響應式，在 56px 到 112px 之間依視窗寬度縮放 */
+  padding: 10px 0 12px; /* 卡片的內距：上方 10px、左右 0px、下方 12px */
+  border-radius: 0; /* 邊角圓角半徑：0 代表直角 */
+  justify-content: flex-start; /* 內部元素垂直對齊方式：靠頂部對齊 */
+  gap: 8px; /* 星期與數字之間的間距：8px */
+  transform: translateY(-3px) !important; /* 卡片上抬特效：選中時向上浮動 3px（使用 !important 確保優先套用） */
+  opacity: 1 !important; /* opacity 設為 1 */
+  margin-bottom: 8px; /* 外邊距：卡片下方的預留空間為 8px */
+}
+
+/* 數字霓虹呼吸發光動畫 */
+@keyframes neonGlowPulseDay {
+  0%, 100% {
+    /* 呼吸動畫的起點與終點：發光最弱的狀態 */
+    text-shadow: 
+      0 0 4px #fff,               /* 第一層：最貼近文字的白光，半徑 4px */
+      0 0 10px var(--brand),      /* 第二層：品牌紫光中層擴散，半徑 10px */
+      0 0 20px var(--brand);      /* 第三層：品牌紫光外層暈染，半徑 20px */
+  }
+  50% {
+    /* 呼吸動畫的二分之一處：發光最強、最耀眼的狀態 */
+    text-shadow: 
+      0 0 6px #fff,               /* 第一層：貼近文字的白光稍微擴大，半徑 6px */
+      0 0 16px #a855f7,           /* 第二層：變為亮紫色擴散，半徑 16px */
+      0 0 28px #a855f7,           /* 第三層：亮紫色外層大發光，半徑 28px */
+      0 0 35px var(--brand);      /* 第四層：最外層品牌紫背光暈染，半徑 35px */
+  }
+}
+
+/* 星期霓虹呼吸發光動畫 (半徑較小，防小字體發光過度導致模糊) */
+@keyframes neonGlowPulseWeekday {
+  0%, 100% {
+    /* 星期文字呼吸起點與終點 */
+    text-shadow: 
+      0 0 3px #fff,               /* 第一層：貼近字體的白光，半徑 3px */
+      0 0 8px var(--brand);       /* 第二層：品牌紫色外光暈，半徑 8px */
+  }
+  50% {
+    /* 星期文字呼吸最強狀態 */
+    text-shadow: 
+      0 0 4px #fff,               /* 第一層：白光微幅擴大，半徑 4px */
+      0 0 12px #a855f7,           /* 第二層：亮紫色外光暈，半徑 12px */
+      0 0 20px var(--brand);      /* 第三層：品牌紫色底光，半徑 20px */
+  }
+}
+
+/* 選取中:日期數字顯著放大，套用方案 E-1 特效（純白字 + 紫色霓虹呼吸發光） */
+body.preview-v2 #calendar .fc-date-scroller .date-item.is-active .date-item-day {
+  font-size: clamp(34px, 4.8vw, 64px); /* 數字字體大小：RWD 響應式，在 34px 到 64px 之間隨視窗寬度變化 */
+  font-weight: 800; /* 數字字體粗細：800 代表超粗體 */
+  letter-spacing: 0.02em; /* 數字字元間距：0.02em */
+  line-height: 1; /* 行高設為 1 */
+  color: #ffffff; /* 字體顏色設為純白色 */
+  animation: neonGlowPulseDay 2.5s infinite ease-in-out; /* 套用上方定義的數字霓虹呼吸動畫，週期 2.5秒 */
+  display: inline-block; /* 設為行內區塊元素 */
+}
+
+/* 選取中:星期顯著放大，套用方案 E-1 特效（純白字 + 紫色霓虹呼吸發光） */
+body.preview-v2 #calendar .fc-date-scroller .date-item.is-active .date-item-weekday {
+  color: #ffffff; /* 星期字體顏色設為純白色 */
+  font-size: clamp(14px, 1.9vw, 24px); /* 星期字體大小：RWD 響應式，在 14px 到 24px 之間隨視窗寬度變化 */
+  font-weight: 800; /* 星期字體粗細：800 代表超粗體 */
+  letter-spacing: 0.14em; /* 星期字元間距：0.14em */
+  line-height: 1; /* 行高設為 1 */
+  animation: neonGlowPulseWeekday 2.5s infinite ease-in-out; /* 套用上方定義的星期霓虹呼吸動畫 */
+}
+
+/* 今天:預設為紫色外框標記（舊版行為） */
+#calendar .fc-date-scroller .date-item.is-today {
+  border-color: color-mix(in srgb, var(--brand) 55%, white);
+}
+
+/* 今天:體驗新版時移除四角外框，改為透明（新版行為） */
+body.preview-v2 #calendar .fc-date-scroller .date-item.is-today {
+  border-color: transparent;
+}
+
+/* ==================== 6) Header / Resource Cards(設計師表頭)==================== */
+
+/* 表頭列容器 */
+#calendar .fc-col-header {
+  height: var(--col-header-height);
+  background: transparent;
+  border-bottom: none;
+}
+
+/* 表頭單格:去背、去邊、去內距 */
+#calendar .fc-col-header-cell {
+  height: 100%;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 表頭單格內層:撐滿高度 */
+#calendar .fc-col-header-cell .fc-scrollgrid-sync-inner {
+  height: 100%;
+}
+
+/* 表頭表格:分離邊框、零間距 */
+#calendar .fc-timegrid table.fc-col-header {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* 設計師表頭墊片(姓名區):置中、白漸層底 */
+#calendar .fc-col-header-cell-cushion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  padding: 7px 10px !important;
+  line-height: 1.1 !important;
+  color: var(--kikyo-dark);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.88em;
+  white-space: nowrap;
+  overflow: visible;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(246, 241, 234, 0.92) 100%) !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* 設計師 1(店長·藍):色階變數 + 白底 */
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion[data-resource-id="1"],
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="1"] .fc-col-header-cell-cushion {
+  --hd-ink: var(--blue);
+  --hd-deep: color-mix(in srgb, var(--blue) 88%, black);
+  --hd-base: color-mix(in srgb, var(--blue) 70%, white);
+  --hd-soft: color-mix(in srgb, var(--blue) 10%, white);
+  background: #ffffff !important;
+  color: var(--hd-ink) !important;
+}
+
+/* 設計師 2(雅婷·橘):色階變數 + 白底 */
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion[data-resource-id="2"],
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="2"] .fc-col-header-cell-cushion {
+  --hd-ink: var(--peach);
+  --hd-deep: color-mix(in srgb, var(--peach) 88%, black);
+  --hd-base: color-mix(in srgb, var(--peach) 70%, white);
+  --hd-soft: color-mix(in srgb, var(--peach) 10%, white);
+  background: #ffffff !important;
+  color: var(--hd-ink) !important;
+}
+
+/* 設計師 3(小白·紫):色階變數 + 白底 */
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion[data-resource-id="3"],
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="3"] .fc-col-header-cell-cushion {
+  --hd-ink: var(--slate);
+  --hd-deep: color-mix(in srgb, var(--slate) 88%, black);
+  --hd-base: color-mix(in srgb, var(--slate) 70%, white);
+  --hd-soft: color-mix(in srgb, var(--slate) 10%, white);
+  background: #ffffff !important;
+  color: var(--hd-ink) !important;
+}
+
+/* 日視圖表頭共用:置中 + 底部極淡分隔線 */
+#calendar .fc-resourceTimeGridDay-view .fc-col-header-cell-cushion {
+  justify-content: center;
+}
+
+/* 表頭 T8 版型:左色脊 | 名字 / STYLIST 兩列(grid) */
+#calendar .fc-col-header-cell-cushion .wt-t8 {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 12px;
+  align-items: center;
+}
+
+/* T8 左側細色脊 */
+#calendar .fc-col-header-cell-cushion .wt-t8 .arrow {
+  display: block;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 8px;
+  height: clamp(28px, 2.2vw, 36px);
+  border-radius: 0;
+  font-size: 0;
+  background: linear-gradient(180deg, var(--hd-base), var(--hd-deep));
+}
+
+/* T8 名字 */
+#calendar .fc-col-header-cell-cushion .wt-t8 b {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: clamp(22px, 2.4vw, 33px);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  color: var(--hd-ink);
+  text-shadow: none;
+}
+
+/* T8 STYLIST 副標:中深色 + 後接漸層髮絲線 */
+#calendar .fc-col-header-cell-cushion .wt-t8 .en {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  color: var(--hd-deep);
+  font-weight: 700;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 3px;
+  opacity: 1;
+}
+
+/* T8 副標尾端的漸層細線 */
+#calendar .fc-col-header-cell-cushion .wt-t8 .en::after {
+  content: "";
+  flex: 1;
+  min-width: 40px;
+  height: 2px;
+  border-radius: 0;
+  background: linear-gradient(90deg, var(--hd-base), transparent);
+}
+
+/* 表頭區捲動容器:隱藏垂直捲動 */
+#calendar .fc-scrollgrid-section-header .fc-scroller {
+  overflow-y: hidden !important;
+}
+
+/* ==================== 7) Header Buttons(排休 / 約滿)==================== */
+
+/* 表頭右上按鈕群:絕對定位、垂直置中 */
+#calendar .header-button-group {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+/* 排休 / 約滿鈕:該設計師淡色底的幽靈方鈕 */
+#calendar .header-button-group .leave-icon-button,
+#calendar .header-button-group .fully-booked-button {
+  background: var(--hd-soft, #f2f1f5) !important;
+  border: 1px solid color-mix(in srgb, var(--hd-deep, #6b5f6b) 16%, transparent) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: rgba(70, 60, 70, 0.9) !important;
+  height: 38px;
+  width: 38px;
+  padding: 0 !important;
+  font-size: 17px;
+  font-weight: 500;
+  border-radius: 0 !important;
+  line-height: 1;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 38px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 按鈕內 SVG 圖示 */
+#calendar .header-button-group .hdr-ico {
+  width: 30px;
+  height: 30px;
+  display: block;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* 排休 / 約滿鈕 hover */
+#calendar .header-button-group .leave-icon-button:hover,
+#calendar .header-button-group .fully-booked-button:hover {
+  background: color-mix(in srgb, var(--hd-base, #d8d4dd) 18%, #fff) !important;
+  border-color: color-mix(in srgb, var(--hd-deep, #6b5f6b) 32%, transparent) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(24, 34, 46, 0.14);
+  outline: none;
+}
+
+/* 約滿啟用(fb-active):紅底高亮 */
+#calendar .fully-booked-button.fb-active {
+  background: rgba(223, 110, 102, 0.24) !important;
+  border-color: rgba(223, 110, 102, 0.45) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(223, 110, 102, 0.16);
+}
+
+/* 時間格高度是排程密度核心；要更緊湊可調整 --time-row-height。 */
+#calendar .fc-timegrid-slot {
+  height: var(--time-row-height) !important;
+  border-bottom: 0 !important;
+  /* 不畫時間格橫線（線條全拿掉） */
+}
+
+/* 行事曆格線全部拿掉：FullCalendar 預設 td/th 與時間格(slot-lane)的 #DDD 灰線改透明，
+   時段分隔改靠斑馬紋底色，不畫任何框線。 */
+#calendar .fc-resourceTimeGridDay-view .fc-scrollgrid td,
+#calendar .fc-resourceTimeGridDay-view .fc-scrollgrid th,
+#calendar td.fc-timegrid-slot-lane {
+  border-color: transparent !important;
+}
+
+/* 清掉時間軸欄的底色與邊框 */
+#calendar .fc-timegrid-slot-label,
+#calendar .fc-timegrid-axis {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* 修正：隱藏 FullCalendar 原生全域時間軸，只保留每個設計師欄內的時間軸。 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-axis,
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-slot-label {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-axis *,
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-slot-label * {
+  display: none !important;
+}
+
+#calendar .fc-resourceTimeGridDay-view col.fc-timegrid-axis,
+#calendar .fc-resourceTimeGridDay-view col.fc-timegrid-slot-label,
+#calendar .fc-resourceTimeGridDay-view .fc-scrollgrid colgroup col:first-child,
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-body colgroup col:first-child {
+  width: 0 !important;
+}
+
+/* 時間刻度膠囊基底樣式（00/30 整點即用此組「大」樣式；下方 .is-minor 才覆蓋成小） */
+#calendar .fc-timegrid-slot-label-cushion,
+#calendar .per-resource-time-item {
+  display: inline-flex;
+  /* 行內彈性盒，文字置中 */
+  align-items: center;
+  /* 文字垂直置中 */
+  justify-content: center;
+  /* 文字水平置中 */
+  width: 62px;
+  /* 固定寬（可調） */
+  height: 36px;
+  /* 固定高（大）；is-minor 會覆蓋 */
+  color: var(--ink-soft);
+  /* 預設字色；各設計師欄下方會被覆蓋成主色 */
+  background: rgba(255, 255, 255, 0.78);
+  /* 半透明白底 */
+  border-radius: 0;
+  font-size: 18px;
+  /* 字級（大）；is-minor 會覆蓋成 15px */
+  font-weight: 800;
+  /* 字重（粗）；is-minor 會覆蓋成 500 */
+  line-height: 1;
+}
+
+/* 非整點（15/45 分）刻度縮小變淡；套用範圍由 JS 決定（index.html:1936，minute 0/30 為 major、15/45 為 minor） */
+#calendar .fc-timegrid-slot.fc-timegrid-slot-minor .fc-timegrid-slot-label-cushion,
+#calendar .per-resource-time-item.is-minor {
+  height: 28px;
+  /* 固定高（小），覆蓋基底的 36px */
+  color: var(--ink-faint);
+  /* 字色更淡 */
+  font-size: 15px;
+  /* 字級（小） */
+  font-weight: 500;
+  /* 字重（細） */
+}
+
+/* 各設計師欄的時間膠囊字色改用設計師主色 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="1"] .per-resource-time-item {
+  color: var(--blue);
+  /* 店長：藍 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="1"] .per-resource-time-item.is-minor {
+  color: color-mix(in srgb, var(--blue) 50%, transparent);
+  /* 店長非整點：藍淡化 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="2"] .per-resource-time-item {
+  color: var(--peach);
+  /* 雅婷：橘 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="2"] .per-resource-time-item.is-minor {
+  color: color-mix(in srgb, var(--peach) 50%, transparent);
+  /* 雅婷非整點：橘淡化 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="3"] .per-resource-time-item {
+  color: var(--slate);
+  /* 小白：灰藍 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="3"] .per-resource-time-item.is-minor {
+  color: color-mix(in srgb, var(--slate) 50%, transparent);
+  /* 小白非整點：灰藍淡化 */
+}
+
+/* 時間格底色改透明：不要斑馬紋（奇偶列同色、無深淺交界），
+   整欄直接露出 col-frame 的卡片底色。 */
+#calendar .fc-timegrid-slots tbody tr td.fc-timegrid-slot-lane {
+  background: transparent !important;
+}
+
+/* 用餐時段（17:30–18:00）深色標示 */
+#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:30:00"],
+#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="17:45:00"],
+#calendar .fc-timegrid-body td.fc-timegrid-slot.fc-timegrid-slot-lane[data-time="18:00:00"] {
+  background: var(--meal-slot-bg-deep) !important;
+}
+
+/* 設計師欄底色改畫在內層 col-frame 上（見下方 col-frame 卡片化），
+   外層 col 本身不上色、不留邊框間隔，間隔交給 frame 的 margin。 */
+#calendar .fc-timegrid-col {
+  background: transparent !important;
+}
+
+/* 店長欄位底色（畫在卡片本體 col-frame 上）。 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="1"] .fc-timegrid-col-frame {
+  background: var(--resource-col-1-bg) !important;
+}
+
+/* 雅婷欄位底色。 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="2"] .fc-timegrid-col-frame {
+  background: var(--resource-col-2-bg) !important;
+}
+
+/* 小白欄位底色。 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="3"] .fc-timegrid-col-frame {
+  background: var(--resource-col-3-bg) !important;
+}
+
+/* 預約卡容器：歸零邊距、本身不吃點擊（交給卡片） */
+#calendar .fc-timegrid-col-events {
+  margin: 0 12px 0 var(--per-resource-time-axis-width) !important;
+  pointer-events: none;
+}
+
+/* 把每欄內的時間刻度固定在左側，避免時間文字鋪滿空白背景；
+   並把這層做成「三張分開的圓角卡片」：四周 margin produce 欄間留白、圓角、裁切溢出。 */
+#calendar .fc-resourceTimeGridDay-view .fc-timegrid-col-frame {
+  position: relative;
+  margin: 0 3px 4px;
+  /* 上 0、左右 3px、下 4px：欄底色塊上緣貼齊表頭，下方留白 */
+  border-radius: 0;
+  /* 卡片圓角 */
+  overflow: hidden;
+  /* 讓底色與內容裁進圓角內 */
+  height: calc(100% - 4px);
+  /* 扣掉下方 margin，避免撐高 */
+}
+
+#calendar .fc-resourceTimeGridDay-view .per-resource-time-axis {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  z-index: 3;
+  width: calc(var(--per-resource-time-axis-width) - 16px);
+  pointer-events: none;
+}
+
+#calendar .fc-resourceTimeGridDay-view .per-resource-time-item {
+  position: absolute;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 8px;
+  transform: translateY(-50%);
+}
+
+/* 每張預約卡上下留間距 */
+#calendar .fc-timegrid-event-harness {
+  padding-top: 0;
+  padding-bottom: 4px;
+}
+
+/* 預約卡基本外觀；實際顏色會依設計師與結帳狀態覆蓋。 */
+#calendar .fc-timegrid-event,
+#calendar .fc-event {
+  overflow: hidden;
+  color: #fff;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: var(--font-display);
+  pointer-events: auto;
+}
+
+/* 預約卡滑過微微提高彩度 */
+#calendar .fc-timegrid-event:hover {
+  filter: saturate(1.04) brightness(1.02);
+}
+
+/* 店長預約卡：藍色漸層（淺端由主色推導） */
+#calendar .fc-event.sty-1:not(.blocked-time):not(.is-paid) {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--blue) var(--card-grad-light), white), var(--blue)) !important;
+}
+
+/* 雅婷預約卡：橘色漸層 */
+#calendar .fc-event.sty-2:not(.blocked-time):not(.is-paid) {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--peach) var(--card-grad-light), white), var(--peach)) !important;
+}
+
+/* 小白預約卡：灰藍漸層 */
+#calendar .fc-event.sty-3:not(.blocked-time):not(.is-paid) {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--slate) var(--card-grad-light), white), var(--slate)) !important;
+}
+
+/* 店長不約時段（較淡，由主色推導） */
+#calendar .fc-event.sty-1.blocked-time {
+  background: color-mix(in srgb, var(--blue) 22%, rgba(255, 255, 255, 0.35)) !important;
+}
+
+/* 雅婷不約時段 */
+#calendar .fc-event.sty-2.blocked-time {
+  background: color-mix(in srgb, var(--peach) 22%, rgba(255, 255, 255, 0.35)) !important;
+}
+
+/* 小白不約時段 */
+#calendar .fc-event.sty-3.blocked-time {
+  background: color-mix(in srgb, var(--slate) 22%, rgba(255, 255, 255, 0.35)) !important;
+}
+
+/* 已結帳預約改用橄欖綠，和一般預約卡區分。 */
+#calendar .fc-event.is-paid:not(.blocked-time) {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--paid) var(--card-grad-light), white), var(--paid)) !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18) !important;
+}
+
+/* 預約卡內層撐滿高度 */
+#calendar .fc-timegrid-event .fc-event-main,
+#calendar .fc-timegrid-event .fc-event-main-frame,
+#calendar .fc-timegrid-event .fc-event-title-container {
+  height: 100%;
+}
+
+/* 預約卡文字區：置中、裁切溢出 */
+#calendar .fc-timegrid-event .fc-event-title {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+/* 預約卡內部四欄：項目、姓名、電話或金額、輸入人。 */
+#calendar .fc-timegrid-event .fc-event-title.evt-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.1fr) minmax(110px, 0.95fr) minmax(24px, max-content);
+  gap: 0;
+  align-items: center;
+  width: 100%;
+}
+
+/* 預約卡四欄共用：單行、超出用 … 省略 */
+.evt-col-svc,
+.evt-col-name,
+.evt-col-phone,
+.evt-col-operator {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 項目欄（剪/染/燙圖示）右側留白 */
+.evt-col-svc {
+  padding-right: 8px;
+  overflow: visible;
+}
+
+/* 姓名/電話/輸入人欄置中、左右留白 */
+.evt-col-name,
+.evt-col-phone,
+.evt-col-operator {
+  padding: 0 10px;
+  text-align: center;
+}
+
+
+
+/* 客人姓名欄（大、粗、白） */
+.evt-col-name {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #fff;
+  font-size: clamp(22px, 1.5vw, 20px);
+  font-weight: 900;
+  line-height: 1;
+  padding-left: 12px;
+  padding-right: 6px;
+}
+
+/* 姓名文字本體，超出省略 */
+.evt-name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 同行人數小標（金色） */
+.evt-pax {
+  flex: none;
+  margin-left: 3px;
+  color: #ffe3a1;
+  font-size: 0.72em;
+  font-weight: 900;
+}
+
+/* 電話欄 */
+.evt-col-phone {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(10px, 1.5vw, 16px);
+  font-weight: 700;
+}
+
+/* 輸入人欄（小、半透明白） */
+.evt-col-operator {
+  max-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 300;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+/* 多個項目圖示並排容器 */
+.evt-services {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* 單一項目圖示方塊（剪/染/燙） */
+.evt-svc {
+  position: sticky;
+  /* 依照 DevTools 測試值，讓勳章保留 sticky 定位 */
+  display: inline-flex;
+  /* 讓勳章維持行內方塊，並可用 flex 置中文字 */
+  align-items: center;
+  /* 文字垂直置中 */
+  justify-content: space-around;
+  /* 文字在勳章內平均分配空間 */
+  width: 35px;
+  /* 勳章寬度 */
+  height: 35px;
+  /* 勳章高度 */
+  color: #132235 !important;
+  /* 勳章文字顏色 */
+  background: #ffffffb0 !important;
+  /* 勳章半透明白色底 */
+  border: 1px solid #22384d !important;
+  /* 外框線：1px 細深色線 */
+  border-radius: 0;
+  /* 保持直角，不做圓角 */
+  font-family: "Noto Sans TC", sans-serif;
+  /* 勳章文字字型，支援剪染燙護預 */
+  font-size: 28px;
+  /* 勳章文字大小 */
+  font-weight: 900;
+  /* 字重加粗，讓單字更有印章感 */
+  line-height: 1;
+  /* 移除多餘行高，避免文字上下偏移 */
+  text-shadow: none;
+  /* 移除文字陰影，保持清楚黑字 */
+  transform: rotate(339deg);
+  /* 整個勳章逆時針傾斜 */
+  box-shadow: none;
+  /* 移除外側陰影 */
+  flex-direction: column-reverse;
+  /* 依照 DevTools 測試值設定 flex 方向 */
+  flex-wrap: wrap;
+  /* 允許內容換行排列 */
+  align-content: stretch;
+  /* 多行內容撐滿勳章可用空間 */
+}
+
+.evt-svc::before {
+  content: "";
+  /* 產生內框用的空偽元素 */
+  position: absolute;
+  /* 讓內框疊在勳章內部 */
+  inset: 1px;
+  /* 內框距離外框 1px，數字越小兩條線越貼近 */
+  border: 1px solid #22384d;
+  /* 內框線：1px 細深色線 */
+  pointer-events: none;
+  /* 內框不攔截滑鼠點擊 */
+}
+
+/* 統一排休時段的外層與毛玻璃效果 */
+#calendar .fc-timegrid-event-harness:has(.blocked-time) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+#calendar .fc-event.blocked-time {
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 不約時段只保留圖示與備註文字，隱藏電話與輸入人欄位。 */
+#calendar .fc-event.blocked-time .fc-event-title.evt-line {
+  grid-template-columns: 62px minmax(0, 1fr);
+}
+
+/* 不約時段：隱藏姓名/電話/輸入人欄與分隔線 */
+#calendar .fc-event.blocked-time .evt-col-name,
+#calendar .fc-event.blocked-time .evt-col-phone,
+#calendar .fc-event.blocked-time .evt-col-operator,
+#calendar .fc-event.blocked-time .evt-col-name::before,
+#calendar .fc-event.blocked-time .evt-col-phone::before,
+#calendar .fc-event.blocked-time .evt-col-operator::before {
+  display: none;
+}
+
+/* 不約時段的鎖頭圖示 */
+.blocked-icon {
+  color: var(--ink-soft) !important;
+  font-family: "Material Symbols Outlined", sans-serif !important;
+  font-size: 30px;
+}
+
+/* 不約時段的備註文字 */
+.fc-event.blocked-time .evt-col-note {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink) !important;
+  font-size: clamp(16px, 1.4vw, 23px);
+  font-weight: 900;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 預約卡上方「上次來店」小字 */
+.evt-last-visit {
+  padding: 0 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(10px, 0.9vw, 15px);
+  /* 隨視窗縮放（原寫死 12px） */
+  line-height: 1.2;
+}
+
+/* 排休/休息/約滿覆蓋層的定位 */
+#calendar .leave-overlay,
+#calendar .closed-overlay,
+#calendar .fully-booked-outline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 0;
+}
+
+/* 排休/休息用斜線紋路底與毛玻璃效果 */
+#calendar .leave-overlay,
+#calendar .closed-overlay {
+  background: repeating-linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.16) 10px,
+      rgba(255, 255, 255, 0.28) 10px,
+      rgba(255, 255, 255, 0.28) 20px) !important;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 排休文字懸浮小卡 */
+#calendar .leave-overlay .overlay-label {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ink);
+  font-size: clamp(24px, 2.2vw, 36px);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+/* 約滿外框（紅框 + 內白邊） */
+#calendar .fully-booked-outline {
+  border: 3px solid var(--danger);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.62);
+}
+
+/* 留言板區塊，放在行事曆下方，保留獨立卡片感。 */
+#notes-section {
+  width: 100%;
+  margin: 16px 0 0;
+}
+
+/* 留言板卡片外框 */
+.notes-container {
+  --notes-bg: var(--paper);
+  /* 留言板底色 */
+  --notes-border: var(--line);
+  /* 留言板邊框 */
+  padding: 18px;
+  background: var(--notes-bg);
+  border: 1px solid var(--notes-border);
+  border-radius: 0;
+  box-shadow: 0 4px 14px rgba(51, 42, 36, 0.1);
+}
+
+/* 留言板標題列 */
+.notes-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* 留言板標題文字 */
+.notes-header h4 {
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* 留言板右側更新時間小字 */
+.notes-meta {
+  margin-left: auto;
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* 留言板儲存按鈕 */
+#save-notes-btn {
+  padding: 9px 14px;
+  color: #fff;
+  cursor: pointer;
+  background: var(--brand);
+  border: 0;
+  border-radius: 0;
+}
+
+/* 儲存按鈕滑過變深 */
+#save-notes-btn:hover {
+  background: var(--brand-dark);
+}
+
+/* 留言輸入框 */
+#notes-content {
+  width: 100%;
+  min-height: 180px;
+  padding: 14px;
+  color: var(--ink);
+  resize: vertical;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+
+
+/* ====================================================================
+   S1+S2) 預約 / 結帳彈窗 —— 移植自雜誌版(styles.css)版面結構,
+   配色改為「自然有機風」(大地色 / 米白 / 苔綠 / 陶土 / 燕麥色)。
+   所有變數限定在 #appointmentModal scope,不污染經典版其他樣式。
+   DOM / class 與 index.html 共用,選擇器與雜誌版一致。
+   ==================================================================== */
+
+/* ---- 自然有機風 色票(只作用於預約彈窗)---- */
+#appointmentModal.appointment-modal {
+  --modal-overlay: rgba(28, 29, 34, 0.46);
+  /* 彈窗遮罩色 */
+  --modal-bg: var(--paper);
+  /* 彈窗底色 */
+  --modal-border: var(--line);
+  /* 彈窗邊框 */
+  --page: #f2ede1;
+  /* 燕麥米白(底)*/
+  --card: #f6f1e7;
+  /* 米白(卡片)*/
+  --surf: #faf6ec;
+  /* 最亮表面 */
+  --ink: #463f33;
+  /* 深可可棕 / 墨褐(避免純黑)*/
+  --sub: #6f6757;
+  /* 次級文字 */
+  --faint: #a89e88;
+  /* 最淡文字 */
+  --line: #ddd4c2;
+  /* 細線 */
+  --line-2: #e6ddca;
+  --accent: #6f7d54;
+  /* 莫蘭迪苔綠(主色)*/
+  --accent-deep: #5c6845;
+  /* 深苔綠(漸層/陰影端)*/
+  --accent-soft: #dfe2cf;
+  /* 淡苔綠(選中底/淡彩)*/
+  --clay: #c8a99b;
+  /* 陶土粉(僅小圖示點綴)*/
+  --gold: #9c8a4e;
+  /* 苔金 */
+  --paper-edge: #c3b69b;
+  /* 紙緣大地色 */
+  --radius: 0;
+
+}
+
+/* ---- 遮罩層(限定預約彈窗,避免影響其他彈窗)---- */
+.modal.appointment-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background:
+    linear-gradient(90deg, rgba(63, 58, 48, 0.52), rgba(63, 58, 48, 0.40)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 4px);
+  -webkit-backdrop-filter: blur(4px) saturate(0.9);
+  backdrop-filter: blur(4px) saturate(0.9);
+  overflow: auto;
+  padding: 15px;
+}
+
+.modal.appointment-modal>.modal-content {
+  margin: 0 auto;
+  animation: appt-modal-rise 0.32s cubic-bezier(0.16, 0.8, 0.3, 1);
+}
+
+@keyframes appt-modal-rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal.appointment-modal>.modal-content {
+    animation: none;
+  }
+}
+
+/* ---- 對話框 ---- */
+.appointment-dialog {
+  position: relative;
+  max-width: 1040px;
+  width: 100%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.42) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, #fbf6ec 0%, var(--card) 42%, #eee3d0 100%);
+  background-size: 9px 100%, auto;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow:
+    0 30px 70px -28px rgba(70, 63, 51, 0.40),
+    0 8px 24px -12px rgba(70, 63, 51, 0.18),
+    0 0 0 8px rgba(245, 239, 227, 0.30);
+
+  overflow: hidden;
+}
+
+.appointment-dialog::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 9px;
+  background: linear-gradient(180deg, var(--accent), #4f5a3b);
+  z-index: 4;
+}
+
+.appointment-dialog::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(63, 58, 48, 0.14);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.appointment-form,
+.appointment-grid,
+.appointment-bottom-bar {
+  position: relative;
+  z-index: 2;
+}
+
+.appointment-close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.25s, background 0.2s, color 0.2s;
+}
+
+.appointment-close-button:hover {
+  transform: rotate(90deg);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---- 雙欄版面 ---- */
+.appointment-grid {
+  display: grid;
+  grid-template-columns: minmax(350px, 0.92fr) minmax(420px, 1.08fr);
+  align-items: stretch;
+}
+
+.appointment-panel--details {
+  padding: 34px 34px 28px 40px;
+  border-right: 1px solid var(--paper-edge);
+}
+
+.appointment-panel--settlement {
+  padding: 34px 34px 26px 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0)),
+    var(--page);
+}
+
+@media (max-width: 880px) {
+  .appointment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-panel--details {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+#appointmentModal.is-blocked .appointment-grid {
+  grid-template-columns: minmax(0, 620px);
+  justify-content: center;
+}
+
+#appointmentModal.is-blocked .appointment-panel--details {
+  border-right: 0;
+}
+
+#appointmentModal.is-create .appointment-dialog {
+  max-width: 420px;
+}
+
+#appointmentModal.is-create .appointment-grid {
+  grid-template-columns: 1fr;
+}
+
+#appointmentModal.is-create .appointment-panel--details {
+  border-right: 0;
+}
+
+#appointmentModal.is-create .appointment-panel--settlement {
+  display: none !important;
+}
+
+/* ---- 新增 + 編輯雙欄 共用:左欄壓縮、固定 620 高、不出現垂直捲軸 ---- */
+#appointmentModal:not(.is-blocked) .appointment-dialog {
+  height: 620px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-panel--details {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 18px 24px 8px 32px;
+}
+
+/* 標頭壓縮 */
+#appointmentModal:not(.is-blocked) .appointment-modal-head {
+  padding: 0 44px 8px 0;
+  margin-bottom: 10px;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-modal-head::after {
+  bottom: -5px;
+  width: 56px;
+  height: 4px;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-kicker {
+  min-height: 18px;
+  padding: 0 7px;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+}
+
+/* 一般／不約 切換壓縮 */
+#appointmentModal:not(.is-blocked) .appointment-type-block {
+  margin-bottom: 10px;
+}
+
+#appointmentModal:not(.is-blocked) .type-toggle-container .toggle-label {
+  padding: 7px 10px;
+  font-size: 12.5px;
+}
+
+/* 欄位區:吃掉剩餘高度,最後一列(備註)伸展 */
+#appointmentModal:not(.is-blocked) .appointment-fields {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 8px 12px;
+  grid-template-rows: min-content min-content min-content min-content minmax(0, 1fr);
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field>label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field input[type="text"],
+#appointmentModal:not(.is-blocked) .appointment-field input[type="tel"],
+#appointmentModal:not(.is-blocked) .appointment-field input[type="number"],
+#appointmentModal:not(.is-blocked) .appointment-field textarea,
+#appointmentModal:not(.is-blocked) .appointment-field select {
+  padding: 0px 0px;
+}
+
+/* 時間 / 時長 */
+#appointmentModal:not(.is-blocked) .time-select-group,
+#appointmentModal:not(.is-blocked) .duration-input-wrap {
+  height: 42px;
+}
+
+#appointmentModal:not(.is-blocked) .time-select-group select {
+  font-size: 22px;
+}
+
+#appointmentModal:not(.is-blocked) .time-sep {
+  font-size: 19px;
+}
+
+#appointmentModal:not(.is-blocked) .duration-input-wrap {
+  grid-template-columns: 36px minmax(70px, 1fr) 36px;
+}
+
+#appointmentModal:not(.is-blocked) .duration-step-btn {
+  width: 36px;
+  font-size: 21px;
+}
+
+#appointmentModal:not(.is-blocked) .duration-input-wrap input[type="number"] {
+  font-size: 24px;
+}
+
+/* 輸入人籌碼 */
+#appointmentModal:not(.is-blocked) .operator-segmented {
+  gap: 6px;
+}
+
+#appointmentModal:not(.is-blocked) .operator-segmented button {
+  height: 52px;
+  font-size: 24px;
+}
+
+/* 顧客身分卡 */
+#appointmentModal:not(.is-blocked) .customer-fields {
+  margin-bottom: 0;
+}
+
+#appointmentModal:not(.is-blocked) .customer-identity-card {
+  gap: 10px;
+  padding: 9px 12px;
+  margin-bottom: 9px;
+}
+
+#appointmentModal:not(.is-blocked) .customer-avatar {
+  width: 42px;
+  height: 50px;
+  font-size: 20px;
+}
+
+#appointmentModal:not(.is-blocked) .customer-identity-fields .appointment-field {
+  margin-bottom: 6px;
+}
+
+#appointmentModal:not(.is-blocked) .customer-identity-fields .appointment-field>label {
+  margin-bottom: 3px;
+}
+
+/* 服務項目圖示 */
+#appointmentModal:not(.is-blocked) .service-icon-buttons {
+  gap: 6px;
+}
+
+#appointmentModal:not(.is-blocked) .service-icon-buttons button {
+  height: 52px;
+  padding: 4px 4px 3px;
+}
+
+#appointmentModal:not(.is-blocked) .service-icon-img {
+  width: 38px;
+  height: 38px;
+}
+
+/* 備註:flex 吸收剩餘高度,textarea 撐滿不固定高 */
+#appointmentModal:not(.is-blocked) .appointment-field--notes {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--notes textarea {
+  flex: 1 1 auto;
+  min-height: 38px;
+  height: auto;
+  resize: none;
+}
+
+/* 底部列壓縮 */
+#appointmentModal:not(.is-blocked) .appointment-bottom-bar {
+  flex: none;
+  padding: 10px 26px 12px 32px;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-edit-btn,
+#appointmentModal:not(.is-blocked) #deleteBtn {
+  padding: 9px 12px;
+}
+
+#appointmentModal:not(.is-blocked) #submit-btn {
+  padding: 10px 22px;
+}
+
+/* 雙欄結帳時，左欄內容沿用新增預約彈窗的內層規格。 */
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-grid {
+  grid-template-columns: 420px minmax(0, 1fr);
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-panel--details>.appointment-modal-head,
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-panel--details>.appointment-type-block,
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-panel--details>.appointment-fields,
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-panel--details>.appointment-bottom-bar {
+  align-self: flex-start;
+  width: min(100%, 363px);
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-fields {
+  flex: 0 0 auto;
+  height: 388px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-bottom-bar {
+  padding: 16px 34px 20px 40px;
+}
+
+/* ==== 結帳/編輯 雙欄模式:左欄與結構沿用上方共用規則,這裡只壓右欄結帳卡 ==== */
+#appointmentModal:not(.is-create):not(.is-blocked) .settlement-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .settlement-section {
+  flex: 0 0 auto;
+  min-height: 0;
+  gap: 6px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .settlement-sub-card {
+  padding: 8px 12px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .settlement-card-heading {
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .sub-card-title {
+  font-size: 16px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .price-group {
+  gap: 3px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .price-item {
+  padding: 3px 8px;
+  font-size: 12.5px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .custom-price-input {
+  font-size: 20px;
+  /* 與上方價錢同字級 */
+  padding: 2px 1px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-inline-field {
+  margin: 2px 0 6px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .shop-sales-inputs {
+  gap: 6px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .shop-sales-inputs select {
+  height: 40px;
+}
+
+#appointmentModal:not(.is-create):not(.is-blocked) .appointment-total-summary {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+/* ---- 左欄:標頭 ---- */
+.appointment-modal-head {
+  position: relative;
+  padding: 0 50px 20px 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.appointment-modal-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: 72px;
+  height: 5px;
+  background: var(--accent);
+}
+
+.appointment-kicker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(111, 125, 84, 0.06);
+}
+
+/* ---- 欄位標籤 ---- */
+.appointment-field>label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 9px;
+}
+
+.appointment-field>label::before {
+  content: "";
+  width: 14px;
+  height: 1.5px;
+  background: var(--accent);
+}
+
+.appointment-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 14px;
+}
+
+.appointment-field {
+  margin-bottom: 0;
+}
+
+.appointment-field--wide,
+.appointment-field--notes,
+.customer-fields {
+  grid-column: 1 / -1;
+}
+
+/* ---- 一般輸入框 ---- */
+.appointment-field input[type="text"],
+.appointment-field input[type="tel"],
+.appointment-field input[type="number"],
+.appointment-field textarea,
+.appointment-field select {
+  width: 100%;
+
+  font-size: 15px;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 227, 0.78));
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--paper-edge);
+  border-radius: 0;
+  padding: 11px 12px 12px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  transition: border-color 0.2s, border-left-color 0.2s, box-shadow 0.2s;
+}
+
+.appointment-field input::placeholder,
+.appointment-field textarea::placeholder {
+  color: var(--faint);
+}
+
+.appointment-field input:focus,
+.appointment-field textarea:focus,
+.appointment-field select:focus {
+  border-color: var(--ink);
+  border-left-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(111, 125, 84, 0.12);
+}
+
+.appointment-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 239, 227, 0.78));
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%,
+    0 0;
+  background-size: 5px 5px, 5px 5px, 100% 100%;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.appointment-field textarea {
+  resize: vertical;
+  min-height: 74px;
+}
+
+/* ---- 一般預約 / 不約時段 切換 ---- */
+.appointment-type-block {
+  margin-bottom: 22px;
+}
+
+.type-toggle-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    var(--surf);
+  overflow: hidden;
+}
+
+.type-toggle-container input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.type-toggle-container .toggle-label {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 11px 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  cursor: pointer;
+  transition: color 0.25s;
+  user-select: none;
+}
+
+.sliding-glider {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--accent);
+  transition: transform 0.28s cubic-bezier(0.16, 0.8, 0.3, 1);
+}
+
+#appointment-blocked:checked~.sliding-glider {
+  transform: translateX(100%);
+}
+
+#appointment-normal:checked~.toggle-label.left,
+#appointment-blocked:checked~.toggle-label.right {
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sliding-glider {
+    transition: none;
+  }
+}
+
+/* ---- 時間 / 時長 ---- */
+.time-select-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 0;
+  height: 56px;
+  border: 1px solid var(--paper-edge);
+  border-left: 4px solid var(--accent);
+  background: linear-gradient(180deg, #fff, #f4eddd);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.time-select-group select {
+  width: 74px;
+  height: 100%;
+  min-width: 0;
+  border: 0;
+  border-left: 0;
+  background: transparent;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-align-last: center;
+
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0 8px;
+  cursor: pointer;
+  justify-self: center;
+}
+
+.time-select-group select:focus {
+  border: 0;
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.time-select-group select option {
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.time-sep {
+  display: grid;
+  place-items: center;
+  height: 100%;
+
+  font-weight: 700;
+  font-size: 23px;
+  color: var(--gold);
+}
+
+.duration-input-wrap {
+  display: grid;
+  grid-template-columns: 44px minmax(82px, 1fr) 44px;
+  align-items: stretch;
+  height: 56px;
+  border: 1px solid var(--paper-edge);
+  border-left: 4px solid var(--accent);
+  border-radius: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff, #f4eddd);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.duration-step-btn {
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  width: 44px;
+
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.duration-step-btn:last-child {
+  border-right: 0;
+  border-left: 1px solid var(--line);
+}
+
+.duration-step-btn:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.duration-input-wrap input[type="number"] {
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  border-bottom: 0 !important;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+
+  font-size: 29px;
+  color: var(--ink);
+  padding: 0 4px;
+  background: transparent;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.duration-input-wrap input[type="number"]::-webkit-outer-spin-button,
+.duration-input-wrap input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+/* ---- 輸入人 籌碼 ---- */
+.appointment-field--wide>#operator_select {
+  display: none;
+}
+
+.operator-segmented {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 70px));
+  gap: 7px;
+}
+
+.operator-segmented button {
+  width: 100%;
+  min-width: 0;
+  height: 76px;
+  border: 1.5px solid var(--line);
+  border-radius: 0;
+  background: linear-gradient(180deg, #fff, #f3ecdc);
+
+  font-weight: 700;
+  font-size: 25px;
+  color: var(--ink);
+  cursor: pointer;
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.operator-segmented button:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.operator-segmented button.is-on {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--ink), 0 10px 18px -14px rgba(63, 58, 48, 0.7);
+  background: linear-gradient(135deg, var(--accent), #4f5a3b);
+  color: #fff;
+}
+
+/* ---- 顧客身分卡 ---- */
+.customer-fields {
+  margin-bottom: 20px;
+}
+
+.customer-identity-card {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  border: 1px solid var(--paper-edge);
+  border-radius: 0;
+  background: var(--surf);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.customer-avatar {
+  flex: none;
+  width: 50px;
+  height: 62px;
+  border-radius: 0;
+  display: none;
+  place-items: center;
+  background: var(--ink);
+  color: var(--page);
+
+  font-weight: 700;
+  font-size: 24px;
+  box-shadow: 0 6px 14px -6px rgba(200, 169, 155, 0.55);
+}
+
+.customer-identity-fields {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+}
+
+.customer-identity-fields .appointment-field {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-identity-fields .appointment-field:last-child {
+  margin-bottom: 0;
+}
+
+.customer-identity-fields .appointment-field>label {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+}
+
+.last-visit-note {
+  font-size: 12.5px;
+  color: var(--sub);
+  background: var(--surf);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  border-radius: 0;
+}
+
+/* ---- 服務項目圖示 ---- */
+#service_id {
+  display: none;
+}
+
+.service-icon-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 70px));
+  gap: 7px;
+}
+
+.service-icon-buttons button {
+  width: 100%;
+  min-width: 0;
+  height: 76px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 0;
+  background: linear-gradient(180deg, #fff, #f3ecdc);
+  color: var(--sub);
+  cursor: pointer;
+  padding: 6px 4px 5px;
+  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.service-icon-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 5px rgba(63, 58, 48, 0.14));
+}
+
+.service-icon-buttons button::after {
+  content: none;
+  display: none;
+}
+
+.service-icon-buttons button:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.service-icon-buttons button.is-on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent), 0 10px 20px -12px rgba(92, 104, 69, 0.5);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.service-icon-buttons button.is-on .service-icon-img {
+  transform: scale(1.08);
+  filter: drop-shadow(0 6px 7px rgba(63, 58, 48, 0.2));
+}
+
+.service-icon-buttons button.is-on::after {
+  color: var(--ink);
+}
+
+/* ---- 右欄:結帳 ---- */
+.settlement-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.settlement-sub-card {
+  background: linear-gradient(180deg, #fff, #f4eddd);
+  border: 1px solid var(--paper-edge);
+  border-radius: 0;
+  padding: 14px 16px;
+  margin-bottom: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.appointment-inline-field,
+.last-visit-info {
+  grid-column: 1 / -1;
+}
+
+.settlement-sub-card--perm {
+  grid-column: 1;
+}
+
+.settlement-sub-card--footer {
+  grid-column: 2;
+  align-self: start;
+  padding-bottom: 14px;
+}
+
+.settlement-card-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.sub-card-title {
+
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--ink);
+}
+
+.settlement-card-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.price-group {
+  display: grid;
+  gap: 6px;
+}
+
+.price-group input[type="radio"][style*="display:none"] {
+  display: none;
+}
+
+.price-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.56);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.price-item:hover {
+  border-color: var(--paper-edge);
+  background: #fff;
+  transform: translateX(2px);
+}
+
+.price-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.price-label input[type="radio"],
+.price-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 0;
+  background: var(--surf);
+  cursor: pointer;
+  flex: none;
+}
+
+.price-label input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--surf);
+}
+
+.price-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ink);
+
+  font-size: 20px;
+  line-height: 1;
+}
+
+.price-item:has(input:checked) {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 8px 16px -8px rgba(92, 104, 69, 0.5);
+}
+
+.price-item:has(input:checked) .price-val {
+  color: #ffffff;
+}
+
+.price-item:has(input:checked) .price-label::before {
+  content: "\25B8";
+  color: #ffffff;
+  margin-right: 2px;
+  margin-left: -10px;
+}
+
+.price-item--suggested {
+  background: rgba(111, 125, 84, 0.10);
+  border-radius: 0;
+}
+
+.price-item--custom .custom-val-wrap {
+  display: none;
+  align-items: baseline;
+  width: 52px;
+  /* = 價錢值欄寬,右緣與上方價錢齊;$ 在左、數字撐到右 */
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.price-item--custom:has(.custom-price-toggle:checked) .custom-val-wrap {
+  display: inline-flex;
+}
+
+.custom-price-input {
+  flex: 1;
+  /* 撐滿 $ 右側,數字靠右,右緣對齊上方價錢右緣 */
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 20px;
+  /* 與上方價錢同字級 */
+  text-align: right;
+  padding: 2px 1px;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  /* 移除 Firefox 上下箭頭 */
+}
+
+.price-item:has(input:checked) .custom-price-input {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.82);
+}
+
+.custom-price-input::-webkit-outer-spin-button,
+.custom-price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  /* 移除 Chrome/Edge 上下箭頭 */
+  margin: 0;
+}
+
+.custom-price-input:focus {
+  border-bottom-color: var(--accent);
+}
+
+.appointment-inline-field {
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0 12px;
+}
+
+.appointment-inline-field label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+.appointment-inline-field input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1.5px solid var(--line);
+  background: transparent;
+
+  font-size: 14px;
+  color: var(--ink);
+  padding: 7px 2px 8px;
+  outline: none;
+}
+
+.appointment-inline-field input:focus {
+  border-color: var(--accent);
+}
+
+.shop-sales-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  /* 品項名稱 | 金額 同排 */
+  gap: 6px 14px;
+  align-items: end;
+}
+
+#retail_item {
+  grid-column: 1;
+}
+
+.shop-price-wrap {
+  /* 金額:$ + 數字底線(跟「其他自訂」一致) */
+  grid-column: 2;
+  display: inline-flex;
+  align-items: baseline;
+  justify-self: end;
+  gap: 3px;
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--ink);
+}
+
+#assistant_select {
+  grid-column: 1 / -1;
+}
+
+/* 助理整排在下 */
+.shop-sales-inputs input,
+.shop-sales-inputs select {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  border: 0;
+  border-bottom: 1.5px solid var(--line);
+  /* 無框、只留底線(跟其他項目卡一致) */
+  border-radius: 0;
+  background: transparent;
+
+  font-size: 14px;
+  color: var(--ink);
+  padding: 7px 2px 8px;
+  outline: none;
+}
+
+#retail_price {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  width: 70px;
+  text-align: right;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+#retail_price::-webkit-outer-spin-button,
+#retail_price::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+#assistant_select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 9px;
+}
+
+#assistant_select::-ms-expand {
+  display: none;
+}
+
+.shop-sales-inputs input:focus,
+.shop-sales-inputs select:focus {
+  border-color: var(--accent);
+}
+
+.last-visit-info {
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 8px;
+}
+
+/* ---- 底部列 ---- */
+.appointment-bottom-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 18px 34px 18px 40px;
+  border-top: 2px solid var(--ink);
+  background:
+    linear-gradient(90deg, rgba(111, 125, 84, 0.09), transparent 42%),
+    var(--card);
+}
+
+.appointment-total-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+/* 總金額移到右欄結帳卡下面:加上分隔線與間距 */
+#settlement-col .appointment-total-summary {
+  flex: none;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 2px solid var(--ink);
+  flex-wrap: wrap;
+}
+
+.total-label-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sub);
+}
+
+#display-total {
+
+  font-weight: 700;
+  font-size: 42px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.appointment-net-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.net-amount-text {
+  font-size: 12.5px;
+  color: var(--sub);
+}
+
+#display-net {
+
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.unset-paid-btn {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surf);
+
+  font-size: 12px;
+  color: var(--sub);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.unset-paid-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.appointment-actions-anchor {
+  margin-left: auto;
+}
+
+.appointment-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#appointmentModal.is-create .appointment-bottom-bar {
+  justify-content: flex-end;
+  padding: 16px 34px 20px 40px;
+  border-top: 1px solid var(--paper-edge);
+  background: var(--card);
+}
+
+#appointmentModal.is-create .appointment-total-summary {
+  display: none;
+}
+
+#appointmentModal.is-create .appointment-actions-anchor {
+  margin-left: 0;
+}
+
+#appointmentModal.is-create .appointment-actions {
+  justify-content: flex-end;
+}
+
+.appointment-edit-btn,
+#deleteBtn {
+  border: 1px solid rgba(111, 125, 84, 0.26);
+  background: transparent;
+
+  font-size: 13.5px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--sub);
+  padding: 11px 14px;
+  cursor: pointer;
+}
+
+.appointment-edit-btn:hover,
+#deleteBtn:hover {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+#deleteBtn {
+  color: var(--accent);
+}
+
+.appointment-edit-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.appointment-edit-btn.is-unlocked {
+  color: var(--ink);
+}
+
+#submit-btn {
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+  color: #ffffff;
+
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 13px 26px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -8px rgba(92, 104, 69, 0.45);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+#submit-btn:hover {
+  background: var(--accent-deep);
+  box-shadow: 0 12px 24px -8px rgba(92, 104, 69, 0.55);
+}
+
+#submit-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* ---- 唯讀態 ---- */
+#appointmentModal.is-readonly .appointment-field input,
+#appointmentModal.is-readonly .appointment-field textarea,
+#appointmentModal.is-readonly .appointment-field select {
+  color: var(--sub);
+  border-color: transparent;
+  border-left-color: var(--line);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+#appointmentModal.is-readonly .appointment-field input:focus,
+#appointmentModal.is-readonly .appointment-field textarea:focus {
+  border-color: var(--line);
+}
+
+/* ---- 響應式:1080p 桌面壓縮 ---- */
+@media (min-width: 901px) and (min-height: 900px) {
+  .appointment-modal {
+    overflow: hidden;
+    padding: 18px 20px;
+  }
+
+  .appointment-dialog {
+    max-height: calc(100vh - 36px);
+  }
+
+  .appointment-dialog::after {
+    inset: 10px;
+  }
+
+  .appointment-close-button {
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    font-size: 20px;
+  }
+
+  .appointment-panel--details {
+    padding: 22px 26px 14px 34px;
+  }
+
+  .appointment-panel--settlement {
+    padding: 22px 26px 14px 22px;
+  }
+
+  .appointment-modal-head {
+    padding: 0 44px 12px 0;
+    margin-bottom: 12px;
+  }
+
+  .appointment-modal-head::after {
+    bottom: -5px;
+    width: 58px;
+    height: 4px;
+  }
+
+  .appointment-kicker {
+    min-height: 19px;
+    padding: 0 7px;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+  }
+
+  .appointment-type-block {
+    margin-bottom: 12px;
+  }
+
+  .type-toggle-container .toggle-label {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+
+  .appointment-fields {
+    gap: 10px 12px;
+  }
+
+  .appointment-field>label {
+    margin-bottom: 5px;
+    font-size: 9.5px;
+  }
+
+  .appointment-field input[type="text"],
+  .appointment-field input[type="tel"],
+  .appointment-field input[type="number"],
+  .appointment-field textarea,
+  .appointment-field select {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .appointment-field textarea {
+    min-height: 46px;
+  }
+
+  .time-select-group,
+  .duration-input-wrap {
+    height: 44px;
+  }
+
+  .time-select-group select {
+    font-size: 23px;
+  }
+
+  .time-sep {
+    font-size: 20px;
+  }
+
+  .duration-input-wrap {
+    grid-template-columns: 38px minmax(74px, 1fr) 38px;
+  }
+
+  .duration-step-btn {
+    width: 38px;
+    font-size: 22px;
+  }
+
+  .duration-input-wrap input[type="number"] {
+    font-size: 25px;
+  }
+
+  .operator-segmented {
+    gap: 6px;
+  }
+
+  .operator-segmented button {
+    height: 56px;
+    font-size: 24px;
+  }
+
+  .customer-fields {
+    margin-bottom: 10px;
+  }
+
+  .customer-identity-card {
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .customer-avatar {
+    width: 44px;
+    height: 52px;
+    font-size: 21px;
+    box-shadow: 0 6px 14px -6px rgba(200, 169, 155, 0.55);
+  }
+
+  .customer-identity-fields .appointment-field {
+    margin-bottom: 6px;
+  }
+
+  .customer-identity-fields .appointment-field>label {
+    margin-bottom: 3px;
+  }
+
+  .service-icon-buttons {
+    gap: 6px;
+  }
+
+  .service-icon-buttons button {
+    height: 56px;
+    padding: 4px 4px 3px;
+  }
+
+  .service-icon-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  #appointmentModal.is-create .appointment-bottom-bar,
+  .appointment-bottom-bar {
+    padding: 10px 26px 12px 34px;
+  }
+
+  .appointment-edit-btn,
+  #deleteBtn {
+    padding: 9px 12px;
+  }
+
+  #submit-btn {
+    padding: 10px 22px;
+    box-shadow: 0 8px 16px -7px rgba(92, 104, 69, 0.45);
+  }
+}
+
+@media (max-width: 720px) {
+  .modal.appointment-modal {
+    padding: 14px 10px;
+  }
+
+  .appointment-dialog::after {
+    inset: 9px;
+  }
+
+  .appointment-panel--details,
+  .appointment-panel--settlement {
+    padding: 28px 22px 22px 28px;
+  }
+
+  .appointment-modal-head {
+    padding-right: 42px;
+  }
+
+  .appointment-fields,
+  .settlement-section {
+    grid-template-columns: 1fr;
+  }
+
+  .settlement-sub-card--perm,
+  .settlement-sub-card--footer {
+    grid-column: 1;
+  }
+
+  .operator-segmented,
+  .service-icon-buttons {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .shop-sales-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-bottom-bar {
+    padding: 16px 22px 18px 28px;
+    align-items: stretch;
+  }
+
+  .appointment-total-summary,
+  .appointment-actions-anchor,
+  .appointment-actions {
+    width: 100%;
+  }
+
+  .appointment-actions-anchor {
+    margin-left: 0;
+  }
+
+  .appointment-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 430px) {
+
+  .appointment-panel--details,
+  .appointment-panel--settlement {
+    padding-right: 16px;
+    padding-left: 24px;
+  }
+
+  .operator-segmented,
+  .service-icon-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #display-total {
+    font-size: 34px;
+  }
+}
+
+/* 預約彈窗姓名電話列：移到時間上方，移除卡片外框，輸入框只保留底線。 */
+#appointmentModal:not(.is-blocked) #customer-fields-left {
+  display: contents !important;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--time {
+  order: 2;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--duration {
+  order: 3;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--operator {
+  order: 4;
+}
+
+#appointmentModal:not(.is-blocked) .customer-identity-card {
+  order: 1;
+  grid-column: 1 / -1;
+  display: block;
+  padding: 0;
+  margin: 0 0 4px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--service {
+  order: 5;
+  grid-column: 1 / -1;
+}
+
+#appointmentModal:not(.is-blocked) .appointment-field--notes {
+  order: 6;
+}
+
+#appointmentModal:not(.is-blocked) .customer-identity-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+#appointmentModal:not(.is-blocked) .name-control-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+#appointmentModal:not(.is-blocked) #customer_name,
+#appointmentModal:not(.is-blocked) #customer_phone {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 0 5px !important;
+  color: var(--ink);
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(73, 72, 63, 0.34) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 28px;
+  line-height: 1;
+  text-align: center;
+}
+
+#appointmentModal:not(.is-blocked) #customer_name::placeholder,
+#appointmentModal:not(.is-blocked) #customer_phone::placeholder {
+  color: transparent !important;
+}
+
+#appointmentModal:not(.is-blocked) #customer_name:focus,
+#appointmentModal:not(.is-blocked) #customer_phone:focus {
+  border-bottom-color: var(--accent) !important;
+  box-shadow: inset 0 -2px 0 var(--accent) !important;
+}
+
+#appointmentModal:not(.is-blocked) .pax-toggle {
+  width: 42px;
+  min-width: 42px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+/* ============================================================
+   通用彈窗(排休 / 主題色 / 警示名單 / 區間統計 / 預約查詢)
+   沿用「新增預約」米白×苔綠風格。精簡版 styles.css 移除了舊 MD3 modal
+   基底,這裡為「非 appointment」的彈窗重建;appointment 彈窗有自己的
+   規則,一律用 :not(.appointment-modal) 排除,避免互相影響。
+   ============================================================ */
+
+/* 遮罩層:預設隱藏,JS 設 display:block 才開啟 */
+.modal:not(.appointment-modal) {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+  padding: 6vh 16px 24px;
+  background: linear-gradient(90deg, rgba(63, 58, 48, 0.52), rgba(63, 58, 48, 0.40));
+  -webkit-backdrop-filter: blur(4px) saturate(0.9);
+  backdrop-filter: blur(4px) saturate(0.9);
+}
+
+/* 對話框本體 */
+.modal:not(.appointment-modal)>.modal-content {
+  --m-page: #f2ede1;
+  --m-card: #f6f1e7;
+  --m-ink: #463f33;
+  --m-sub: #6f6757;
+  --m-line: #ddd4c2;
+  --m-accent: #6f7d54;
+  --m-accent-deep: #5c6845;
+
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 460px;
+  /* 預設寬;各 modal 用行內 max-width 覆蓋(360/520/700) */
+  box-sizing: border-box;
+  padding: 28px 30px 26px 38px;
+  color: var(--m-ink);
+  font-family: var(--font-sans);
+  background: linear-gradient(180deg, #fbf6ec 0%, var(--m-card) 42%, #eee3d0 100%);
+  border: 1px solid var(--m-line);
+  box-shadow:
+    0 30px 70px -28px rgba(70, 63, 51, 0.40),
+    0 8px 24px -12px rgba(70, 63, 51, 0.18),
+    0 0 0 8px rgba(245, 239, 227, 0.30);
+  overflow: hidden;
+  animation: appt-modal-rise 0.32s cubic-bezier(0.16, 0.8, 0.3, 1);
+}
+
+/* 左側苔綠直條 */
+.modal:not(.appointment-modal)>.modal-content::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 8px;
+  background: linear-gradient(180deg, var(--m-accent), var(--m-accent-deep));
+}
+
+/* 標題:墨褐底線 + 苔綠重點短條 */
+.modal:not(.appointment-modal) .modal-content h3 {
+  position: relative;
+  margin: 0 44px 22px 0;
+  padding-bottom: 14px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--m-ink);
+  border-bottom: 2px solid var(--m-ink);
+}
+
+.modal:not(.appointment-modal) .modal-content h3::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 60px;
+  height: 4px;
+  background: var(--m-accent);
+}
+
+/* 段落說明文字 */
+.modal:not(.appointment-modal) .modal-content p {
+  margin: 0 0 16px;
+  color: var(--m-sub);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 關閉鈕:深色方塊,hover 轉 90° */
+.modal:not(.appointment-modal) .close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--m-ink);
+  background: var(--m-ink);
+  color: var(--m-page);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.25s, background 0.2s, color 0.2s;
+}
+
+.modal:not(.appointment-modal) .close-button:hover {
+  transform: rotate(90deg);
+  background: var(--m-accent);
+  color: #fff;
+}
+
+/* 欄位標籤 */
+.modal:not(.appointment-modal) .modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--m-sub);
+}
+
+/* 輸入框(排除取色器/radio/checkbox/hidden) */
+.modal:not(.appointment-modal) .modal-content input:not([type="color"]):not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
+.modal:not(.appointment-modal) .modal-content select,
+.modal:not(.appointment-modal) .modal-content textarea {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--m-ink);
+  background: #fffdf8;
+  border: 1px solid var(--m-line);
+  border-radius: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal:not(.appointment-modal) .modal-content input:not([type="color"]):not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):focus,
+.modal:not(.appointment-modal) .modal-content select:focus,
+.modal:not(.appointment-modal) .modal-content textarea:focus {
+  outline: none;
+  border-color: var(--m-accent);
+  box-shadow: inset 0 0 0 1px var(--m-accent);
+}
+
+/* 按鈕:預設苔綠實心(主動作) */
+.modal:not(.appointment-modal) .modal-content button {
+  padding: 9px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--m-accent);
+  border: 1px solid var(--m-accent-deep);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.modal:not(.appointment-modal) .modal-content button:hover {
+  background: var(--m-accent-deep);
+}
+
+.modal:not(.appointment-modal) .modal-content button:active {
+  transform: translateY(1px);
+}
+
+/* 次要動作(取消排休 / 恢復預設):改描邊低調樣式 */
+.modal:not(.appointment-modal) #deleteLeaveBtn,
+.modal:not(.appointment-modal) #theme-reset-btn {
+  color: var(--m-sub);
+  background: transparent;
+  border-color: var(--m-line);
+}
+
+.modal:not(.appointment-modal) #deleteLeaveBtn:hover,
+.modal:not(.appointment-modal) #theme-reset-btn:hover {
+  background: rgba(70, 63, 51, 0.06);
+  color: var(--m-ink);
+}
+
+/* 排休表單:直排欄位 + 動作列靠右 */
+.modal:not(.appointment-modal) .modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal:not(.appointment-modal) .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 警示名單:輸入列橫排(輸入框可縮、電話固定寬、按鈕不縮,避免「新增」被切掉) */
+.modal:not(.appointment-modal) .warnlist-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.modal:not(.appointment-modal) .warnlist-add-row input {
+  min-width: 0;
+}
+
+.modal:not(.appointment-modal) .warnlist-add-row #warn-phone {
+  flex: 0 0 150px;
+}
+
+.modal:not(.appointment-modal) .warnlist-add-row button {
+  flex: 0 0 auto;
+}
+
+/* 區間統計:控制列橫排 */
+.modal:not(.appointment-modal) .report-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.modal:not(.appointment-modal) .report-label {
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 區間統計:表格(JS 已輸出 .report-table,精簡時樣式被刪,這裡補回) */
+.modal:not(.appointment-modal) .report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--m-ink);
+}
+
+.modal:not(.appointment-modal) .report-table th {
+  padding: 9px 10px;
+  text-align: center;
+  background: #ece3cf;
+  border: 1px solid var(--m-line);
+  font-weight: 700;
+  color: var(--m-ink);
+}
+
+.modal:not(.appointment-modal) .report-table td {
+  padding: 9px 10px;
+  border: 1px solid var(--m-line);
+  vertical-align: middle;
+}
+
+.modal:not(.appointment-modal) .report-table td.num-cell {
+  text-align: center;
+  font-weight: 700;
+}
+
+.modal:not(.appointment-modal) .report-table tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* V2 體驗 Switch 開關樣式 */
+.switch-v2 input:checked + .slider-v2 {
+  background-color: var(--brand);
+}
+.slider-v2:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+.switch-v2 input:checked + .slider-v2:before {
+  transform: translateX(20px);
+}
