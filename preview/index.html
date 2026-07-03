@@ -15,7 +15,7 @@
     href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@900&family=Source+Serif+4:wght@900&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=936">
+  <link rel="stylesheet" href="styles.css?v=937">
 
   <script>
     // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
@@ -193,7 +193,10 @@
                         <div class="name-control-wrap">
                           <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
                           <input type="hidden" id="pax_count" name="pax_count" value="1">
-                          <button type="button" id="pax_toggle" class="pax-toggle" aria-label="陪同人數" title="陪同人數（點一下循環：陪 → 1 → 2 → 3）">陪</button>
+                          <div class="pax-toggle-group">
+                            <button type="button" id="pax_x2" class="pax-toggle" data-pax-value="2" aria-label="陪同人數 2 人" title="共 2 人（再點一次取消）">x2</button>
+                            <button type="button" id="pax_x3" class="pax-toggle" data-pax-value="3" aria-label="陪同人數 3 人" title="共 3 人（再點一次取消）">x3</button>
+                          </div>
                         </div>
                       </div>
                       <div class="form-row appointment-field">
@@ -564,18 +567,74 @@
         /* 簡易快取：key → { data, ts }，預設 5 分鐘 */
         const _apiCache = {};
         const API_CACHE_TTL = 5 * 60 * 1000;
-        function cachedFetch(url, ttl = API_CACHE_TTL) {
-          const now = Date.now();
+        const PERSISTENT_EVENT_CACHE_PREFIX = 'sj_api_cache_v1:';
+        const PERSISTENT_EVENT_CACHE_TTL = 12 * 60 * 60 * 1000;
+
+        function isPersistentEventUrl(url) {
+          return String(url || '').includes('action=getEvents');
+        }
+
+        function persistentEventCacheKey(url) {
+          return PERSISTENT_EVENT_CACHE_PREFIX + encodeURIComponent(url);
+        }
+
+        function getFreshMemoryCache(url, ttl = API_CACHE_TTL) {
           const cached = _apiCache[url];
-          if (cached && (now - cached.ts) < ttl) return Promise.resolve(cached.data);
+          return cached && (Date.now() - cached.ts) < ttl ? cached.data : null;
+        }
+
+        function readPersistentEventCache(url, ttl = PERSISTENT_EVENT_CACHE_TTL) {
+          if (!isPersistentEventUrl(url)) return null;
+          try {
+            const raw = localStorage.getItem(persistentEventCacheKey(url));
+            if (!raw) return null;
+            const cached = JSON.parse(raw);
+            if (!cached || (Date.now() - cached.ts) >= ttl) return null;
+            return cached.data;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function writePersistentEventCache(url, data) {
+          if (!isPersistentEventUrl(url) || !Array.isArray(data)) return;
+          try {
+            localStorage.setItem(persistentEventCacheKey(url), JSON.stringify({ data, ts: Date.now() }));
+          } catch (e) {
+            console.warn('寫入事件快取失敗:', e);
+          }
+        }
+
+        function removePersistentEventCache(keyword) {
+          try {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+              const key = localStorage.key(i);
+              if (!key || !key.startsWith(PERSISTENT_EVENT_CACHE_PREFIX)) continue;
+              const url = decodeURIComponent(key.slice(PERSISTENT_EVENT_CACHE_PREFIX.length));
+              if (!keyword || url.includes(keyword)) localStorage.removeItem(key);
+            }
+          } catch (e) {
+            console.warn('清除事件快取失敗:', e);
+          }
+        }
+
+        function fetchFreshJson(url) {
           return fetch(url, { method: 'GET', mode: 'cors' }).then(r => r.json()).then(data => {
             _apiCache[url] = { data, ts: Date.now() };
+            writePersistentEventCache(url, data);
             return data;
           });
+        }
+
+        function cachedFetch(url, ttl = API_CACHE_TTL) {
+          const cached = getFreshMemoryCache(url, ttl);
+          if (cached) return Promise.resolve(cached);
+          return fetchFreshJson(url);
         }
         /* 寫入操作後，清除相關快取 */
         function invalidateCache(keyword) {
           Object.keys(_apiCache).forEach(k => { if (k.includes(keyword)) delete _apiCache[k]; });
+          removePersistentEventCache(keyword);
         }
 
         /* 防止同一個 action 重複併發：回傳進行中的 Promise */
@@ -584,6 +643,12 @@
           if (_inflightRequests[url]) return _inflightRequests[url];
           _inflightRequests[url] = cachedFetch(url).finally(() => { delete _inflightRequests[url]; });
           return _inflightRequests[url];
+        }
+
+        function deliverEventsAsync(successCallback, data) {
+          Promise.resolve().then(() => {
+            successCallback(Array.isArray(data) ? data : []);
+          });
         }
 
         /* 主題已統一為單一預設樣式；清除舊版三態切換殘留 */
@@ -779,17 +844,16 @@
             });
           }
 
-          // 陪同人數單顆循環鈕：pax_count 存「總人數」(1~4)；按鈕顯示陪同數(pax-1)，
-          // pax=1 顯示「陪」(只有本人)，pax=2/3/4 顯示 1/2/3。
           function syncPaxToggle() {
             const input = document.getElementById('pax_count');
-            const btn = document.getElementById('pax_toggle');
-            if (!input || !btn) return;
+            const btnX2 = document.getElementById('pax_x2');
+            const btnX3 = document.getElementById('pax_x3');
+            if (!input || !btnX2 || !btnX3) return;
             let pax = parseInt(input.value, 10);
-            if (!(pax >= 1 && pax <= 4)) pax = 1;
+            if (!(pax >= 1 && pax <= 3)) pax = 1;
             input.value = String(pax);
-            btn.textContent = pax === 1 ? '陪' : String(pax - 1);
-            btn.classList.toggle('is-on', pax > 1);
+            btnX2.classList.toggle('is-on', pax === 2);
+            btnX3.classList.toggle('is-on', pax === 3);
           }
 
           function syncDurationTooltip() {
@@ -852,13 +916,14 @@
             });
 
             const paxInput = document.getElementById('pax_count');
-            document.getElementById('pax_toggle')?.addEventListener('click', () => {
-              if (!paxInput) return;
-              let pax = parseInt(paxInput.value, 10);
-              if (!(pax >= 1 && pax <= 4)) pax = 1;
-              pax = pax >= 4 ? 1 : pax + 1;  // 陪(1) → 1(2) → 2(3) → 3(4) → 歸零回陪(1)
-              paxInput.value = String(pax);
-              syncPaxToggle();
+            document.querySelectorAll('.pax-toggle[data-pax-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!paxInput) return;
+                const value = Number(btn.dataset.paxValue) || 1;
+                const current = parseInt(paxInput.value, 10);
+                paxInput.value = String(current === value ? 1 : value);
+                syncPaxToggle();
+              });
             });
 
             document.getElementById('customer_name')?.addEventListener('input', syncCustomerAvatar);
@@ -927,9 +992,25 @@
               businessHours: [{ daysOfWeek: [0, 2, 3, 4, 5, 6], startTime: '00:00', endTime: '24:00' }],
               resources: RESOURCE_LIST,
               events: function (info, successCallback, failureCallback) {
-                const start = ymd(info.start);
-                const end = ymd(info.end);
-                const url = APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + start + '&end=' + end;
+                const url = buildEventsUrl(info.start, info.end);
+                const memoryCached = getFreshMemoryCache(url);
+                if (memoryCached) {
+                  deliverEventsAsync(successCallback, memoryCached);
+                  return;
+                }
+
+                const persistentCached = readPersistentEventCache(url);
+                if (persistentCached) {
+                  deliverEventsAsync(successCallback, persistentCached);
+                  deduplicatedFetch(url).then(data => {
+                    if (!Array.isArray(data)) return;
+                    if (isCalendarViewingEventsUrl(url) && JSON.stringify(data) !== JSON.stringify(persistentCached)) {
+                      calendar.refetchEvents();
+                    }
+                  }).catch(error => console.error('背景更新事件失敗:', error));
+                  return;
+                }
+
                 deduplicatedFetch(url).then(data => {
                   successCallback(Array.isArray(data) ? data : []);
                 }).catch(failureCallback);
@@ -1263,6 +1344,44 @@
             ev.remove(); return true;
           }
 
+          function buildEventsUrl(startDate, endDate) {
+            return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(startDate) + '&end=' + ymd(endDate);
+          }
+
+          function currentEventsUrl() {
+            if (!calendar || !calendar.view) return '';
+            return buildEventsUrl(calendar.view.activeStart, calendar.view.activeEnd);
+          }
+
+          function isCalendarViewingEventsUrl(url) {
+            return !!url && url === currentEventsUrl();
+          }
+
+          function formatLocalDateTime(date) {
+            if (!date) return null;
+            const pad = value => String(value).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+          }
+
+          function saveCurrentEventsToCache() {
+            const url = currentEventsUrl();
+            if (!url) return;
+            const data = calendar.getEvents().map(ev => {
+              const resources = ev.getResources();
+              const resourceId = resources && resources[0] ? String(resources[0].id) : '';
+              return {
+                id: ev.id,
+                resourceId,
+                title: ev.title,
+                start: formatLocalDateTime(ev.start),
+                end: formatLocalDateTime(ev.end),
+                extendedProps: { ...ev.extendedProps }
+              };
+            });
+            _apiCache[url] = { data, ts: Date.now() };
+            writePersistentEventCache(url, data);
+          }
+
           function bindEventListeners() {
             phoneEl.addEventListener('input', async (e) => {
               let d = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -1474,6 +1593,7 @@
                     entered_by: payload.operator_name || previousEnteredBy
                   }
                 });
+                saveCurrentEventsToCache();
 
               } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
               finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
@@ -1485,7 +1605,7 @@
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
                 invalidateCache('getEvents');
-                if (removeEventOptimistically(eventId)) showToast('已刪除', 'success'); else calendar.refetchEvents();
+                if (removeEventOptimistically(eventId)) { saveCurrentEventsToCache(); showToast('已刪除', 'success'); } else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
               } catch (err) { alert('❌ 刪除失敗'); }
             };
@@ -1823,7 +1943,7 @@
             const paxCount = document.getElementById('pax_count');
             if (paxCount) {
               const p = parseInt(ep.pax, 10);
-              paxCount.value = String(p >= 1 && p <= 4 ? p : 1);
+              paxCount.value = String(p >= 1 && p <= 3 ? p : 1);
             }
             {
               const decoded = decodeNotes(ep.notes);
