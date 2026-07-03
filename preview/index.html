@@ -574,12 +574,17 @@
           return String(url || '').includes('action=getEvents');
         }
 
+        function apiCacheKey(url) {
+          if (!isPersistentEventUrl(url)) return url;
+          return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents';
+        }
+
         function persistentEventCacheKey(url) {
-          return PERSISTENT_EVENT_CACHE_PREFIX + encodeURIComponent(url);
+          return PERSISTENT_EVENT_CACHE_PREFIX + encodeURIComponent(apiCacheKey(url));
         }
 
         function getFreshMemoryCache(url, ttl = API_CACHE_TTL) {
-          const cached = _apiCache[url];
+          const cached = _apiCache[apiCacheKey(url)];
           return cached && (Date.now() - cached.ts) < ttl ? cached.data : null;
         }
 
@@ -645,7 +650,7 @@
             try {
               const response = await fetch(url, { method: 'GET', mode: 'cors' });
               const data = await parseJsonResponse(response, url);
-              _apiCache[url] = { data, ts: Date.now() };
+              _apiCache[apiCacheKey(url)] = { data, ts: Date.now() };
               writePersistentEventCache(url, data);
               return data;
             } catch (error) {
@@ -678,6 +683,18 @@
         function deliverEventsAsync(successCallback, data) {
           Promise.resolve().then(() => {
             successCallback(Array.isArray(data) ? data : []);
+          });
+        }
+
+        function filterEventsForRange(events, startDate, endDate) {
+          if (!Array.isArray(events)) return [];
+          const rangeStart = startDate ? startDate.getTime() : -Infinity;
+          const rangeEnd = endDate ? endDate.getTime() : Infinity;
+          return events.filter(event => {
+            const eventStart = new Date(event.start).getTime();
+            const eventEnd = event.end ? new Date(event.end).getTime() : eventStart;
+            if (!Number.isFinite(eventStart)) return false;
+            return eventStart < rangeEnd && eventEnd >= rangeStart;
           });
         }
 
@@ -1025,27 +1042,28 @@
                 const url = buildEventsUrl(info.start, info.end);
                 const memoryCached = getFreshMemoryCache(url);
                 if (memoryCached) {
-                  deliverEventsAsync(successCallback, memoryCached);
+                  deliverEventsAsync(successCallback, filterEventsForRange(memoryCached, info.start, info.end));
                   return;
                 }
 
                 const persistentCached = readPersistentEventCache(url);
                 if (persistentCached) {
-                  deliverEventsAsync(successCallback, persistentCached);
+                  deliverEventsAsync(successCallback, filterEventsForRange(persistentCached, info.start, info.end));
                   deduplicatedFetch(url).then(data => {
                     if (!Array.isArray(data)) return;
-                    if (isCalendarViewingEventsUrl(url) && JSON.stringify(data) !== JSON.stringify(persistentCached)) {
-                      calendar.refetchEvents();
-                    }
+                    if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
                   }).catch(error => console.error('背景更新事件失敗:', error));
                   return;
                 }
 
                 deduplicatedFetch(url).then(data => {
-                  successCallback(Array.isArray(data) ? data : []);
+                  successCallback(filterEventsForRange(data, info.start, info.end));
                 }).catch(error => {
                   console.error('讀取事件資料失敗:', error);
                   successCallback([]);
+                  window.setTimeout(() => {
+                    if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
+                  }, 5000);
                 });
               },
               views: {
