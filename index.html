@@ -2605,11 +2605,12 @@
             reportResult.innerHTML = '<div style="text-align:center; padding:20px; color:var(--md3-on-surface-variant);">該區間尚無預約資料</div>'; return;
           }
           let html = '';
-          html += `<h4 style="margin-top:0; border-left:4px solid var(--md3-primary); padding-left:10px;">設計師業績 (40%)</h4>`;
+          html += `<h4 style="margin-top:0; border-left:4px solid var(--md3-primary); padding-left:10px;">設計師業績 (店長100%，其他40%)</h4>`;
           html += `<table class="report-table" style="margin-bottom:20px;"><thead><tr><th width="18%">設計師</th><th width="10%">客數</th><th width="9%">剪</th><th width="9%">燙</th><th width="9%">染</th><th width="22%">總金額</th><th width="23%">業績抽成</th></tr></thead><tbody>`;
           const designerMap = { '1': '店長', '2': '雅婷', '3': '小白' };
           for (const [id, info] of Object.entries(data.designers)) {
-            const commission = Math.round((info.totalAmount || 0) * 0.4);
+            const commissionRate = String(id) === '1' ? 1 : 0.4;
+            const commission = Math.round((info.totalAmount || 0) * commissionRate);
             html += `<tr><td style="text-align:center; font-weight:bold;">${designerMap[id] || id}</td><td class="num-cell">${info.count || 0}</td><td class="num-cell">${info.cutCount || info.count || 0}</td><td class="num-cell">${info.permCount || 0}</td><td class="num-cell">${info.dyeCount || 0}</td><td class="num-cell">$${(info.totalAmount || 0).toLocaleString()}</td><td class="num-cell" style="color:var(--md3-primary); font-weight:bold;">$${commission.toLocaleString()}</td></tr>`;
           }
           html += `</tbody></table>`;
