@@ -618,12 +618,42 @@
           }
         }
 
-        function fetchFreshJson(url) {
-          return fetch(url, { method: 'GET', mode: 'cors' }).then(r => r.json()).then(data => {
-            _apiCache[url] = { data, ts: Date.now() };
-            writePersistentEventCache(url, data);
-            return data;
-          });
+        function wait(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function parseJsonResponse(response, url) {
+          const text = await response.text();
+          const trimmed = text.trim();
+          if (!response.ok) {
+            throw new Error(`API HTTP ${response.status}: ${trimmed.slice(0, 120)}`);
+          }
+          if (!trimmed) return null;
+          if (trimmed[0] === '<') {
+            throw new Error(`API 回傳 HTML，不是 JSON: ${url}`);
+          }
+          try {
+            return JSON.parse(text);
+          } catch (error) {
+            throw new Error(`API JSON 解析失敗: ${error.message}`);
+          }
+        }
+
+        async function fetchFreshJson(url, retryCount = 2) {
+          let lastError;
+          for (let attempt = 0; attempt <= retryCount; attempt++) {
+            try {
+              const response = await fetch(url, { method: 'GET', mode: 'cors' });
+              const data = await parseJsonResponse(response, url);
+              _apiCache[url] = { data, ts: Date.now() };
+              writePersistentEventCache(url, data);
+              return data;
+            } catch (error) {
+              lastError = error;
+              if (attempt < retryCount) await wait(600 * (attempt + 1));
+            }
+          }
+          throw lastError;
         }
 
         function cachedFetch(url, ttl = API_CACHE_TTL) {
@@ -1013,7 +1043,10 @@
 
                 deduplicatedFetch(url).then(data => {
                   successCallback(Array.isArray(data) ? data : []);
-                }).catch(failureCallback);
+                }).catch(error => {
+                  console.error('讀取事件資料失敗:', error);
+                  successCallback([]);
+                });
               },
               views: {
                 resourceTimeGridWeek: { hiddenDays: [1] },
