@@ -956,7 +956,7 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
   align-items: center;
   gap: 0;
   width: 100%;
-  padding-right: 6px;
+  padding: 0 2px;
 }
 .evt-col-svc,
 .evt-col-name,
@@ -1086,8 +1086,7 @@ font-family: 'LocalFont_ShanHaiHeiQiShiGeTeW-2';
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.7fr);
   width: 100%;
-  padding-left: 0;
-  padding-right: 6px;
+  padding: 0 2px;
   gap: 0;
 }
 #calendar .fc-event.blocked-time .evt-col-name,

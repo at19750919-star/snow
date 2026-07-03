@@ -1416,6 +1416,7 @@ body.preview-v2 #calendar .fc-date-scroller .date-item.is-today {
   gap: 0;
   align-items: center;
   width: 100%;
+  padding: 0 2px;
 }
 
 /* 預約卡四欄共用：單行、超出用 … 省略 */
