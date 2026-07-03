@@ -5061,8 +5061,8 @@ body.theme-glass #appointmentModal .sliding-glider {
   background: linear-gradient(140deg, var(--appt-azure), var(--appt-azure-deep));
   box-shadow: 0 6px 14px -5px rgba(67, 107, 133, 0.6);
   color: #ffffff;
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 400;
 }
 
 #appointmentModal .customer-identity-fields {
@@ -6020,7 +6020,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-grid {
   grid-template-columns: 1fr !important;
-  padding: 18px !important;
+  padding: 5px !important;
 }
 
 #appointmentModal.is-create .appointment-panel--settlement {
@@ -6029,7 +6029,7 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-panel--details {
   /* 新增模式頂列上下收緊；左右仍保留原本舒適點擊空間。 */
-  padding: 10px 18px 14px !important;
+  padding: 6px 10px 10px !important;
   overflow: visible !important;
 }
 
@@ -6053,9 +6053,9 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .appointment-field > label {
   width: auto !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1.6 !important;
 }
 
 #appointmentModal.is-create .customer-identity-card {
@@ -7251,18 +7251,24 @@ body.theme-glass #appointmentModal .settlement-section .settlement-row > label {
   min-width: 0;
 }
 
+#appointmentModal .pax-toggle-group {
+  flex: none;
+  display: flex;
+  gap: 3px;
+}
+
 #appointmentModal .pax-toggle {
   flex: none;
-  min-width: 26px;
+  min-width: 20px;
   height: 24px;
-  padding: 0 7px;
+  padding: 0 4px;
   color: var(--appt-slate-2, #52606a);
   background: rgba(255, 255, 255, 0.68);
   border: 1px solid rgba(67, 107, 133, 0.28);
   border-radius: 7px;
   cursor: pointer;
   font: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1;
 }

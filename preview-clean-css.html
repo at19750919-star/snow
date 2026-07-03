@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新 CSS 預覽</title>
+  <style>
+    html,
+    body,
+    iframe {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      border: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background: #f4f0ea;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="preview-frame" src="index.html" title="新 CSS 預覽"></iframe>
+  <script>
+    const frame = document.getElementById("preview-frame");
+
+    frame.addEventListener("load", () => {
+      const doc = frame.contentDocument;
+      const originalStyle = [...doc.querySelectorAll('link[rel="stylesheet"]')]
+        .find((link) => /styles\.css/.test(link.getAttribute("href") || ""));
+
+      if (originalStyle) originalStyle.remove();
+
+      const cleanStyle = doc.createElement("link");
+      cleanStyle.rel = "stylesheet";
+      cleanStyle.href = `styles_clean_v2.css?v=${Date.now()}`;
+      doc.head.appendChild(cleanStyle);
+
+      // 載入 styles_clean_v2.css 指定的網路字型到 iframe 內層，
+      // 否則星期(Source Serif 4)會 fallback 到系統 serif 而變細。
+      const webFont = doc.createElement("link");
+      webFont.rel = "stylesheet";
+      webFont.href =
+        "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@900&display=swap";
+      doc.head.appendChild(webFont);
+
+      // 橋接字型測試工具(localhost:8011):把 client.js 注入 iframe 內層，
+      // 讓工具能即時把字型/樣式套到日曆畫面、也能「從頁面選取元件」。
+      if (!doc.getElementById("font-tool-bridge")) {
+        const bridge = doc.createElement("script");
+        bridge.id = "font-tool-bridge";
+        bridge.src = "http://localhost:8011/font-bridge/client.js";
+        doc.body.appendChild(bridge);
+      }
+    });
+  </script>
+</body>
+</html>

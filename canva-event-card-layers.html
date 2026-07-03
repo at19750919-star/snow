@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>事件卡片分層</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 492px;
+      height: 59px;
+      background: #f7e2db;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+    }
+
+    .card {
+      position: relative;
+      width: 492px;
+      height: 59px;
+      background: #e49a82;
+      overflow: hidden;
+    }
+
+    .badge-border {
+      position: absolute;
+      left: 14px;
+      top: 5px;
+      width: 52px;
+      height: 49px;
+      background: transparent;
+      border: 4px solid #ffffff;
+      box-sizing: border-box;
+    }
+
+    .badge-label,
+    .customer,
+    .phone,
+    .designer {
+      position: absolute;
+      color: #ffffff;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .badge-label {
+      left: 26px;
+      top: 14px;
+      font-size: 30px;
+    }
+
+    .customer {
+      left: 95px;
+      top: 20px;
+      font-size: 23px;
+    }
+
+    .phone {
+      left: 311px;
+      top: 18px;
+      font-size: 20px;
+    }
+
+    .designer {
+      right: 18px;
+      top: 22px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" aria-label="事件卡片背景">
+    <div class="badge-border" aria-label="服務勳章外框"></div>
+    <div class="badge-label">剪</div>
+    <div class="customer">林*2</div>
+    <div class="phone">0920-381348</div>
+    <div class="designer">婷</div>
+  </div>
+</body>
+</html>
