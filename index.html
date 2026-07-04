@@ -525,8 +525,7 @@
         }
 
         function apiCacheKey(url) {
-          if (!isPersistentEventUrl(url)) return url;
-          return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents';
+          return url;
         }
 
         function persistentEventCacheKey(url) {
@@ -553,10 +552,16 @@
 
         function writePersistentEventCache(url, data) {
           if (!isPersistentEventUrl(url) || !Array.isArray(data)) return;
+          const key = persistentEventCacheKey(url);
+          const payload = JSON.stringify({ data, ts: Date.now() });
           try {
-            localStorage.setItem(persistentEventCacheKey(url), JSON.stringify({ data, ts: Date.now() }));
+            localStorage.setItem(key, payload);
           } catch (e) {
-            console.warn('寫入事件快取失敗:', e);
+            /* 配額爆了：清掉所有事件快取後重試一次，還是不行就放棄這次快取 */
+            removePersistentEventCache();
+            try {
+              localStorage.setItem(key, payload);
+            } catch (e2) { /* 放棄 */ }
           }
         }
 

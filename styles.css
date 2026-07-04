@@ -6235,12 +6235,12 @@ body:not(.theme-glass) #appointmentModal .appointment-total-summary #display-tot
 
 #appointmentModal.is-create .toggle-label {
   font-size: 17px !important;
-  font-weight: 600 !important;
+  font-weight: 400 !important;
 }
 
 #appointmentModal.is-create #submit-btn {
   font-size: 24px !important;
-  font-weight: 600 !important;
+  font-weight: 400 !important;
 }
 
 #appointmentModal.is-create .duration-step-btn {
