@@ -1280,7 +1280,12 @@
           }
 
           function buildEventsUrl(startDate, endDate) {
-            return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(startDate) + '&end=' + ymd(endDate);
+            /* 抓取視窗放大為「當月 ±7 天」：同視窗內切日/週共用同一份快取，不必每換一天打一次 API */
+            const winStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+            winStart.setDate(winStart.getDate() - 7);
+            const winEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 1);
+            winEnd.setDate(winEnd.getDate() + 7);
+            return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(winStart) + '&end=' + ymd(winEnd);
           }
 
           function currentEventsUrl() {
@@ -1313,8 +1318,20 @@
                 extendedProps: { ...ev.extendedProps }
               };
             });
-            _apiCache[url] = { data, ts: Date.now() };
-            writePersistentEventCache(url, data);
+            /* 快取視窗比目前檢視寬：只覆蓋檢視範圍內的事件，視窗內其他天的既有快取要保留 */
+            const viewStart = calendar.view.activeStart.getTime();
+            const viewEnd = calendar.view.activeEnd.getTime();
+            const ids = new Set(data.map(ev => String(ev.id)));
+            const existing = getFreshMemoryCache(url) || readPersistentEventCache(url) || [];
+            const outside = existing.filter(ev => {
+              if (ids.has(String(ev.id))) return false;
+              const s = new Date(ev.start).getTime();
+              const en = ev.end ? new Date(ev.end).getTime() : s;
+              return !(s < viewEnd && en >= viewStart);
+            });
+            const merged = outside.concat(data);
+            _apiCache[url] = { data: merged, ts: Date.now() };
+            writePersistentEventCache(url, merged);
           }
 
           function bindEventListeners() {
