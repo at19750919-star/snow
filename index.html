@@ -2383,10 +2383,11 @@
             // 去重守衛：strip 為持久元素，每次切日期都會呼叫此函式，若不擋會無限累積 listener 導致越用越卡
             if (strip.dataset.dragBound === '1') return;
             strip.dataset.dragBound = '1';
-            let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
-            strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
-            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
-            strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
+            let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null, downItem = null;
+            strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); downItem = e.target.closest('.date-item'); });
+            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; downItem = null; });
+            /* 用 mousedown 當下抓到的 downItem，而非 mouseup 的 e.target：按下後 strip 加 active、卡片 arc 變形位移，mouseup 的 target 會漂掉變 null 導致點不到（桌機切不了日期的真正原因） */
+            strip.addEventListener('mouseup', () => { isDown = false; strip.classList.remove('active'); if (!moved && downItem) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(downItem); } lastTouchTarget = null; downItem = null; });
             strip.addEventListener('mousemove', (e) => { if (!isDown) return; const delta = e.pageX - startX; if (!moved && Math.abs(delta) < 6) return; /* 未超過門檻視為點擊，不捲動、不標記 moved，避免微小抖動吃掉點擊 */ e.preventDefault(); strip.scrollLeft = scrollLeft - delta * 2; moved = true; });
             // touch support
             strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
