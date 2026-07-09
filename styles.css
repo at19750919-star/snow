@@ -750,6 +750,20 @@ body {
   z-index: 1;
 }
 
+/* 現在時刻紅線（nowIndicator） */
+
+#calendar .fc-timegrid-now-indicator-line {
+  border-color: #e53935;
+  border-width: 2px 0 0;
+  z-index: 6;
+}
+
+#calendar .fc-timegrid-now-indicator-arrow {
+  border-color: #e53935;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
 /* ==================== 9) Event Cards ==================== */
 
 #calendar .fc-timegrid-event {
@@ -786,6 +800,30 @@ body {
 #calendar .fc-timegrid-event:hover {
   transform: none;
   box-shadow: none !important;
+}
+
+/* 觸控裝置：拉長時長的把手加大並顯示可見握把
+   （iPad 沒滑鼠，用手指長按卡片下緣的握把再往下拖即可延長預約時長） */
+@media (pointer: coarse) {
+  #calendar .fc-timegrid-event .fc-event-resizer-end {
+    height: 20px;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  #calendar .fc-timegrid-event .fc-event-resizer-end::after {
+    content: '';
+    width: 30px;
+    height: 4px;
+    margin-bottom: 3px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+  }
 }
 
 /* 內容排版 */
@@ -2016,7 +2054,7 @@ body {
 }
 
 #calendar .fc-resourceTimeGridDay-view .fc-timegrid-body .fc-timegrid-col-frame {
-  margin: 4px 4px;
+  margin: 2px 2px;
   border-radius: 12px;
   border: none;
   overflow: hidden;
