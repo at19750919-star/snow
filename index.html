@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=215">
+  <link rel="stylesheet" href="styles.css?v=216">
 
 </head>
 
@@ -658,7 +658,7 @@
           const btn = document.getElementById('themeToggleBtn');
           if (!btn) return;
           btn.addEventListener('click', function () {
-            window.location.href = 'preview/';
+            window.location.href = 'preview/index.html';
           });
         })();
 
@@ -920,6 +920,55 @@
           fetchAllCloudData();
           bindEventListeners();
 
+          // 拖曳/拉時長改約：payload 欄位需與表單送出完全一致，缺欄位會被後端洗成空白
+          async function onEventDragSave(info) {
+            const event = info.event;
+            const ep = event.extendedProps || {};
+            const rs = event.getResources();
+            const resource = rs && rs[0] ? rs[0] : null;
+            const startDt = event.start;
+            const endDt = event.end || new Date(startDt.getTime() + 15 * 60000);
+            const durationMin = Math.max(5, Math.round((endDt - startDt) / 60000));
+            const pad2 = n => String(n).padStart(2, '0');
+            const hm = d => pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+            const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
+            const who = ep.appointment_type === 'blocked' ? '不約時段' : `「${ep.customer_name || '未填名'}」`;
+            const msg = `${who} 改到 ${startDt.getMonth() + 1}/${startDt.getDate()}(${weekdayMap[startDt.getDay()]}) ${hm(startDt)}-${hm(endDt)}${resource ? ' · ' + resource.title : ''}，確定？`;
+            if (!confirm(msg)) { info.revert(); return; }
+            const payload = {
+              action: 'edit',
+              id: String(event.id),
+              operator_name: ep.entered_by || '',
+              employee_id: resource ? String(resource.id) : '',
+              start: toTaipeiIsoForApi(startDt),
+              appointment_type: ep.appointment_type || 'normal',
+              customer_name: ep.customer_name || '',
+              customer_phone: String(ep.customer_phone || '').replace(/\D/g, ''),
+              service_id: ep.service_id || '',
+              cut_price: ep.cut_price || '',
+              amount: ep.amount !== undefined && ep.amount !== null ? String(ep.amount) : '',
+              total_amount: ep.total_amount,
+              assistant_id: ep.assistant_id || '',
+              notes: ep.notes || '',
+              duration: durationMin,
+              dye_color: ep.dye_color || '',
+              pax: ep.pax || 1
+            };
+            invalidateCache('getEvents');
+            showToast('儲存中...', 'loading', 3000);
+            try {
+              const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+              const data = await res.json();
+              if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+              saveCurrentEventsToCache();
+              showToast('已更新', 'success', 2000);
+            } catch (err) {
+              info.revert();
+              calendar.refetchEvents();
+              showToast('更新失敗', 'error', 2000);
+            }
+          }
+
           function initializeCalendar() {
             calendar = new FullCalendar.Calendar(calendarEl, {
               schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
@@ -1006,6 +1055,11 @@
                 if (d === 0) arg.el.classList.add('leave-yatting');
               },
               selectLongPressDelay: 250,
+              nowIndicator: true,
+              editable: !isMobileLayout(),
+              eventLongPressDelay: 500,
+              eventDrop: onEventDragSave,
+              eventResize: onEventDragSave,
               datesSet: function (info) {
                 updateToolbarTitle(info);
                 updateDateScroller(info);
@@ -2223,25 +2277,11 @@
               if (dateKey === todayKey) btn.classList.add('is-today');
               btn.dataset.date = dateKey;
               btn.innerHTML = `<span class="date-item-weekday">${weekdayFmt.format(d)}</span><span class="date-item-day">${d.getDate()}</span>`;
-              // 確保點擊會切換日期（支援滑動後的 click 與行動裝置）
+              // 確保點擊會切換日期
               btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // quick visual feedback for debugging
-                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item clicked', btn.dataset.date);
                 selectDateFromItem(btn);
               });
-              // pointer/touch 支援，部分裝置會觸發 pointerdown/touchstart 而非 click
-              btn.addEventListener('pointerdown', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item pointerdown', btn.dataset.date);
-                selectDateFromItem(btn);
-              });
-              btn.addEventListener('touchstart', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item touchstart', btn.dataset.date);
-                selectDateFromItem(btn);
-              }, { passive: true });
               strip.appendChild(btn);
             });
             enableDragScroll(strip); applyDateStripCurve(strip);
@@ -2269,6 +2309,7 @@
             }));
           }
           function applyMobileResourceVisibility(info) {
+            if (calendar) calendar.setOption('editable', !isMobileLayout());
             const cal = document.getElementById('calendar'); if (!cal) return;
             const viewType = info?.view?.type || calendar?.view?.type || '';
             const shouldShowSingle = (viewType === 'resourceTimeGridDay' && isMobileLayout());
@@ -2308,18 +2349,6 @@
             selectedDate = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
             calendar.changeView('resourceTimeGridDay', item.dataset.date);
             calendar.gotoDate(item.dataset.date);
-            // debug feedback
-            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) { }
-            try {
-              let dbg = document.getElementById('fc-debug-banner');
-              if (!dbg) {
-                dbg = document.createElement('div'); dbg.id = 'fc-debug-banner';
-                dbg.style.position = 'fixed'; dbg.style.right = '12px'; dbg.style.bottom = '12px'; dbg.style.padding = '6px 10px'; dbg.style.background = 'rgba(0,0,0,0.7)'; dbg.style.color = '#fff'; dbg.style.borderRadius = '6px'; dbg.style.zIndex = 99999; dbg.style.fontSize = '13px';
-                document.body.appendChild(dbg);
-              }
-              dbg.textContent = `Selected: ${item.dataset.date}`;
-              setTimeout(() => { try { dbg.textContent = ''; } catch (e) { } }, 2000);
-            } catch (e) { }
             // 立即更新 header 顯示，避免視圖切換滯後時無反應感
             try {
               const sc = document.querySelector('.fc-date-scroller');
@@ -2351,6 +2380,9 @@
           }
           function enableDragScroll(strip) {
             /* 簡化版拖曳邏輯 */
+            // 去重守衛：strip 為持久元素，每次切日期都會呼叫此函式，若不擋會無限累積 listener 導致越用越卡
+            if (strip.dataset.dragBound === '1') return;
+            strip.dataset.dragBound = '1';
             let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
             strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
             strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
