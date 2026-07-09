@@ -2387,11 +2387,11 @@
             strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
             strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
             strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
-            strip.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
+            strip.addEventListener('mousemove', (e) => { if (!isDown) return; const delta = e.pageX - startX; if (!moved && Math.abs(delta) < 6) return; /* 未超過門檻視為點擊，不捲動、不標記 moved，避免微小抖動吃掉點擊 */ e.preventDefault(); strip.scrollLeft = scrollLeft - delta * 2; moved = true; });
             // touch support
             strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
             strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
-            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
+            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const delta = e.touches[0].pageX - startX; if (!moved && Math.abs(delta) < 6) return; strip.scrollLeft = scrollLeft - delta * 2; moved = true; }, { passive: false });
           }
           function updateToolbarTitle(info) {
             const el = document.querySelector('#calendar .fc-toolbar-title'); if (!el) return;
