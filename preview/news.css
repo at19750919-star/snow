@@ -28,9 +28,9 @@
   --muted: #6d6553;      /* 紙面上 ≥4.5:1 */
   --accent: #CD6F47;     /* 標誌橙:今日/進行中(claude 色板) */
   /* 設計師主色(claude 色板) */
-  --designer-1: #BDCEC0; /* 店長:鼠尾草 */
+  --designer-1: #6B8A6F; /* 店長:深鼠尾草 */
   --designer-2: #CD6F47; /* 雅婷:標誌橙 */
-  --designer-3: #6B8A6F; /* 小白:深鼠尾草 */
+  --designer-3: #8A68AC; /* 小白:紫 */
   --paid: #6d6553;       /* 結帳卡片主色(預設=灰階,主題色設定可改) */
   --resource-col-alpha: 10%; /* 欄底濃度(主題色設定滑桿) */
   --appt-alpha: 20%;     /* 預約卡片濃度:卡片底染設計師色的透明度(主題色設定滑桿) */
@@ -373,7 +373,7 @@ body {
 .fc .fc-col-header-cell[data-resource-id="1"] { border-bottom-color: var(--designer-1); }
 .fc .fc-col-header-cell[data-resource-id="2"] { border-bottom-color: var(--designer-2); }
 .fc .fc-col-header-cell[data-resource-id="3"] { border-bottom-color: var(--designer-3); }
-.fc .fc-col-header-cell[data-resource-id="1"] .wt-t8 b { background: var(--designer-1); color: var(--ink); }
+.fc .fc-col-header-cell[data-resource-id="1"] .wt-t8 b { background: var(--designer-1); color: var(--paper); }
 .fc .fc-col-header-cell[data-resource-id="2"] .wt-t8 b { background: var(--designer-2); color: var(--paper); }
 .fc .fc-col-header-cell[data-resource-id="3"] .wt-t8 b { background: var(--designer-3); color: var(--paper); }
 .fc .fc-timegrid-col.fc-resource[data-resource-id="1"] { background: color-mix(in srgb, var(--designer-1) var(--resource-col-alpha), transparent) !important; }
@@ -2592,3 +2592,89 @@ body:has(.appointment-modal[style*="display: block"]) { overflow: hidden; }
   resize: vertical;
 }
 #notes-content:focus { outline: none; border-color: var(--ink); }
+
+/* ---- 11. 手機直立(≤480px):報頭精簡 + 單欄設計師切換 ----
+   目標:看得到日期、能切日期、能切單欄、報表/主題可點;其餘從簡 */
+
+/* 設計師篩選列:只在 JS 掛上 data-mobile-resource(≤480 日視圖)時出現 */
+.mobile-resource-toggle { display: none; }
+
+#calendar[data-mobile-resource] .mobile-resource-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 6px;
+}
+
+.resource-toggle-btn {
+  font-family: "Noto Serif TC", serif;
+  padding: 6px 14px;
+  font-size: 14px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.resource-toggle-btn.is-active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* 單欄:隱藏未選欄(attr 只在 ≤480 日視圖由 JS 掛上;"all" 不匹配任何規則=三欄全顯) */
+#calendar[data-mobile-resource="1"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="2"],
+#calendar[data-mobile-resource="1"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="3"],
+#calendar[data-mobile-resource="1"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="2"],
+#calendar[data-mobile-resource="1"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="3"] {
+  display: none !important;
+}
+
+#calendar[data-mobile-resource="2"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="1"],
+#calendar[data-mobile-resource="2"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="3"],
+#calendar[data-mobile-resource="2"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="1"],
+#calendar[data-mobile-resource="2"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="3"] {
+  display: none !important;
+}
+
+#calendar[data-mobile-resource="3"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="1"],
+#calendar[data-mobile-resource="3"] .fc-resourceTimeGridDay-view .fc-timegrid-col[data-resource-id="2"],
+#calendar[data-mobile-resource="3"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="1"],
+#calendar[data-mobile-resource="3"] .fc-resourceTimeGridDay-view .fc-col-header-cell[data-resource-id="2"] {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  /* 報頭:保留日期章與店名,藏英文副標與右側 logo,整體縮一號 */
+  .news-masthead {
+    height: 64px;
+    gap: 8px;
+    padding: 6px 12px;
+  }
+
+  .news-masthead h1 { font-size: 20px; }
+
+  .news-masthead h1 span { display: none; }
+
+  .news-masthead .mh-right { display: none; }
+
+  .news-masthead .mh-datebox { width: 104px; height: 52px; padding: 4px 6px; }
+
+  .news-masthead .db-year { left: 8px; bottom: 28px; font-size: 10px; }
+
+  .news-masthead .db-md { left: 6px; bottom: 4px; }
+
+  .news-masthead .db-md span { font-size: 16px; }
+
+  .news-masthead .db-md b { font-size: 34px; margin-left: 3px; }
+
+  .news-masthead .mh-week { font-size: 14px; margin-bottom: 4px; }
+
+  /* 工具列:允許換行;日週月後的保留位取消;右側按鈕縮小 */
+  .fc-date-scroller { flex-wrap: wrap; }
+
+  .fc-date-scroller .date-toggle-btn:nth-of-type(3) { margin-right: 12px; }
+
+  .fc-date-scroller .report-trigger-btn { padding: 4px 8px; font-size: 13px; }
+}
