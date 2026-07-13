@@ -62,13 +62,14 @@
     <div class="mh-side mh-right"><img src="logo.png" alt="世紀髮型 MAN since 1993" class="mh-logo"><span>景美店</span></div>
   </header>
   <script>
-    (function () {
-      var d = new Date();
+    // 報頭日期:預設今天,行事曆切日期時由 datesSet 呼叫同步
+    function updateMastheadDate(d) {
       document.getElementById('mh-year').textContent = d.getFullYear();
       document.getElementById('mh-month').textContent = String(d.getMonth() + 1).padStart(2, '0') + '.';
       document.getElementById('mh-day').textContent = String(d.getDate()).padStart(2, '0');
       document.getElementById('mh-week').textContent = '星期' + '日一二三四五六'[d.getDay()];
-    })();
+    }
+    updateMastheadDate(new Date());
   </script>
   <script>
     // 排休/約滿鈕：點設計師名字（黑塊）展開，點按鈕或空白處收回。
@@ -1158,6 +1159,8 @@
                 schedulePerResourceTimeAxis(80);
                 // 更新 currentYmd
                 currentYmd = ymd(info.start);
+                // 報頭日期跟著行事曆目前日期(週/月視圖用區間起日)
+                if (typeof updateMastheadDate === 'function') updateMastheadDate(new Date(info.view.currentStart));
 
                 // 在日視圖時,同步 selectedDate
                 if (info.view && info.view.type === 'resourceTimeGridDay') {
