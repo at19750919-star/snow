@@ -14,23 +14,26 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+TC:wght@900&family=Source+Serif+4:wght@900&display=swap"
     rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=937">
+  <link rel="stylesheet" href="news.css?v=79">
 
   <script>
     // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
     // 這份設定是「可在網頁上自訂的色票」的唯一來源，三處共用。
     window.THEME_COLOR_KEYS = [
-      { key: 'theme-brand', var: '--brand', label: '品牌主色（紫）' },
-      { key: 'theme-blue',  var: '--blue',  label: '店長' },
-      { key: 'theme-peach', var: '--peach', label: '雅婷' },
-      { key: 'theme-slate', var: '--slate', label: '小白' },
-      { key: 'theme-paid',  var: '--paid',  label: '結帳卡片' }
+      { key: 'theme-paper',     var: '--paper',      label: '頁面底色' },
+      { key: 'theme-designer1', var: '--designer-1', label: '店長' },
+      { key: 'theme-designer2', var: '--designer-2', label: '雅婷' },
+      { key: 'theme-designer3', var: '--designer-3', label: '小白' },
+      { key: 'theme-paid',      var: '--paid',       label: '結帳卡片' }
     ];
     // 可調「推導參數」（數字%，用滑桿）：值含單位字串(如 "24%")，存 localStorage
     window.THEME_PARAM_KEYS = [
-      { key: 'theme-col-alpha',  var: '--resource-col-alpha', label: '欄底濃度',     min: 0,  max: 60, step: 2, unit: '%' },
-      { key: 'theme-card-light', var: '--card-grad-light',    label: '卡片漸層濃度', min: 50, max: 95, step: 5, unit: '%' }
+      { key: 'theme-col-alpha',  var: '--resource-col-alpha', label: '欄底濃度',     min: 0, max: 60, step: 2, unit: '%' },
+      { key: 'theme-appt-alpha', var: '--appt-alpha',         label: '預約卡片濃度', min: 0, max: 100, step: 2, unit: '%' }
     ];
     try {
       window.THEME_COLOR_KEYS.forEach(function (c) {
@@ -47,7 +50,55 @@
 </head>
 
 <body>
-  <a href="../" class="preview-return-btn" title="回正式版" aria-label="回正式版">
+  <header class="news-masthead">
+    <div class="mh-side mh-left">
+      <div class="mh-datebox">
+        <span class="db-year" id="mh-year">2026</span>
+        <div class="db-md"><span id="mh-month">05.</span><b id="mh-day">25</b></div>
+      </div>
+      <span class="mh-week" id="mh-week">週三</span>
+    </div>
+    <h1>世紀髮廊<span>JINGMEI · DAILY PROGRAMME</span></h1>
+    <div class="mh-side mh-right"><img src="logo.png" alt="世紀髮型 MAN since 1993" class="mh-logo"><span>景美店</span></div>
+  </header>
+  <script>
+    (function () {
+      var d = new Date();
+      document.getElementById('mh-year').textContent = d.getFullYear();
+      document.getElementById('mh-month').textContent = String(d.getMonth() + 1).padStart(2, '0') + '.';
+      document.getElementById('mh-day').textContent = String(d.getDate()).padStart(2, '0');
+      document.getElementById('mh-week').textContent = '星期' + '日一二三四五六'[d.getDay()];
+    })();
+  </script>
+  <script>
+    // 排休/約滿鈕：點設計師名字（黑塊）展開，點按鈕或空白處收回。
+    // 用 capture 階段委派，不受既有按鈕 handler 的 stopPropagation 影響，也不動既有 JS。
+    (function () {
+      document.addEventListener('click', function (e) {
+        var closeAll = function (except) {
+          document.querySelectorAll('.fc-col-header-cell-cushion.show-actions').forEach(function (c) {
+            if (c !== except) c.classList.remove('show-actions');
+          });
+        };
+        var name = e.target.closest && e.target.closest('.wt-t8 b');
+        if (name) {
+          var cushion = name.closest('.fc-col-header-cell-cushion');
+          closeAll(cushion);
+          if (cushion) cushion.classList.toggle('show-actions');
+          return;
+        }
+        var btn = e.target.closest && e.target.closest('.leave-icon-button, .fully-booked-button');
+        if (btn) {
+          var c = btn.closest('.fc-col-header-cell-cushion');
+          if (c) setTimeout(function () { c.classList.remove('show-actions'); }, 0);
+          return;
+        }
+        closeAll(null);
+      }, true);
+    })();
+  </script>
+
+  <a href="../index.html" class="preview-return-btn" title="回正式版" aria-label="回正式版">
     <span class="material-symbols-outlined" aria-hidden="true">home</span>
     <span class="preview-return-label">正式版</span>
   </a>
@@ -166,7 +217,7 @@
                 </div>
 
                 <div class="form-row appointment-field appointment-field--wide appointment-field--operator">
-                  <label for="operator_select">結果</label>
+                  <label for="operator_select">輸入人</label>
                   <select id="operator_select" name="operator_select" style="display:none;" required>
                     <option value="">-- 請選擇 --</option>
                     <option value="店長">店長</option>
@@ -174,6 +225,7 @@
                     <option value="小白">小白</option>
                     <option value="陳翎">陳翎</option>
                     <option value="曹家溱">曹家溱</option>
+                    <option value="羅雨凡">羅雨凡</option>
                   </select>
                   <div class="operator-segmented" aria-label="選擇輸入人">
                     <button type="button" data-operator-value="店長">雪</button>
@@ -181,6 +233,7 @@
                     <button type="button" data-operator-value="小白">白</button>
                     <button type="button" data-operator-value="陳翎">陳</button>
                     <button type="button" data-operator-value="曹家溱">曹</button>
+                    <button type="button" data-operator-value="羅雨凡">凡</button>
                   </div>
                 </div>
 
@@ -194,8 +247,8 @@
                           <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
                           <input type="hidden" id="pax_count" name="pax_count" value="1">
                           <div class="pax-toggle-group">
-                            <button type="button" id="pax_x2" class="pax-toggle" data-pax-value="2" aria-label="陪同人數 2 人" title="共 2 人（再點一次取消）">x2</button>
-                            <button type="button" id="pax_x3" class="pax-toggle" data-pax-value="3" aria-label="陪同人數 3 人" title="共 3 人（再點一次取消）">x3</button>
+                            <button type="button" id="pax_x2" class="pax-toggle" data-pax-value="2" aria-label="陪同人數 2 人" title="共 2 人（再點一次取消）">2</button>
+                            <button type="button" id="pax_x3" class="pax-toggle" data-pax-value="3" aria-label="陪同人數 3 人" title="共 3 人（再點一次取消）">3</button>
                           </div>
                         </div>
                       </div>
@@ -345,6 +398,7 @@
                       <option value="">-- 選助理 --</option>
                       <option value="陳翎">陳翎</option>
                       <option value="曹家溱">曹家溱</option>
+                      <option value="羅雨凡">羅雨凡</option>
                     </select>
                   </div>
                 </div>
@@ -412,16 +466,6 @@
         <h3 style="margin-top:0;">主題色設定</h3>
         <div id="theme-color-rows"></div>
 
-        <!-- V2 霓虹版面體驗 Switch 開關 -->
-        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 16px 0 12px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
-          <span style="font-weight:600; color:var(--date-card-text);">體驗 V2 霓虹版面</span>
-          <label class="switch-v2" style="position: relative; display: inline-block; width: 44px; height: 24px;">
-            <input type="checkbox" id="v2-toggle-checkbox" style="opacity: 0; width: 0; height: 0;">
-            <span class="slider-v2" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px;"></span>
-          </label>
-        </div>
-
         <div style="display:flex; justify-content:space-between; gap:10px; margin-top:16px;">
           <button type="button" id="theme-reset-btn" class="report-trigger-btn">恢復預設</button>
           <button type="button" id="theme-apply-btn" class="report-trigger-btn">套用</button>
@@ -433,7 +477,8 @@
     <div id="warnlistModal" class="modal">
       <div class="modal-content" style="max-width: 520px;">
         <span class="close-button warnlist-close-button">&times;</span>
-        <h3 style="margin-top:0; color:#e65100;">⚠ 警示名單</h3>
+        <span class="modal-kicker">JINGMEI · WATCH LIST</span>
+        <h3 style="margin-top:0;">警示名單</h3>
         <div class="warnlist-add-row">
           <input type="tel" id="warn-phone" inputmode="numeric" autocomplete="off" placeholder="電話 09xx-xxx-xxx">
           <input type="text" id="warn-note" placeholder="備註（如：請先付款）" style="flex:1;">
@@ -446,6 +491,7 @@
     <div id="reportModal" class="modal">
       <div class="modal-content" style="max-width: 700px;">
         <span class="close-button report-close-button">&times;</span>
+        <span class="modal-kicker">JINGMEI · REPORT</span>
         <h3 style="margin-top:0;">區間統計 (客數)</h3>
         <div class="report-controls">
           <label for="report-start" class="report-label">起日</label>
@@ -454,7 +500,7 @@
           <input type="date" id="report-end">
           <button id="fetch-report-btn" type="button">查詢</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 4px 0;">
+        <hr class="modal-rule">
         <div id="report-result">
           <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
             請選擇起訖日期，點擊「查詢」。
@@ -466,6 +512,7 @@
     <div id="lookupModal" class="modal">
       <div class="modal-content lookup-modal-content">
         <span class="close-button lookup-close-button">&times;</span>
+        <span class="modal-kicker">JINGMEI · BOOKING LOOKUP</span>
         <h3 style="margin-top:0;">&#x9810;&#x7D04;&#x67E5;&#x8A62;</h3>
         <div class="lookup-controls">
           <label for="lookup-phone" class="lookup-label">&#x96FB;&#x8A71;</label>
@@ -475,7 +522,7 @@
             placeholder="&#x53EF;&#x8F38;&#x5165;&#x90E8;&#x5206;&#x59D3;&#x540D;">
           <button id="fetch-lookup-btn" type="button">&#x67E5;&#x8A62;</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid var(--md3-outline-variant); margin: 8px 0;">
+        <hr class="modal-rule">
         <div id="lookup-result" class="lookup-result">
           <div style="text-align:center; color:var(--md3-on-surface-variant); padding: 20px;">
             &#x8ACB;&#x8F38;&#x5165;&#x96FB;&#x8A71;&#x5F8C;&#x67E5;&#x8A62;
@@ -489,7 +536,7 @@
         <div class="notes-header">
           <h4>留言板</h4>
           <div class="notes-meta"><span>未儲存</span></div>
-          <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
+          <button id="save-notes-btn" type="button">儲存今日留言</button>
         </div>
         <textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
       </div>
@@ -540,6 +587,9 @@
         }
         let employeeLeaveData = [];
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        // 該設計師該日是否已約滿(存在 employeeLeaveData, reason='已約滿')
+        const isFullyBooked = (dateStr, resourceId) => Array.isArray(employeeLeaveData) &&
+          employeeLeaveData.some(l => l.date === dateStr && String(l.resourceId) === String(resourceId) && l.reason === '已約滿');
         let currentYmd = null;
         let selectedDate = null;
         let calendar;
@@ -1025,8 +1075,8 @@
               slotMinTime: '12:00:00',
               slotMaxTime: '21:00:00',
               slotDuration: '00:15:00',
-              slotLabelInterval: '00:15:00',
-              slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+              slotLabelInterval: '01:00',
+              slotLabelContent: function (arg) { return String(arg.date.getHours()); },
               dayHeaderContent: function (arg) {
                 const date = arg.date;
                 const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
@@ -1071,6 +1121,7 @@
                 dayGridMonth: { eventDisplay: 'auto', displayEventTime: false, fixedWeekCount: false, showNonCurrentDates: false, dayMaxEventRows: 3 }
               },
               selectable: true,
+              selectAllow: function (info) { return !(info.resource && isFullyBooked(ymd(info.start), info.resource.id)); },
               dateClick: function (info) {
                 if (info.view.type === 'dayGridMonth') {
                   calendar.changeView('resourceTimeGridDay', info.date);
@@ -1146,6 +1197,16 @@
                 }
 
                 if (isDayView) {
+                  const dStr = ymd(calendar.view.currentStart);
+                  const isFB = Array.isArray(employeeLeaveData) && employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(arg.resource.id) && l.reason === '已約滿');
+
+                  if (isFB) {
+                    const status = document.createElement('span');
+                    status.className = 'fully-booked-header-status';
+                    status.textContent = '已約滿';
+                    nodes.push(status);
+                  }
+
                   const btnGroup = document.createElement('div');
                   btnGroup.className = 'header-button-group';
 
@@ -1160,8 +1221,6 @@
                     setTimeout(() => { openLeaveModal(calendar.view.currentStart, arg.resource); }, 0);
                   });
 
-                  const dStr = ymd(calendar.view.currentStart);
-                  const isFB = Array.isArray(employeeLeaveData) && employeeLeaveData.some(l => l.date === dStr && l.resourceId === arg.resource.id && l.reason === '已約滿');
                   const fbBtn = document.createElement('button');
                   fbBtn.type = 'button';
                   fbBtn.className = 'fully-booked-button' + (isFB ? ' fb-active' : '');
@@ -1172,6 +1231,8 @@
 
                   fbBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
+                    if (fbBtn.disabled) return; // 防連點:等後端回應期間再點會重複寫入
+                    fbBtn.disabled = true;
                     const date = ymd(calendar.view.currentStart);
                     const resourceId = arg.resource.id;
                     try {
@@ -1179,8 +1240,11 @@
                         const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteLeave', resourceId, date }) });
                         const j = await res.json(); if (j.status !== 'success') throw new Error(j.message);
                         if (Array.isArray(employeeLeaveData)) {
-                          const i = employeeLeaveData.findIndex(l => l.date === date && l.resourceId === resourceId && l.reason === '已約滿');
-                          if (i !== -1) employeeLeaveData.splice(i, 1);
+                          // 後端回傳的 resourceId 可能是數字,統一轉字串比對,並把重複筆一次清掉
+                          for (let i = employeeLeaveData.length - 1; i >= 0; i--) {
+                            const l = employeeLeaveData[i];
+                            if (l.date === date && String(l.resourceId) === String(resourceId) && l.reason === '已約滿') employeeLeaveData.splice(i, 1);
+                          }
                         }
                         fbBtn.classList.remove('fb-active'); fbBtn.innerHTML = iconSvg('ic-calchk'); fbBtn.title = '約滿';
                       } else {
@@ -1192,6 +1256,7 @@
                       invalidateCache('getLeave');
                       paintEmployeeLeave(); syncFullyBookedButtons();
                     } catch (err) { alert('切換約滿失敗：' + err.message); }
+                    finally { fbBtn.disabled = false; }
                   });
 
                   nodes.push(btnGroup);
@@ -1257,9 +1322,15 @@
                 const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
                 const operator = safeTrim(ep.entered_by);
                 // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
-                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹', '吳佩珈': '珈' };
+                const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹', '吳佩珈': '珈', '羅雨凡': '凡' };
                 const operatorShort = operatorShortMap[operator] || operator;  // 沒對到就退回原字，避免漏顯示
-                return { html: `<div class="fc-event-title evt-line"><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name"><span class="evt-name-text">${escapeHtml(name)}</span>${paxExtra > 0 ? `<span class="evt-pax">+${paxExtra}</span>` : ''}</span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>` };
+                // 報紙條目：開始時間 + 狀態符號（●已結帳 ◐服務中 ○未到）+ 領行點
+                const evtStart = arg.event.start, evtEnd = arg.event.end, evtNow = new Date();
+                const timeStr = evtStart ? String(evtStart.getHours()).padStart(2, '0') + ':' + String(evtStart.getMinutes()).padStart(2, '0') : '';
+                const isServing = !isPaid && evtStart && evtEnd && evtNow >= evtStart && evtNow < evtEnd;
+                const statusSym = isPaid ? '●' : (isServing ? '◐' : '○');
+                const statusCls = isPaid ? 'is-paid' : (isServing ? 'is-serving' : 'is-wait');
+                return { html: `<div class="fc-event-title evt-line${isPaid ? ' evt-paid' : ''}">${timeStr ? `<span class="evt-time">${timeStr}</span>` : ''}<span class="evt-status ${statusCls}">${statusSym}</span><span class="evt-col-svc"><span class="evt-services">${servicesHtml}</span></span><span class="evt-col-name"><span class="evt-name-text">${escapeHtml(name)}</span>${paxExtra > 0 ? `<span class="evt-pax">+${paxExtra}</span>` : ''}</span><span class="evt-lead" aria-hidden="true"></span><span class="evt-col-phone">${isPaid ? amountLabel : escapeHtml(phone)}</span>${operator ? `<span class="evt-col-operator">${escapeHtml(operatorShort)}</span>` : ''}</div>` };
               },
               eventClassNames: function (arg) {
                 const r = arg.event.getResources();
@@ -1294,6 +1365,21 @@
                 const rid = btn.dataset.resourceId;
                 const isFB = employeeLeaveData.some(l => l.date === dStr && String(l.resourceId) === String(rid) && l.reason === '已約滿');
                 if (isFB) { btn.classList.add('fb-active'); btn.innerHTML = iconSvg('ic-calban-on'); btn.title = '已約滿'; } else { btn.classList.remove('fb-active'); btn.innerHTML = iconSvg('ic-calchk'); btn.title = '約滿'; }
+
+                const header = btn.closest('.fc-col-header-cell-cushion');
+                if (!header) return;
+                // 章可能同時由 resourceLabelContent 與這裡產生,先清到只剩一顆再依狀態增刪
+                const statuses = header.querySelectorAll('.fully-booked-header-status');
+                for (let i = 1; i < statuses.length; i++) statuses[i].remove();
+                let status = header.querySelector('.fully-booked-header-status');
+                if (isFB && !status) {
+                  status = document.createElement('span');
+                  status.className = 'fully-booked-header-status';
+                  status.textContent = '已約滿';
+                  header.insertBefore(status, header.querySelector('.header-button-group'));
+                } else if (!isFB && status) {
+                  status.remove();
+                }
               });
             } catch (e) { }
           }
@@ -1396,7 +1482,12 @@
           }
 
           function buildEventsUrl(startDate, endDate) {
-            return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(startDate) + '&end=' + ymd(endDate);
+            /* 抓取視窗放大為「當月 ±7 天」:同視窗內切日共用同一份快取,不必每換一天打一次 API(與正式版一致) */
+            const winStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+            winStart.setDate(winStart.getDate() - 7);
+            const winEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 1);
+            winEnd.setDate(winEnd.getDate() + 7);
+            return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(winStart) + '&end=' + ymd(winEnd);
           }
 
           function currentEventsUrl() {
@@ -1714,14 +1805,18 @@
             // [新增] 監聽左右箭頭
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
-            if (prevBtn) prevBtn.addEventListener('click', () => {
-              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
-              calendar.prev();
-            });
-            if (nextBtn) nextBtn.addEventListener('click', () => {
-              // 交給 FullCalendar 處理日期變更（datesSet 事件會同步 selectedDate）
-              calendar.next();
-            });
+            // 日視圖箭頭:逐日移動並跳過週一(公休,日期條上也沒有這天);其他視圖交給 FullCalendar
+            function stepDayView(dir) {
+              if (!calendar) return;
+              if (!calendar.view || calendar.view.type !== 'resourceTimeGridDay') { if (dir < 0) calendar.prev(); else calendar.next(); return; }
+              const base = selectedDate ? new Date(selectedDate) : new Date(calendar.view.currentStart);
+              base.setHours(12, 0, 0, 0);
+              do { base.setDate(base.getDate() + dir); } while (base.getDay() === 1);
+              selectedDate = base;
+              calendar.gotoDate(ymd(base));
+            }
+            if (prevBtn) prevBtn.addEventListener('click', () => stepDayView(-1));
+            if (nextBtn) nextBtn.addEventListener('click', () => stepDayView(1));
 
             // [新增] 監聽染髮選項，顯示顏色輸入框
             document.querySelectorAll('input[name="other_item"]').forEach(cb => {
@@ -1881,6 +1976,7 @@
           function paintEmployeeLeave() {
             document.querySelectorAll('#calendar .leave-overlay').forEach(n => n.remove());
             document.querySelectorAll('#calendar .fully-booked-outline').forEach(n => n.remove());
+            document.querySelectorAll('#calendar .fb-stamp').forEach(n => n.remove());
             if (!Array.isArray(employeeLeaveData)) return;
             employeeLeaveData.forEach(leave => {
               const targetColumn = document.querySelector(`#calendar .fc-timegrid-col[data-date="${leave.date}"][data-resource-id="${leave.resourceId}"]`);
@@ -1888,6 +1984,10 @@
               const frame = targetColumn.querySelector('.fc-timegrid-col-frame') || targetColumn;
               if (leave.reason === '已約滿') {
                 const o = document.createElement('div'); o.className = 'fully-booked-outline'; frame.appendChild(o);
+                // 中央半透明大字(疊在卡片上層,pointer-events:none 不擋點擊)
+                const stamp = document.createElement('div'); stamp.className = 'fb-stamp';
+                const sl = document.createElement('span'); sl.className = 'fb-stamp-label'; sl.textContent = '約滿';
+                stamp.appendChild(sl); frame.appendChild(stamp);
                 return;
               }
               const ov = document.createElement('div'); ov.className = 'closed-overlay leave-overlay';
@@ -1911,6 +2011,10 @@
 
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
+            // 已約滿:擋新增(dateClick / select 都走這裡)
+            if (isFullyBooked(ymd(startDate), resource.id)) {
+              return;
+            }
             form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             syncOperatorRequired();
             if (operatorSelect) operatorSelect.classList.remove('has-value');
@@ -2327,25 +2431,13 @@
               if (dateKey === todayKey) btn.classList.add('is-today');
               btn.dataset.date = dateKey;
               btn.innerHTML = `<span class="date-item-weekday">${weekdayFmt.format(d)}</span><span class="date-item-day">${d.getDate()}</span>`;
-              // 確保點擊會切換日期（支援滑動後的 click 與行動裝置）
+              // 單一觸發路徑:只用原生 click(滑鼠與觸控都會發);拖曳中不觸發
               btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // quick visual feedback for debugging
-                try { btn.style.outline = '3px solid rgba(255,0,0,0.8)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item clicked', btn.dataset.date);
+                if (strip.dataset.dragging === '1') return;
+                strip.dataset.centerOnNextUpdate = '1';
                 selectDateFromItem(btn);
               });
-              // pointer/touch 支援，部分裝置會觸發 pointerdown/touchstart 而非 click
-              btn.addEventListener('pointerdown', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,122,255,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item pointerdown', btn.dataset.date);
-                selectDateFromItem(btn);
-              });
-              btn.addEventListener('touchstart', (e) => {
-                try { btn.style.outline = '3px solid rgba(0,200,100,0.9)'; setTimeout(() => btn.style.outline = '', 600); } catch (err) { }
-                console.log('date-item touchstart', btn.dataset.date);
-                selectDateFromItem(btn);
-              }, { passive: true });
               strip.appendChild(btn);
             });
             enableDragScroll(strip); applyDateStripCurve(strip);
@@ -2402,28 +2494,16 @@
               const dist = Math.abs(idx - activeIndex);
               item.style.setProperty('--arc-offset', `${Math.min(22, dist * 6)}px`);
               item.style.setProperty('--arc-scale', (dist === 0 ? 1.1 : Math.max(0.84, 1 - dist * 0.06)).toFixed(2));
-              item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.45, 1 - dist * 0.12)).toFixed(2));
-              item.style.setProperty('--arc-font-scale', (dist === 0 ? 1 : Math.max(0.42, 1 - dist * 0.1)).toFixed(2));
+              item.style.setProperty('--arc-opacity', (dist === 0 ? 1 : Math.max(0.5, 1 - dist * 0.08)).toFixed(2));
             });
           }
           function selectDateFromItem(item) {
             if (!item || !item.dataset.date) return;
             const parts = item.dataset.date.split('-').map(Number);
             selectedDate = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
-            calendar.changeView('resourceTimeGridDay', item.dataset.date);
-            calendar.gotoDate(item.dataset.date);
-            // debug feedback
-            try { console.log('selectDateFromItem ->', item.dataset.date); } catch (e) { }
-            try {
-              let dbg = document.getElementById('fc-debug-banner');
-              if (!dbg) {
-                dbg = document.createElement('div'); dbg.id = 'fc-debug-banner';
-                dbg.style.position = 'fixed'; dbg.style.right = '12px'; dbg.style.bottom = '12px'; dbg.style.padding = '6px 10px'; dbg.style.background = 'rgba(0,0,0,0.7)'; dbg.style.color = '#fff'; dbg.style.borderRadius = '6px'; dbg.style.zIndex = 99999; dbg.style.fontSize = '13px';
-                document.body.appendChild(dbg);
-              }
-              dbg.textContent = `Selected: ${item.dataset.date}`;
-              setTimeout(() => { try { dbg.textContent = ''; } catch (e) { } }, 2000);
-            } catch (e) { }
+            // 一次到位:已在日視圖只 gotoDate;否則 changeView 直接帶日期(避免連續兩輪重繪)
+            if (calendar.view && calendar.view.type === 'resourceTimeGridDay') calendar.gotoDate(item.dataset.date);
+            else calendar.changeView('resourceTimeGridDay', item.dataset.date);
             // 立即更新 header 顯示，避免視圖切換滯後時無反應感
             try {
               const sc = document.querySelector('.fc-date-scroller');
@@ -2434,8 +2514,7 @@
                 setDateHeaderParts(sc, y, m, d, _wd2, _isMonth2);
               }
             } catch (e) { }
-            // 強制更新日期顯示
-            updateDateScroller({ view: calendar.view });
+            // 日期條由 datesSet → updateDateScroller 統一更新,不再手動重繪
           }
           function syncDateToggleState(scroller, viewType) {
             scroller.querySelectorAll('.date-toggle-btn').forEach(btn => {
@@ -2454,16 +2533,19 @@
             }));
           }
           function enableDragScroll(strip) {
-            /* 簡化版拖曳邏輯 */
-            let isDown = false, startX, scrollLeft, moved = false, lastTouchTarget = null;
-            strip.addEventListener('mousedown', (e) => { isDown = true; moved = false; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
-            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); lastTouchTarget = null; });
-            strip.addEventListener('mouseup', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && e.target.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(e.target.closest('.date-item')); } lastTouchTarget = null; });
-            strip.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; });
+            /* 拖曳捲動:只綁一次(strip 元素不會換,重複綁會讓監聽器累積導致連發卡死);
+               選日期統一交給 date-item 的 click,這裡只負責捲動與 dragging 旗標 */
+            if (strip.dataset.dragBound === '1') return;
+            strip.dataset.dragBound = '1';
+            let isDown = false, startX, scrollLeft;
+            strip.addEventListener('mousedown', (e) => { isDown = true; strip.dataset.dragging = '0'; startX = e.pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); });
+            strip.addEventListener('mouseleave', () => { isDown = false; strip.classList.remove('active'); });
+            strip.addEventListener('mouseup', () => { isDown = false; strip.classList.remove('active'); setTimeout(() => { strip.dataset.dragging = '0'; }, 0); });
+            strip.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; strip.dataset.dragging = '1'; });
             // touch support
-            strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; moved = false; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); lastTouchTarget = e.target; }, { passive: true });
-            strip.addEventListener('touchend', (e) => { isDown = false; strip.classList.remove('active'); if (!moved && lastTouchTarget && lastTouchTarget.closest && lastTouchTarget.closest('.date-item')) { strip.dataset.centerOnNextUpdate = '1'; selectDateFromItem(lastTouchTarget.closest('.date-item')); } lastTouchTarget = null; });
-            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; moved = true; }, { passive: false });
+            strip.addEventListener('touchstart', (e) => { if (!e.touches || !e.touches[0]) return; isDown = true; strip.dataset.dragging = '0'; startX = e.touches[0].pageX; scrollLeft = strip.scrollLeft; strip.classList.add('active'); }, { passive: true });
+            strip.addEventListener('touchend', () => { isDown = false; strip.classList.remove('active'); setTimeout(() => { strip.dataset.dragging = '0'; }, 0); });
+            strip.addEventListener('touchmove', (e) => { if (!isDown || !e.touches || !e.touches[0]) return; const x = e.touches[0].pageX; const walk = (x - startX) * 2; strip.scrollLeft = scrollLeft - walk; strip.dataset.dragging = '1'; }, { passive: false });
           }
           function updateToolbarTitle(info) {
             const el = document.querySelector('#calendar .fc-toolbar-title'); if (!el) return;
@@ -2970,40 +3052,7 @@
         });
       })();
     </script>
-    <!-- ====== V2 新舊版體驗切換 JS ====== -->
-    <!-- ====== V2 新舊版體驗切換 JS ====== -->
-    <script>
-      (function() {
-        const v2Checkbox = document.getElementById('v2-toggle-checkbox');
-        if (!v2Checkbox) return;
-
-        // 讀取快取狀態
-        const isV2Stored = localStorage.getItem('preview-v2') === 'true';
-        v2Checkbox.checked = isV2Stored;
-
-        // 如果快取為 true，則為 body 加上新版 class
-        if (isV2Stored) {
-          document.body.classList.add('preview-v2');
-        }
-
-        // 監聽 Checkbox 變更
-        v2Checkbox.addEventListener('change', function() {
-          const isChecked = this.checked;
-          // 先同步為 body 加上/移除類別
-          if (isChecked) {
-            document.body.classList.add('preview-v2');
-          } else {
-            document.body.classList.remove('preview-v2');
-          }
-          // 儲存狀態至 localStorage
-          localStorage.setItem('preview-v2', isChecked ? 'true' : 'false');
-          // 延遲 80 毫秒重新整理，確保 localStorage 寫入完成並順利重繪日曆
-          setTimeout(function() {
-            window.location.reload();
-          }, 80);
-        });
-      })();
-    </script>
+    <script src="http://localhost:8011/font-bridge/client.js" data-codex-temp-bridge="1"></script>
 </body>
 
 </html>
