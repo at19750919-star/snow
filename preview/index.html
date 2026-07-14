@@ -18,7 +18,7 @@
     href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="news.css?v=81">
+  <link rel="stylesheet" href="news.css?v=82">
 
   <script>
     // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
@@ -1508,6 +1508,15 @@
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
           }
 
+          /* 寫入前先留存當前月窗快取：invalidateCache 會把它整批清掉，
+             saveCurrentEventsToCache 合併時需要這份舊資料，否則快取只剩當天、切日全空白 */
+          let _stashedEventsCache = null;
+          function stashEventsCacheBeforeInvalidate() {
+            const url = currentEventsUrl();
+            const data = url ? (getFreshMemoryCache(url) || readPersistentEventCache(url)) : null;
+            _stashedEventsCache = Array.isArray(data) ? { url, data } : null;
+          }
+
           function saveCurrentEventsToCache() {
             const url = currentEventsUrl();
             if (!url) return;
@@ -1523,8 +1532,25 @@
                 extendedProps: { ...ev.extendedProps }
               };
             });
-            _apiCache[url] = { data, ts: Date.now() };
-            writePersistentEventCache(url, data);
+            /* 快取視窗比目前檢視寬（月±7天）：只覆蓋檢視範圍內的事件，視窗內其他天的既有快取要保留 */
+            const viewStart = calendar.view.activeStart.getTime();
+            const viewEnd = calendar.view.activeEnd.getTime();
+            const ids = new Set(data.map(ev => String(ev.id)));
+            const stashed = _stashedEventsCache && _stashedEventsCache.url === url ? _stashedEventsCache.data : null;
+            _stashedEventsCache = null;
+            const existing = getFreshMemoryCache(url) || readPersistentEventCache(url) || stashed;
+            /* 沒有任何舊資料可合併時寧可不寫快取，讓下次切日直接問後端，也不要寫入只剩當天的殘缺快取 */
+            if (!existing) return;
+            const outside = existing.filter(ev => {
+              if (ids.has(String(ev.id))) return false;
+              const s = new Date(ev.start).getTime();
+              const en = ev.end ? new Date(ev.end).getTime() : s;
+              return !(s < viewEnd && en >= viewStart);
+            });
+            const merged = outside.concat(data);
+            /* 注意:preview 的 apiCacheKey 會把所有 getEvents 正規化成同一把 key,寫入必須過 apiCacheKey 否則讀不到 */
+            _apiCache[apiCacheKey(url)] = { data: merged, ts: Date.now() };
+            writePersistentEventCache(url, merged);
           }
 
           function bindEventListeners() {
@@ -1699,7 +1725,7 @@
                 // [新增] 人數（陪同併卡，1~3）；後端「客數」統計依此計
                 pax: fd.get('pax_count') || 1
               };
-              submitBtn.disabled = true; appointmentModal.style.display = 'none'; invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; stashEventsCacheBeforeInvalidate(); invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
@@ -1749,6 +1775,7 @@
               if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+                stashEventsCacheBeforeInvalidate();
                 invalidateCache('getEvents');
                 if (removeEventOptimistically(eventId)) { saveCurrentEventsToCache(); showToast('已刪除', 'success'); } else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
