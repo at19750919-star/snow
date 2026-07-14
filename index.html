@@ -1614,7 +1614,9 @@
                     pax: payload.pax,
                     entered_by: payload.operator_name || previousEnteredBy
                   }
-                });
+                  /* 第二參數 true＝掛進事件來源：之後任何 refetch 會用來源新資料「取代」這張樂觀卡。
+                     不掛來源的話，refetch 供出的同一筆會和這張並存 → 畫面出現兩張重複卡片 */
+                }, true);
                 saveCurrentEventsToCache();
 
               } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
