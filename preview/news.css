@@ -27,6 +27,9 @@
   --rule-faint: #e6dfc9;
   --muted: #6d6553;      /* 紙面上 ≥4.5:1 */
   --accent: #CD6F47;     /* 標誌橙:今日/進行中(claude 色板) */
+  /* 不約時段卡片:與正式版一致的螢光黃綠底＋深色字 */
+  --blocked-bg: #ccff00;
+  --blocked-text: #111111;
   /* 設計師主色(claude 色板) */
   --designer-1: #6B8A6F; /* 店長:深鼠尾草 */
   --designer-2: #CD6F47; /* 雅婷:標誌橙 */
@@ -385,13 +388,13 @@ body {
 .fc .fc-timegrid-col[data-resource-id="2"] .fc-timegrid-event { background: color-mix(in srgb, var(--designer-2) var(--appt-alpha), var(--card)); border-color: var(--designer-2); border-width: 1.5px; }
 .fc .fc-timegrid-col[data-resource-id="3"] .fc-timegrid-event { background: color-mix(in srgb, var(--designer-3) var(--appt-alpha), var(--card)); border-color: var(--designer-3); border-width: 1.5px; }
 
-/* 不約時段:不畫事件卡,整格做成「不約」戳章(墨框 + 置中戳字,隱藏 ✋) */
+/* 不約時段:不畫事件卡,整格做成「不約」戳章(螢光黃綠底 + 置中戳字,隱藏 ✋) */
 .fc .fc-timegrid-event.blocked-time {
-  background: color-mix(in srgb, var(--ink) 4%, var(--paper)) !important;
-  border: 2px solid var(--muted) !important;
+  background: var(--blocked-bg) !important;
+  border: 2px solid var(--blocked-bg) !important;
   border-radius: 4px !important;
   box-shadow: none !important;
-  color: var(--muted);
+  color: var(--blocked-text);
 }
 .fc .fc-timegrid-event.blocked-time .fc-event-main {
   display: flex;
@@ -409,7 +412,7 @@ body {
   font-weight: 900;
   font-size: var(--fs-title);
   letter-spacing: 6px;
-  color: var(--muted);
+  color: var(--blocked-text);
 }
 
 /* 已結帳:灰階收據感,明顯有別於彩色預約卡(A 方案) */
