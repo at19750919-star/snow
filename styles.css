@@ -978,7 +978,7 @@ body {
 .blocked-icon {
   font-family: "Material Symbols Outlined", sans-serif !important;
   font-size: 32px;
-  color: rgba(255, 255, 255, 0.95);
+  color: inherit; /* 跟著卡片文字色走：螢光底配深色 icon 才看得見 */
   display: block;
   grid-column: 1 / 2;
   margin: 0 auto;
@@ -1119,6 +1119,9 @@ body {
   /* 小白 */
   --stylist-3-text: #fbfaf7;
   --stylist-3-bg-light: #afb4cc;
+  /* 不約時段卡片：全設計師統一螢光黃綠底＋深色字 */
+  --blocked-bg: #ccff00;
+  --blocked-text: #111111;
 }
 
 /* #1：漸層從淺到深，前者是卡片頂部/左側底色，後者是右下角的主色 */
@@ -1157,22 +1160,17 @@ body {
   color: var(--stylist-3-text) !important;
 }
 
-#calendar .fc-event.sty-1.blocked-time {
-  background: var(--stylist-1-bg-light) !important;
-  border-color: var(--stylist-1-bg-light) !important;
-  color: var(--stylist-1-text) !important;
+/* 不約時段：不分設計師，統一螢光黃綠（取代原本三條 sty-N.blocked-time 各自用淺色的規則） */
+#calendar .fc-event.blocked-time {
+  background: var(--blocked-bg) !important;
+  border-color: var(--blocked-bg) !important;
+  color: var(--blocked-text) !important;
 }
 
-#calendar .fc-event.sty-2.blocked-time {
-  background: var(--stylist-2-bg-light) !important;
-  border-color: var(--stylist-2-bg-light) !important;
-  color: var(--stylist-2-text) !important;
-}
-
-#calendar .fc-event.sty-3.blocked-time {
-  background: var(--stylist-3-bg-light) !important;
-  border-color: var(--stylist-3-bg-light) !important;
-  color: var(--stylist-3-text) !important;
+/* 標題排版規則（.fc-event-title.evt-line）寫死白字，這裡以同權重後位覆寫成深色 */
+#calendar .fc-event.blocked-time .fc-event-title.evt-line {
+  color: var(--blocked-text);
+  text-shadow: none;
 }
 
 /* Paid status */
