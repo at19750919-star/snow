@@ -18,7 +18,7 @@
     href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="news.css?v=82">
+  <link rel="stylesheet" href="news.css?v=83">
 
   <script>
     // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
@@ -1062,6 +1062,56 @@
           fetchAllCloudData();
           bindEventListeners();
 
+          // 拖曳/拉時長改約：payload 欄位需與表單送出完全一致，缺欄位會被後端洗成空白（自正式版移植）
+          async function onEventDragSave(info) {
+            const event = info.event;
+            const ep = event.extendedProps || {};
+            const rs = event.getResources();
+            const resource = rs && rs[0] ? rs[0] : null;
+            const startDt = event.start;
+            const endDt = event.end || new Date(startDt.getTime() + 15 * 60000);
+            const durationMin = Math.max(5, Math.round((endDt - startDt) / 60000));
+            const pad2 = n => String(n).padStart(2, '0');
+            const hm = d => pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+            const weekdayMap = ['日', '一', '二', '三', '四', '五', '六'];
+            const who = ep.appointment_type === 'blocked' ? '不約時段' : `「${ep.customer_name || '未填名'}」`;
+            const msg = `${who} 改到 ${startDt.getMonth() + 1}/${startDt.getDate()}(${weekdayMap[startDt.getDay()]}) ${hm(startDt)}-${hm(endDt)}${resource ? ' · ' + resource.title : ''}，確定？`;
+            if (!confirm(msg)) { info.revert(); return; }
+            const payload = {
+              action: 'edit',
+              id: String(event.id),
+              operator_name: ep.entered_by || '',
+              employee_id: resource ? String(resource.id) : '',
+              start: toTaipeiIsoForApi(startDt),
+              appointment_type: ep.appointment_type || 'normal',
+              customer_name: ep.customer_name || '',
+              customer_phone: String(ep.customer_phone || '').replace(/\D/g, ''),
+              service_id: ep.service_id || '',
+              cut_price: ep.cut_price || '',
+              amount: ep.amount !== undefined && ep.amount !== null ? String(ep.amount) : '',
+              total_amount: ep.total_amount,
+              assistant_id: ep.assistant_id || '',
+              notes: ep.notes || '',
+              duration: durationMin,
+              dye_color: ep.dye_color || '',
+              pax: ep.pax || 1
+            };
+            stashEventsCacheBeforeInvalidate();
+            invalidateCache('getEvents');
+            showToast('儲存中...', 'loading', 3000);
+            try {
+              const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+              const data = await res.json();
+              if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+              saveCurrentEventsToCache();
+              showToast('已更新', 'success', 2000);
+            } catch (err) {
+              info.revert();
+              calendar.refetchEvents();
+              showToast('更新失敗', 'error', 2000);
+            }
+          }
+
           function initializeCalendar() {
             calendar = new FullCalendar.Calendar(calendarEl, {
               schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
@@ -1149,6 +1199,11 @@
                 if (d === 0) arg.el.classList.add('leave-yatting');
               },
               selectLongPressDelay: 250,
+              /* 拖曳改時段＋下緣握把拉時長（自正式版移植）；手機窄版停用避免誤拖 */
+              editable: !isMobileLayout(),
+              eventLongPressDelay: 500,
+              eventDrop: onEventDragSave,
+              eventResize: onEventDragSave,
               datesSet: function (info) {
                 updateToolbarTitle(info);
                 updateDateScroller(info);
@@ -1763,7 +1818,9 @@
                     pax: payload.pax,
                     entered_by: payload.operator_name || previousEnteredBy
                   }
-                });
+                  /* 第二參數 true＝掛進事件來源：之後任何 refetch 會用來源新資料「取代」這張樂觀卡。
+                     不掛來源的話，refetch 供出的同一筆會和這張並存 → 畫面出現兩張重複卡片 */
+                }, true);
                 saveCurrentEventsToCache();
 
               } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }

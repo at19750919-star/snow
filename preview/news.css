@@ -741,6 +741,30 @@ body {
   padding-left: 14px;
 }
 
+/* 觸控裝置:拉長時長的握把(自正式版移植;紙面風改用墨色把手)
+   iPad 沒滑鼠,用手指長按卡片下緣的握把再往下拖即可延長預約時長 */
+@media (pointer: coarse) {
+  .fc .fc-timegrid-event .fc-event-resizer-end {
+    height: 20px;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .fc .fc-timegrid-event .fc-event-resizer-end::after {
+    content: '';
+    width: 30px;
+    height: 4px;
+    margin-bottom: 3px;
+    border-radius: 4px;
+    background: rgba(26, 26, 26, 0.55);
+    box-shadow: 0 0 0 1px rgba(239, 234, 224, 0.8);
+    pointer-events: none;
+  }
+}
+
 /* ---- 8. 隱藏未樣式化元素 ----
    彈窗與留言板尚未在此版樣式化;JS 用 inline style.display 開啟不受影響 */
 /* 預設隱藏;JS 以 style.display='block' 開啟後,以下定位讓它成為全幅遮罩 */
