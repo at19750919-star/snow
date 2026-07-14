@@ -102,9 +102,9 @@ body {
   margin: 0;
   color: var(--ink);
   background:
-    radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 32%),
     radial-gradient(circle at 88% 8%, rgba(88, 168, 216, 0.18), transparent 34%),
     linear-gradient(180deg, #f6f0ec 0%, #ece7e2 100%);
+  /* 外框去色：移除左上角原本連動 --brand 的紫色暈染，退成中性米灰底 */
   font-family: "Times New Roman", serif;
   font-size: 15px;
   font-variant-numeric: tabular-nums;
@@ -217,7 +217,8 @@ textarea {
   --meal-slot-bg-deep: rgba(164, 187, 80, 0.35);
   /* 用餐時段標示色 */
   /* 日期列 */
-  --date-card-bg: linear-gradient(180deg, #f8f3fd 0%, #efe7f8 100%);
+  --date-card-bg: linear-gradient(180deg, var(--paper-soft) 0%, var(--paper-strong) 100%);
+  /* 外框去色：日期列表頭底改用既有中性米白 token，不再連動 --brand 的紫調 */
   --date-card-text: color-mix(in srgb, var(--brand) 45%, #333333);
   --date-card-muted: color-mix(in srgb, var(--brand) 50%, #888888);
   --date-item-active-bg: color-mix(in srgb, var(--brand) 55%, white);
