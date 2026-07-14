@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=217">
+  <link rel="stylesheet" href="styles.css?v=218">
 
 </head>
 
@@ -957,6 +957,7 @@
               dye_color: ep.dye_color || '',
               pax: ep.pax || 1
             };
+            stashEventsCacheBeforeInvalidate();
             invalidateCache('getEvents');
             showToast('儲存中...', 'loading', 3000);
             try {
@@ -1360,6 +1361,15 @@
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
           }
 
+          /* 寫入前先留存當前月窗快取：invalidateCache 會把它整批清掉，
+             saveCurrentEventsToCache 合併時需要這份舊資料，否則快取只剩當天、切日全空白 */
+          let _stashedEventsCache = null;
+          function stashEventsCacheBeforeInvalidate() {
+            const url = currentEventsUrl();
+            const data = url ? (getFreshMemoryCache(url) || readPersistentEventCache(url)) : null;
+            _stashedEventsCache = Array.isArray(data) ? { url, data } : null;
+          }
+
           function saveCurrentEventsToCache() {
             const url = currentEventsUrl();
             if (!url) return;
@@ -1379,7 +1389,11 @@
             const viewStart = calendar.view.activeStart.getTime();
             const viewEnd = calendar.view.activeEnd.getTime();
             const ids = new Set(data.map(ev => String(ev.id)));
-            const existing = getFreshMemoryCache(url) || readPersistentEventCache(url) || [];
+            const stashed = _stashedEventsCache && _stashedEventsCache.url === url ? _stashedEventsCache.data : null;
+            _stashedEventsCache = null;
+            const existing = getFreshMemoryCache(url) || readPersistentEventCache(url) || stashed;
+            /* 沒有任何舊資料可合併時寧可不寫快取，讓下次切日直接問後端，也不要寫入只剩當天的殘缺快取 */
+            if (!existing) return;
             const outside = existing.filter(ev => {
               if (ids.has(String(ev.id))) return false;
               const s = new Date(ev.start).getTime();
@@ -1562,7 +1576,7 @@
                 dye_color: document.getElementById('dye_color_input').value,
                 pax: fd.get('pax_count') || 1
               };
-              submitBtn.disabled = true; appointmentModal.style.display = 'none'; invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; stashEventsCacheBeforeInvalidate(); invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
@@ -1612,6 +1626,7 @@
               if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
               try {
                 const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+                stashEventsCacheBeforeInvalidate();
                 invalidateCache('getEvents');
                 if (removeEventOptimistically(eventId)) { saveCurrentEventsToCache(); showToast('已刪除', 'success'); } else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
