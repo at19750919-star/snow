@@ -1371,19 +1371,9 @@ body.preview-v2 #calendar .fc-date-scroller .date-item.is-today {
   background: linear-gradient(90deg, color-mix(in srgb, var(--slate) var(--card-grad-light), white), var(--slate)) !important;
 }
 
-/* 店長不約時段（較淡，由主色推導） */
-#calendar .fc-event.sty-1.blocked-time {
-  background: color-mix(in srgb, var(--blue) 22%, rgba(255, 255, 255, 0.35)) !important;
-}
-
-/* 雅婷不約時段 */
-#calendar .fc-event.sty-2.blocked-time {
-  background: color-mix(in srgb, var(--peach) 22%, rgba(255, 255, 255, 0.35)) !important;
-}
-
-/* 小白不約時段 */
-#calendar .fc-event.sty-3.blocked-time {
-  background: color-mix(in srgb, var(--slate) 22%, rgba(255, 255, 255, 0.35)) !important;
+/* 不約時段：不分設計師，統一底色 */
+#calendar .fc-event.blocked-time {
+  background: #fefb41 !important;
 }
 
 /* 已結帳預約改用橄欖綠，和一般預約卡區分。 */

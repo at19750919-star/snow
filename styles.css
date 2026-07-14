@@ -1119,8 +1119,8 @@ body {
   /* 小白 */
   --stylist-3-text: #fbfaf7;
   --stylist-3-bg-light: #afb4cc;
-  /* 不約時段卡片：全設計師統一螢光黃綠底＋深色字 */
-  --blocked-bg: #ccff00;
+  /* 不約時段卡片：全設計師統一底色＋深色字 */
+  --blocked-bg: #fefb41;
   --blocked-text: #111111;
 }
 
