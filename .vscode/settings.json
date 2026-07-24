@@ -1,4 +1,10 @@
 {
-  "liveServer.settings.port": 5503,
-  "stylelint.validate": ["css", "less", "postcss", "scss", "sass"]
+  "liveServer.settings.port": 5504,
+  "stylelint.validate": [
+    "css",
+    "less",
+    "postcss",
+    "scss",
+    "sass"
+  ]
 }
