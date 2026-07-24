@@ -18,7 +18,8 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=218">
+  <link rel="stylesheet" href="styles.css?v=221">
+
 
 </head>
 
@@ -740,6 +741,7 @@
               editBtn.style.display = isEdit ? 'inline-flex' : 'none';
               editBtn.classList.toggle('is-unlocked', isEdit && !on);
               editBtn.disabled = isEdit && !on;
+              editBtn.textContent = isEdit && !on ? '編輯中' : '編輯';
             }
             // 刪除/儲存：既有預約模式常駐顯示；新增模式維持原本（由 placeAppointmentActions 控制 is-create 樣式）。
             if (submitBtn) submitBtn.style.display = 'inline-block';

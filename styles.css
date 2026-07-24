@@ -956,10 +956,10 @@ body {
 /* Blocked time styles */
 
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.7fr);
+  grid-template-columns: 24px minmax(0, 1fr);
   width: 100%;
-  padding: 0 2px;
-  gap: 0;
+  padding: 3px 10px;
+  gap: 7px;
 }
 
 #calendar .fc-event.blocked-time .evt-col-name,
@@ -977,19 +977,30 @@ body {
 
 .blocked-icon {
   font-family: "Material Symbols Outlined", sans-serif !important;
-  font-size: 32px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 23px;
+  font-variation-settings: "FILL" 1, "wght" 520, "GRAD" 0, "opsz" 24;
   color: inherit; /* 跟著卡片文字色走：螢光底配深色 icon 才看得見 */
-  display: block;
+  opacity: 0.82;
   grid-column: 1 / 2;
-  margin: 0 auto;
 }
 
 .fc-event.blocked-time .evt-col-note {
   grid-column: 2 / 3;
-  text-align: center;
+  min-width: 0;
+  text-align: left;
   width: 100%;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0.015em;
   color: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -1165,12 +1176,25 @@ body {
   background: var(--blocked-bg) !important;
   border-color: var(--blocked-bg) !important;
   color: var(--blocked-text) !important;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(17, 17, 17, 0.2),
+    inset 0 -3px 0 rgba(120, 116, 0, 0.16) !important;
 }
 
 /* 標題排版規則（.fc-event-title.evt-line）寫死白字，這裡以同權重後位覆寫成深色 */
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
   color: var(--blocked-text);
   text-shadow: none;
+}
+
+#calendar .fc-event.blocked-time:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(17, 17, 17, 0.28),
+    inset 0 -3px 0 rgba(120, 116, 0, 0.2),
+    0 3px 8px rgba(64, 61, 0, 0.18) !important;
 }
 
 /* Paid status */
@@ -3345,9 +3369,6 @@ body #appointmentModal .settlement-section .price-item--suggested {
 
 #appointmentModal.is-edit .appointment-grid {
   height: auto;
-  /* v131：原本 align-items:start 讓矮的左欄頂部對齊、底部留空。
-     改 stretch → 左右兩欄等高、底部對齊（三主題共用，glass/md3 也受惠）。
-     左欄 .appointment-panel--details 本身是 flex column，會被拉高撐滿。 */
   align-items: stretch;
   /* 左欄固定較窄（只放預約基本資料），右側結算區吃掉剩餘空間，
      視窗放大時主要讓右側 4 欄價目格變寬，不再左右等比放大。 */
@@ -3437,7 +3458,7 @@ body #appointmentModal .settlement-section .price-item--suggested {
   height: 36px;
   padding: 3px;
   border-radius: 11px;
-  width: 240px !important;
+  width: 100% !important;
   max-width: 100% !important;
   justify-self: start !important;
 }
@@ -3640,9 +3661,11 @@ body #appointmentModal .settlement-section .price-item--suggested {
 
 #appointmentModal .time-select-group {
   min-height: 40px;
-  width: fit-content;
+  width: 100%;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
   padding: 2px 12px;
   border-radius: 10px;
@@ -3662,8 +3685,8 @@ body #appointmentModal .settlement-section .price-item--suggested {
   background-image: none;
   box-shadow: none !important;
   color: #ffffff !important;
-  font-size: 30px;
-  letter-spacing: 1px;
+  font-size: 26px;
+  letter-spacing: 0;
   line-height: 1;
   text-align: center;
   text-align-last: center;
@@ -3671,7 +3694,7 @@ body #appointmentModal .settlement-section .price-item--suggested {
 }
 
 #appointmentModal .time-sep {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   margin: 0 1px;
@@ -3680,9 +3703,11 @@ body #appointmentModal .settlement-section .price-item--suggested {
 
 #appointmentModal .duration-input-wrap {
   min-height: 40px;
-  width: fit-content;
+  width: 100%;
+  box-sizing: border-box;
   display: inline-grid;
   grid-template-columns: auto auto auto auto;
+  justify-content: center;
   align-items: center;
   gap: 6px;
   padding: 2px 10px;
@@ -3716,8 +3741,8 @@ body #appointmentModal .settlement-section .price-item--suggested {
   background: transparent !important;
   box-shadow: none !important;
   color: #ffffff !important;
-  font-size: 26px;
-  letter-spacing: 1px;
+  font-size: 24px;
+  letter-spacing: 0;
   line-height: 1;
   text-align: center;
   text-align-last: center;
@@ -3751,7 +3776,8 @@ body #appointmentModal .settlement-section .price-item--suggested {
 #appointmentModal .operator-segmented button {
   min-height: 42px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
   -webkit-backdrop-filter: blur(10px) saturate(1.35);
   backdrop-filter: blur(10px) saturate(1.35);
   font: inherit;
@@ -3771,10 +3797,12 @@ body #appointmentModal .settlement-section .price-item--suggested {
 
 #appointmentModal .service-icon-buttons button {
   min-height: 48px;
+  background-color: rgba(255, 255, 255, 0.07);
   background-repeat: no-repeat;
   background-position: center;
   background-size: auto 40px;
   border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   transition: background-color .15s ease, transform .12s ease;
 }
 
@@ -4001,6 +4029,10 @@ body #appointmentModal .settlement-section .price-item--suggested {
   margin: 0 0 10px;
 }
 
+#appointmentModal .settlement-sub-card:first-child .settlement-card-heading {
+  padding-right: 52px;
+}
+
 #appointmentModal .settlement-sub-card .sub-card-title {
   align-items: center;
   display: block;
@@ -4048,7 +4080,7 @@ body #appointmentModal .settlement-section .price-item--suggested {
 #appointmentModal .settlement-section .price-label {
   letter-spacing: 0;
   line-height: 1.1;
-  opacity: 0.5;
+  opacity: 0.78;
 }
 
 #appointmentModal .settlement-section .price-val {
@@ -4340,7 +4372,7 @@ body #appointmentModal .settlement-sub-card--perm .price-item:has(input:checked)
 
 #appointmentModal .settlement-section .price-item {
   color: var(--appt-slate-2);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 3px 8px -4px rgba(44, 55, 61, 0.22);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 4px 10px -5px rgba(44, 55, 61, 0.28);
   cursor: pointer;
   white-space: nowrap;
   display:flex !important;
@@ -4354,8 +4386,8 @@ body #appointmentModal .settlement-sub-card--perm .price-item:has(input:checked)
   min-height:34px !important;
   padding:3px 8px !important;
   border-radius:10px !important;
-  background:rgba(255,255,255,.45) !important;
-  border:1px solid rgba(255,255,255,.55) !important;
+  background:rgba(255,255,255,.72) !important;
+  border:1px solid rgba(255,255,255,.9) !important;
 }
 
 #appointmentModal .price-item .price-label {
@@ -4852,10 +4884,10 @@ body #appointmentModal.is-create .appointment-total-summary {
 /* 編輯鈕解鎖後（欄位已可編輯）：變灰示意、停用點擊，三顆按鈕仍並排不跳動 */
 
 #appointmentModal .appointment-edit-btn.is-unlocked {
-  background: rgba(120, 132, 140, 0.45);
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   cursor: default;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 #appointmentModal .appointment-edit-btn.is-unlocked:hover,
@@ -4881,6 +4913,106 @@ body #appointmentModal.is-create .appointment-total-summary {
 #appointmentModal.is-readonly .appointment-fields textarea,
 #appointmentModal.is-readonly .appointment-fields select {
   pointer-events: none;
+}
+
+/* 解鎖編輯後：姓名/電話從「純文字外觀」變回「可輸入外觀」——深色卡上的幽靈輸入框
+   （半透明白底 + 細邊框圓角，聚焦微亮），讓人一眼看出這兩欄已可修改；
+   需 !important 蓋過上方 identity-card 的純文字化規則 */
+
+#appointmentModal.is-edit:not(.is-readonly) #customer_name,
+#appointmentModal.is-edit:not(.is-readonly) #customer_phone {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: var(--appt-slate) !important;
+  border: 1px solid rgba(44, 55, 61, 0.08) !important;
+  border-radius: 9px !important;
+  padding: 3px 10px !important;
+}
+
+#appointmentModal.is-edit:not(.is-readonly) #customer_name:focus,
+#appointmentModal.is-edit:not(.is-readonly) #customer_phone:focus {
+  background: #ffffff !important;
+  border-color: #006dff !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.96),
+    0 0 0 6px rgba(0, 109, 255, 0.9),
+    0 0 18px rgba(0, 109, 255, 0.45) !important;
+}
+
+/* iPad 文字輸入焦點：高飽和藍色游標搭配粗焦點圈，避免細黑游標融入文字 */
+
+#appointmentModal.is-edit:not(.is-readonly) input[type="text"],
+#appointmentModal.is-edit:not(.is-readonly) input[type="tel"],
+#appointmentModal.is-edit:not(.is-readonly) input[type="number"],
+#appointmentModal.is-edit:not(.is-readonly) textarea {
+  caret-color: #006dff !important;
+}
+
+#appointmentModal.is-edit:not(.is-readonly) input[type="text"]:focus,
+#appointmentModal.is-edit:not(.is-readonly) input[type="tel"]:focus,
+#appointmentModal.is-edit:not(.is-readonly) input[type="number"]:focus,
+#appointmentModal.is-edit:not(.is-readonly) textarea:focus {
+  outline: 3px solid #006dff !important;
+  outline-offset: 2px;
+  border-color: #006dff !important;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.96),
+    0 0 0 6px rgba(0, 109, 255, 0.9),
+    0 0 18px rgba(0, 109, 255, 0.45) !important;
+}
+
+/* 解鎖提示：可修改的控制區持續做柔和呼吸，讓 iPad 上的編輯狀態保持可見 */
+
+@keyframes appointment-unlock-cue {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(213, 245, 226, 0.32),
+      0 0 3px rgba(213, 245, 226, 0.08);
+    filter: brightness(0.98);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(213, 245, 226, 0.9),
+      0 0 12px rgba(213, 245, 226, 0.3);
+    filter: brightness(1.08);
+  }
+}
+
+#appointmentModal.is-edit:not(.is-readonly) .type-toggle-container,
+#appointmentModal.is-edit:not(.is-readonly) .time-select-group,
+#appointmentModal.is-edit:not(.is-readonly) .duration-input-wrap,
+#appointmentModal.is-edit:not(.is-readonly) .operator-segmented,
+#appointmentModal.is-edit:not(.is-readonly) .customer-identity-card,
+#appointmentModal.is-edit:not(.is-readonly) .service-icon-buttons,
+#appointmentModal.is-edit:not(.is-readonly) .appointment-field--notes textarea {
+  border-radius: 10px;
+  animation: appointment-unlock-cue 1.45s ease-in-out infinite;
+}
+
+#appointmentModal.is-edit:not(.is-readonly) .appointment-panel--details {
+  box-shadow:
+    inset 0 0 0 2px rgba(213, 245, 226, 0.5),
+    0 0 12px rgba(213, 245, 226, 0.1);
+}
+
+#appointmentModal.is-edit:not(.is-readonly) .appointment-field > label {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #appointmentModal.is-edit:not(.is-readonly) .type-toggle-container,
+  #appointmentModal.is-edit:not(.is-readonly) .time-select-group,
+  #appointmentModal.is-edit:not(.is-readonly) .duration-input-wrap,
+  #appointmentModal.is-edit:not(.is-readonly) .operator-segmented,
+  #appointmentModal.is-edit:not(.is-readonly) .customer-identity-card,
+  #appointmentModal.is-edit:not(.is-readonly) .service-icon-buttons,
+  #appointmentModal.is-edit:not(.is-readonly) .appointment-field--notes textarea {
+    animation: none;
+    box-shadow:
+      0 0 0 1px rgba(213, 245, 226, 0.58),
+      0 0 5px rgba(213, 245, 226, 0.14);
+  }
 }
 
 /* 唯讀時左側欄位的游標提示，讓使用者一眼看出不能改 */
