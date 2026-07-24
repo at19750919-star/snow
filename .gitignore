@@ -7,3 +7,33 @@ node_modules/
 
 # 除錯用截圖（非 app 素材；呆.png/dai.png/cut.png 等是 app 用的，不忽略）
 century-*.png
+appointment-*.png
+calendar-*.png
+news-layout-*.png
+
+# 練習/暫存檔（非專案內容）
+_baseline_tmp.css
+*_practice.css
+*_practice.html
+calendar-snapshot.md
+
+# 素材原圖（未被 index.html 引用，非上線資產；如日後要入庫再移除對應行）
+bg.png
+世紀價目.jpg
+世紀報紙.png
+世紀的logo.jpg
+世紀的logo_透明背景_保留原色.png
+
+# 本機工具／其他專案（LINE 日報等，與排班 app 無關，只是混在同資料夾）
+.gas-line-fix/
+.line-webhook-worker/
+.impeccable/
+scripts/
+AGENT.md
+LINE_DAILY_REPORT_SETUP.md
+
+# CI 設定（此 repo 目前不跑 GitHub Actions；要啟用再移除此行）
+.github/
+
+# 預覽版本機殘留（遠端已用 preview/index.html 為報紙版）
+preview/news.html
