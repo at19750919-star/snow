@@ -4096,6 +4096,11 @@ body #appointmentModal .settlement-section .price-item--suggested {
   font-size: 10.5px;
 }
 
+/* 韓式壓貼 1000：燙髮卡片內唯一非「燙髮」字樣的品項 */
+#appointmentModal .settlement-sub-card--perm .price-item--kr .price-label::after {
+  content: "韓式壓貼";
+}
+
 #appointmentModal .custom-val-wrap {
   align-items: baseline;
   gap: 1px;
