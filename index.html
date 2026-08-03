@@ -2351,6 +2351,22 @@
             }
             if (!shouldShowSingle) cal.removeAttribute('data-mobile-resource');
             else cal.setAttribute('data-mobile-resource', ensureMobileResourceId());
+            syncCalendarResources(shouldShowSingle);
+          }
+
+          /* 單設計師檢視必須真的把 resource 換掉，不能只靠 CSS 藏欄位：
+             FullCalendar 的點擊/拖曳判定看的是它自己的欄位座標，被 CSS 藏起來的欄仍在模型裡，
+             會把新增的預約算到別人（多半是第一欄店長）身上，或判定不到 resource 而開不了彈窗。 */
+          function syncCalendarResources(shouldShowSingle) {
+            if (!calendar) return;
+            const rid = shouldShowSingle ? ensureMobileResourceId() : 'all';
+            const wanted = (rid && rid !== 'all')
+              ? RESOURCE_LIST.filter(r => String(r.id) === String(rid))
+              : RESOURCE_LIST;
+            const target = wanted.length ? wanted : RESOURCE_LIST;
+            const current = calendar.getResources().map(r => String(r.id)).join(',');
+            if (current === target.map(r => String(r.id)).join(',')) return;
+            calendar.setOption('resources', target);
           }
           function applyDateStripCurve(strip) {
             /* 簡化版曲線效果 */
