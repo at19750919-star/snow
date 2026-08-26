@@ -452,10 +452,15 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
+    <script src="diagnostics.js?v=1"></script>
 
     <script>
       // 後端 Google Apps Script 網址
       const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q/exec';
+      // 僅在網址帶有 ?diagnostic=1 時顯示，不影響一般預約畫面。
+      if (window.CenturyDiagnostics) {
+        window.CenturyDiagnostics.install({ apiUrl: APPS_SCRIPT_WEB_APP_URL });
+      }
 
       // 全域 escapeHtml（防 XSS）
       function escapeHtml(value) {
@@ -683,6 +688,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
+          if (window.CenturyDiagnosticsActive) return;
           const calendarEl = document.getElementById('calendar');
           if (calendarEl && isMobileLayout()) {
             mobileSelectedResourceId = ensureMobileResourceId();
