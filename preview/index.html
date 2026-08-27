@@ -546,6 +546,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
+    <script src="../appointment-delete.js?v=1"></script>
 
     <script>
       // 後端 Google Apps Script 網址
@@ -1827,17 +1828,63 @@
               finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
             });
 
-            deleteBtn.onclick = async function () {
-              const eventId = eventIdInput.value.trim();
-              if (!eventId || !confirm('確定要刪除這筆預約嗎？')) return;
-              try {
-                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: eventId }), mode: 'cors' });
+            window.AppointmentDelete.installDeleteButton({
+              button: deleteBtn,
+              getId: () => eventIdInput.value,
+              confirmDelete: () => confirm('確定要刪除這筆預約嗎？'),
+              requestDelete: async eventId => {
+                const controller = new AbortController();
+                const timer = window.setTimeout(() => controller.abort(), 30000);
+                try {
+                  const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'delete', id: eventId }),
+                    mode: 'cors',
+                    signal: controller.signal
+                  });
+                  return await parseJsonResponse(res, APPS_SCRIPT_WEB_APP_URL);
+                } finally {
+                  window.clearTimeout(timer);
+                }
+              },
+              verifyDeleted: async eventId => {
+                const url = currentEventsUrl();
+                if (!url) return null;
+                await wait(800);
+                const controller = new AbortController();
+                const timer = window.setTimeout(() => controller.abort(), 20000);
+                try {
+                  const separator = url.includes('?') ? '&' : '?';
+                  const res = await fetch(`${url}${separator}_verify_delete=${Date.now()}`, {
+                    method: 'GET', mode: 'cors', cache: 'no-store', signal: controller.signal
+                  });
+                  const events = await parseJsonResponse(res, url);
+                  return Array.isArray(events)
+                    ? !events.some(event => String(event.id) === String(eventId))
+                    : null;
+                } catch (error) {
+                  return null;
+                } finally {
+                  window.clearTimeout(timer);
+                }
+              },
+              onDeleted: (eventId, result) => {
                 stashEventsCacheBeforeInvalidate();
                 invalidateCache('getEvents');
-                if (removeEventOptimistically(eventId)) { saveCurrentEventsToCache(); showToast('已刪除', 'success'); } else calendar.refetchEvents();
+                if (removeEventOptimistically(eventId)) saveCurrentEventsToCache();
+                else calendar.refetchEvents();
                 appointmentModal.style.display = 'none';
-              } catch (err) { alert('❌ 刪除失敗'); }
-            };
+                showToast(result.verified || result.alreadyDeleted ? '已確認刪除' : '已刪除', 'success');
+              },
+              onFailed: result => {
+                showToast('刪除失敗，資料仍存在', 'error', 3500);
+                alert('❌ 刪除失敗：' + result.message);
+              },
+              onUncertain: () => {
+                showToast('刪除結果尚未確認', 'error', 4500);
+                alert('刪除結果尚未確認，請重新整理後查看，請勿重複刪除。');
+              }
+            });
 
             if (appointmentCloseButton) appointmentCloseButton.onclick = () => appointmentModal.style.display = 'none';
             if (leaveCloseButton) leaveCloseButton.onclick = () => leaveModal.style.display = 'none';
