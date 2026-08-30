@@ -682,6 +682,21 @@ body {
   line-height: 1;
 }
 
+/* LINE 預約:深底白字,跟店內手動輸入的紙色卡片一眼分開 */
+.fc .fc-event.evt-from-line,
+.fc .fc-timegrid-event.evt-from-line {
+  background: var(--ink);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+.fc .fc-timegrid-event.evt-from-line .fc-event-main { color: #fff; }
+.fc .fc-timegrid-event.evt-from-line .evt-time,
+.fc .fc-timegrid-event.evt-from-line .evt-col-name,
+.fc .fc-timegrid-event.evt-from-line .evt-name-text,
+.fc .fc-timegrid-event.evt-from-line .evt-col-phone { color: #fff; }
+.fc .fc-timegrid-event.evt-from-line .evt-col-operator,
+.fc .fc-timegrid-event.evt-from-line .evt-pax { color: rgba(255, 255, 255, 0.72); }
+
 /* 窄卡(重疊時段):姓名優先,先收引線與輸入人,再收電話/金額 */
 @container (max-width: 300px) {
   .evt-line .evt-lead,
