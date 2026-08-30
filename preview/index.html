@@ -701,7 +701,8 @@
           for (let attempt = 0; attempt <= retryCount; attempt++) {
             try {
               const response = await fetch(url, { method: 'GET', mode: 'cors' });
-              const data = await parseJsonResponse(response, url);
+              const parsed = await parseJsonResponse(response, url);
+              const data = isPersistentEventUrl(url) && Array.isArray(parsed?.events) ? parsed.events : parsed;
               _apiCache[apiCacheKey(url)] = { data, ts: Date.now() };
               writePersistentEventCache(url, data);
               return data;
