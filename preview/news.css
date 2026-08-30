@@ -683,8 +683,10 @@ body {
 }
 
 /* LINE 預約:深底白字,跟店內手動輸入的紙色卡片一眼分開 */
+/* 第三個選擇器是為了蓋過同檔的 .fc-timegrid-col[data-resource-id] 設計師底色 */
 .fc .fc-event.evt-from-line,
-.fc .fc-timegrid-event.evt-from-line {
+.fc .fc-timegrid-event.evt-from-line,
+.fc .fc-timegrid-col[data-resource-id] .fc-timegrid-event.evt-from-line {
   background: var(--ink);
   border-color: rgba(255, 255, 255, 0.24);
   color: #fff;
