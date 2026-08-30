@@ -1143,19 +1143,18 @@
               resources: RESOURCE_LIST,
               events: function (info, successCallback, failureCallback) {
                 const url = buildEventsUrl(info.start, info.end);
+                /* 先給快取畫面，再背景重抓：LINE 從外部新增的預約不必等快取過期就會出現 */
                 const memoryCached = getFreshMemoryCache(url);
                 if (memoryCached) {
                   deliverEventsAsync(successCallback, filterEventsForRange(memoryCached, info.start, info.end));
+                  revalidateEventsInBackground(url);
                   return;
                 }
 
                 const persistentCached = readPersistentEventCache(url);
                 if (persistentCached) {
                   deliverEventsAsync(successCallback, filterEventsForRange(persistentCached, info.start, info.end));
-                  deduplicatedFetch(url).then(data => {
-                    if (!Array.isArray(data)) return;
-                    if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
-                  }).catch(error => console.error('背景更新事件失敗:', error));
+                  revalidateEventsInBackground(url);
                   return;
                 }
 
@@ -1553,6 +1552,20 @@
           function currentEventsUrl() {
             if (!calendar || !calendar.view) return '';
             return buildEventsUrl(calendar.view.activeStart, calendar.view.activeEnd);
+          }
+
+          /* 快取命中後仍在背景向 GAS 重抓一次；拿到新資料才 refetchEvents，避免快取讓外部新增的預約長時間看不到 */
+          const EVENT_REVALIDATE_AFTER = 60 * 1000;
+          function revalidateEventsInBackground(url) {
+            if (!url || _inflightRequests[url]) return;
+            const cached = _apiCache[apiCacheKey(url)];
+            if (cached && (Date.now() - cached.ts) < EVENT_REVALIDATE_AFTER) return;
+            const request = fetchFreshJson(url).finally(() => { delete _inflightRequests[url]; });
+            _inflightRequests[url] = request;
+            request.then(data => {
+              if (!Array.isArray(data)) return;
+              if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
+            }).catch(error => console.error('背景更新事件失敗:', error));
           }
 
           function isCalendarViewingEventsUrl(url) {
