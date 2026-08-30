@@ -18,7 +18,7 @@
     href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="news.css?v=85">
+  <link rel="stylesheet" href="news.css?v=86">
 
   <script>
     // 主題色：開頁立即套用使用者自訂色（存在 localStorage），避免換色閃爍。
@@ -1346,6 +1346,7 @@
                   '燙': ['燙'],
                   '染+燙': ['燙', '染'],
                   '頭皮護理': ['護'],
+                  '洗髮': ['洗'],
                   // 保留相容性
                   '剪+染': ['染'],
                   '剪+燙': ['燙'],
@@ -1358,7 +1359,7 @@
                   return { html: `<div class="fc-event-title evt-line evt-blocked"><span class="blocked-icon material-symbols-outlined" aria-hidden="true">pan_tool</span><span class="evt-col-note">${escapeHtml(blockedText)}</span></div>` };
                 }
                 const svcList = svcMap[ep.service_id] || ['預'];
-                const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
+                const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '洗': 'svc-wash', '預': 'svc-default' };
                 const safeTrim = (v) => (v != null ? String(v).trim() : '');
                 const decodedNotes = decodeNotes(ep.notes);
                 const name = safeTrim(ep.customer_name) || safeTrim(decodedNotes.free);

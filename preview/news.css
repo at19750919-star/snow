@@ -42,6 +42,7 @@
   --svc-dye: #c23a27;
   --svc-perm: #a3690f;
   --svc-treat: #3f6b4a;
+  --svc-wash: #2f6f7a;
   --svc-default: #756c58;
   /* 字級(iPad 站姿掃讀,整體比 v1 大一階) */
   --fs-note: 12px;   /* 輸入人、人數、註記 */
@@ -603,6 +604,7 @@ body {
 .evt-line .evt-svc.svc-dye { background: var(--svc-dye); }
 .evt-line .evt-svc.svc-perm { background: var(--svc-perm); }
 .evt-line .evt-svc.svc-treat { background: var(--svc-treat); }
+.evt-line .evt-svc.svc-wash { background: var(--svc-wash); }
 .evt-line .evt-svc.svc-default { background: var(--svc-default); }
 
 .evt-line .evt-services,
