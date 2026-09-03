@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=222">
+  <link rel="stylesheet" href="styles.css?v=234">
 
 
 </head>
@@ -108,7 +108,6 @@
             <section class="modal-section blue-card-section appointment-panel appointment-panel--details" id="appointment-info-card">
               <div class="appointment-modal-head">
                 <span class="appointment-kicker">JINGMEI · 預約登記</span>
-                <h2 id="appointment-modal-title">新增預約</h2>
                 <span id="appointment-modal-when">請選擇時間</span>
               </div>
 
@@ -143,9 +142,9 @@
                   </div>
                 </div>
 
-                <div class="form-row appointment-field appointment-field--wide">
+                <div class="form-row appointment-field appointment-field--wide appointment-field--operator">
                   <label for="operator_select">輸入人</label>
-                  <select id="operator_select" name="operator_select" required>
+                  <select id="operator_select" name="operator_select" style="display:none;" required>
                     <option value="">-- 請選擇 --</option>
                     <option value="店長">店長</option>
                     <option value="雅婷">雅婷</option>
@@ -169,27 +168,27 @@
                     <div class="customer-avatar" aria-hidden="true">客</div>
                     <div class="customer-identity-fields">
                       <div class="form-row appointment-field">
-                        <label for="customer_name">顧客姓名</label>
+                        <label for="customer_name">姓名</label>
                         <div class="name-control-wrap">
-                          <input type="text" id="customer_name" name="customer_name" autocomplete="off">
+                          <input type="text" id="customer_name" name="customer_name" placeholder="請輸入顧客姓名" autocomplete="off">
                           <input type="hidden" id="pax_count" name="pax_count" value="1">
                           <div class="pax-toggle-group">
-                            <button type="button" id="pax_x2" class="pax-toggle" data-pax-value="2" aria-label="陪同人數 2 人" title="共 2 人（再點一次取消）">x2</button>
-                            <button type="button" id="pax_x3" class="pax-toggle" data-pax-value="3" aria-label="陪同人數 3 人" title="共 3 人（再點一次取消）">x3</button>
+                            <button type="button" id="pax_x2" class="pax-toggle" data-pax-value="2" aria-label="陪同人數 2 人" title="共 2 人（再點一次取消）">2</button>
+                            <button type="button" id="pax_x3" class="pax-toggle" data-pax-value="3" aria-label="陪同人數 3 人" title="共 3 人（再點一次取消）">3</button>
                           </div>
                         </div>
                       </div>
 
                       <div class="form-row appointment-field">
                         <label for="customer_phone">電話</label>
-                        <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off">
+                        <input type="tel" id="customer_phone" name="customer_phone" inputmode="numeric" autocomplete="off" placeholder="09xx-xxx-xxx">
                       </div>
                     </div>
                   </div>
 
-                  <div class="form-row appointment-field">
+                  <div class="form-row appointment-field appointment-field--service">
                     <label for="service_id">項目</label>
-                    <select id="service_id" name="service_id">
+                    <select id="service_id" name="service_id" style="display:none;">
                       <option value="">-- 不選 --</option>
                       <option value="剪髮">剪髮</option>
                       <option value="染">染</option>
@@ -198,11 +197,11 @@
                       <option value="頭皮護理">頭皮護理</option>
                     </select>
                     <div class="service-icon-buttons" aria-label="選擇項目">
-                      <button type="button" data-service-value="剪髮" title="剪髮"><span class="material-symbols-outlined" aria-hidden="true">content_cut</span></button>
-                      <button type="button" data-service-value="染" title="染"><span class="material-symbols-outlined" aria-hidden="true">brush</span></button>
-                      <button type="button" data-service-value="燙" title="燙"><span class="material-symbols-outlined" aria-hidden="true">waves</span></button>
-                      <button type="button" data-service-value="染+燙" title="染+燙"><span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span></button>
-                      <button type="button" data-service-value="頭皮護理" title="頭皮護理"><span class="material-symbols-outlined" aria-hidden="true">spa</span></button>
+                      <button type="button" data-service-value="剪髮" title="剪髮"><img class="service-icon-img" src="icons/svc-cut-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="染" title="染"><img class="service-icon-img" src="icons/svc-dye-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="燙" title="燙"><img class="service-icon-img" src="icons/svc-perm-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="染+燙" title="染+燙"><img class="service-icon-img" src="icons/svc-dye-perm-gpt.png" alt="" aria-hidden="true"></button>
+                      <button type="button" data-service-value="頭皮護理" title="頭皮護理"><img class="service-icon-img" src="icons/svc-scalp-gpt.png" alt="" aria-hidden="true"></button>
                     </div>
                   </div>
                 </div>
@@ -368,18 +367,18 @@
     </div>
 
     <div id="report-trigger-placeholder" hidden>
-      <button id="open-report-btn" type="button" class="report-trigger-btn">
-        報表
+      <button id="open-report-btn" type="button" class="report-trigger-btn" aria-label="開啟報表" title="報表">
+        <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span>
       </button>
     </div>
     <div id="lookup-trigger-placeholder" hidden>
-      <button id="open-lookup-btn" type="button" class="report-trigger-btn">
-        預約
+      <button id="open-lookup-btn" type="button" class="report-trigger-btn" aria-label="查詢預約" title="預約">
+        <span class="material-symbols-outlined" aria-hidden="true">event_note</span>
       </button>
     </div>
     <div id="warnlist-trigger-placeholder" hidden>
-      <button id="open-warnlist-btn" type="button" class="report-trigger-btn">
-        警示
+      <button id="open-warnlist-btn" type="button" class="report-trigger-btn" aria-label="開啟警示名單" title="警示">
+        <span class="material-symbols-outlined" aria-hidden="true">warning</span>
       </button>
     </div>
 
@@ -441,9 +440,9 @@
     <div id="notes-section">
       <div class="notes-container">
         <div class="notes-header">
-          <h4>留言板</h4>
-          <div class="notes-meta"><span>未儲存</span></div>
-          <button id="save-notes-btn" type="button">💾 儲存今日留言</button>
+          <h4><span class="material-symbols-outlined notes-title-icon" aria-hidden="true">chat</span>留言板</h4>
+          <div class="notes-meta"><span class="notes-meta-status">未儲存</span></div>
+          <button id="save-notes-btn" type="button"><span class="material-symbols-outlined" aria-hidden="true">save</span>儲存今日留言</button>
         </div>
         <textarea id="notes-content" placeholder="請輸入今日留言..."></textarea>
       </div>
@@ -909,7 +908,7 @@
           installAppointmentVisualControls();
 
           async function fetchDailyNote(dStr) {
-            const meta = document.querySelector('.notes-meta span');
+            const meta = document.querySelector('.notes-meta-status');
             const notesTextarea = document.getElementById('notes-content');
             notesTextarea.value = '';
             notesTextarea.placeholder = '留言載入中...';
@@ -1526,9 +1525,9 @@
               }
             });
 
-            notesTextarea.addEventListener('input', () => document.querySelector('.notes-meta span').textContent = '未儲存');
+            notesTextarea.addEventListener('input', () => document.querySelector('.notes-meta-status').textContent = '未儲存');
             document.getElementById('save-notes-btn').addEventListener('click', async () => {
-              const meta = document.querySelector('.notes-meta span'); meta.textContent = '儲存中...';
+              const meta = document.querySelector('.notes-meta-status'); meta.textContent = '儲存中...';
               try {
                 await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'saveNotes', date: currentYmd || ymd(new Date()), content: notesTextarea.value }) });
                 invalidateCache('getNotes'); meta.textContent = '已儲存 ✓';
@@ -2254,15 +2253,17 @@
                       <span class="date-header-month"></span>
                       <span class="date-header-weekday"></span>
                     </div>
-                    <div class="nav-arrows">
-                      <button type="button" id="prev-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                      <button type="button" id="next-btn" class="nav-btn"><span class="material-symbols-outlined">chevron_right</span></button>
-                    </div>
                   </div>
-                  <div class="date-toggle">
-                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
-                    <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
-                    <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
+                  <div class="date-controls-row">
+                    <div class="date-toggle">
+                      <button type="button" class="date-toggle-btn" data-view="resourceTimeGridDay">日</button>
+                      <button type="button" class="date-toggle-btn" data-view="resourceTimeGridWeek">週</button>
+                      <button type="button" class="date-toggle-btn" data-view="dayGridMonth">月</button>
+                    </div>
+                    <div class="nav-arrows" aria-label="切換日期">
+                      <button type="button" id="prev-btn" class="nav-btn" aria-label="上一個日期"><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button>
+                      <button type="button" id="next-btn" class="nav-btn" aria-label="下一個日期"><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>
+                    </div>
                   </div>
                   <div class="mobile-resource-toggle"></div>
                 </div>
@@ -2271,12 +2272,16 @@
             if (toolbar) toolbar.insertAdjacentElement('afterend', scroller);
             else if (viewHarness) viewHarness.insertAdjacentElement('beforebegin', scroller);
             else cal.prepend(scroller);
+            const utilityToolbar = document.createElement('div');
+            utilityToolbar.className = 'utility-toolbar';
+            utilityToolbar.setAttribute('aria-label', '常用工具');
             const reportBtn = document.getElementById('open-report-btn');
-            if (reportBtn) scroller.querySelector('.date-toggle').appendChild(reportBtn);
+            if (reportBtn) utilityToolbar.appendChild(reportBtn);
             const lookupBtn = document.getElementById('open-lookup-btn');
-            if (lookupBtn) scroller.querySelector('.date-toggle').appendChild(lookupBtn);
+            if (lookupBtn) utilityToolbar.appendChild(lookupBtn);
             const warnlistBtn = document.getElementById('open-warnlist-btn');
-            if (warnlistBtn) scroller.querySelector('.date-toggle').appendChild(warnlistBtn);
+            if (warnlistBtn) utilityToolbar.appendChild(warnlistBtn);
+            if (utilityToolbar.childElementCount) scroller.querySelector('.date-row').appendChild(utilityToolbar);
             ensureMobileResourceToggle(scroller);
             return scroller;
           }
@@ -2867,6 +2872,7 @@
           else e.target.value = d;
         });
       })();
+
     </script>
 </body>
 
