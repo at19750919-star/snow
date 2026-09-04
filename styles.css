@@ -96,7 +96,6 @@ body {
   background: var(--bg-card);
   border-radius: var(--border-radius);
   overflow: visible;
-  border: 1px solid var(--calendar-border);
   position: relative;
   touch-action: manipulation;
 }
@@ -171,14 +170,13 @@ body {
 #calendar.is-date-scroller .fc-toolbar-title { display: none; }
 
 #calendar .fc-date-scroller {
-  margin: 6px 6px 6px;
+  margin: 2px 2px 2px;
   padding: clamp(8px, 0.67vw, 10px) clamp(15px, 1.26vw, 19px) clamp(15px, 1.26vw, 19px);
   background: var(--date-card-bg);
   border-radius: 22px;
   color: var(--date-card-text);
   position: relative;
   overflow: visible;
-  border: 1px solid #CAC4D0;
   height: auto;
   /* 卡片高度隨寬度連續縮放（不再固定 145px 凍結）；下限為手機可讀最小值 */
   min-height: clamp(108px, 12vw, 150px);
@@ -867,7 +865,7 @@ body {
   align-items: center;
   gap: 0;
   width: 100%;
-  padding: 0 2px;
+  padding: 0 1px;
 }
 
 .evt-col-svc,
@@ -916,11 +914,10 @@ body {
   /* 圓角方形 */
 
   /* 2. 文字設定 */
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
   font-family: var(--font-main-black);
   color: #ffffff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28);
   /* D. 底色透明 */
 
   /* 4. 防跑版 */
@@ -955,7 +952,6 @@ body {
 .evt-svc.svc-treat,
 .evt-svc.svc-default {
   color: #f371ec !important;
-  text-shadow: 0 1px 1px rgba(60, 20, 70, 0.24) !important;
   border-color: #f371ec !important;
   /* 外框跟著文字一起變粉紫色 */
 }
