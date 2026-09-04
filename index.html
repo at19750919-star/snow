@@ -33,10 +33,10 @@
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <linearGradient id="gFrond" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#5b9ad9"/><stop offset="1" stop-color="#3f72c0"/>
+        <stop offset="0" stop-color="#7fb8ea"/><stop offset="0.5" stop-color="#4a80c9"/><stop offset="1" stop-color="#2c5596"/>
       </linearGradient>
-      <linearGradient id="gTrunk" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#274a73"/><stop offset="1" stop-color="#16304f"/>
+      <linearGradient id="gTrunk" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#4f83ad"/><stop offset="0.45" stop-color="#274a73"/><stop offset="1" stop-color="#122540"/>
       </linearGradient>
       <linearGradient id="gCalN" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#8f9aa6"/><stop offset="1" stop-color="#6f7c8a"/>
@@ -47,8 +47,14 @@
       <linearGradient id="gBan" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#e0584d"/><stop offset="1" stop-color="#c63a30"/>
       </linearGradient>
-      <filter id="icoSoft" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="1.1" stdDeviation="0.9" flood-color="#23314a" flood-opacity="0.26"/>
+      <filter id="icoSoft" x="-50%" y="-50%" width="200%" height="220%">
+        <feDropShadow dx="0" dy="0.7" stdDeviation="0.4" flood-color="#050d1c" flood-opacity="0.55"/>
+        <feDropShadow dx="0" dy="1.8" stdDeviation="1.3" flood-color="#050d1c" flood-opacity="0.4"/>
+        <feDropShadow dx="0" dy="3.4" stdDeviation="2.2" flood-color="#050d1c" flood-opacity="0.28"/>
+      </filter>
+      <filter id="icoHalo" x="-70%" y="-70%" width="240%" height="240%">
+        <feMorphology operator="dilate" radius="1"/>
+        <feGaussianBlur stdDeviation="0.6"/>
       </filter>
       <filter id="icoSoftW" x="-30%" y="-30%" width="160%" height="160%">
         <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#7a1e16" flood-opacity="0.45"/>
@@ -56,10 +62,24 @@
     </defs>
     <!-- 排休：椰子樹 + 沙灘 -->
     <symbol id="ic-palm" viewBox="0 0 24 24">
+      <g filter="url(#icoHalo)" fill="#ffffff" opacity="0.9">
+        <path d="M13 8.6C9.4 6.7 5.8 7.2 3.6 9.7 6.8 8.7 10 9.2 13 8.6Z"/>
+        <path d="M13 8.6C9.9 6 8.1 4 8 2.3 9.9 4 11.6 5.9 13 8.6Z"/>
+        <path d="M13 8.6C13.7 5 15.2 2.9 17 2.1 15.7 4.3 14.3 6.2 13 8.6Z"/>
+        <path d="M13 8.6C16.6 6.4 20.3 6.7 22.4 9.2 19.1 8.3 15.9 8.7 13 8.6Z"/>
+        <path d="M13 8.6C16.4 8 19.6 8.9 21.4 11.4 18 10.4 15.2 9.6 13 8.6Z"/>
+        <path d="M12.6 18.6C11.7 14 11.6 11.4 13 8.6" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+      </g>
       <g filter="url(#icoSoft)">
         <path d="M2.5 19.4C7 17.9 17 17.9 21.5 19.4 17 20.6 7 20.6 2.5 19.4Z" fill="#e7cfa6"/>
         <path d="M3 21.4q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0t3.2 0q1.6-1 3.2 0" fill="none" stroke="#7fb3df" stroke-width="1" stroke-linecap="round"/>
         <path d="M12.6 18.6C11.7 14 11.6 11.4 13 8.6" fill="none" stroke="url(#gTrunk)" stroke-width="2.1" stroke-linecap="round"/>
+        <path d="M12.9 17.8C12.3 14 12.2 11.7 13.3 9.2" fill="none" stroke="#7fb0d6" stroke-width="0.55" stroke-linecap="round" opacity="0.6"/>
+        <g fill="none" stroke="#0e1d34" stroke-width="0.55" stroke-linecap="round" opacity="0.55">
+          <path d="M11.9 16.4q0.9 0.35 1.7 0"/>
+          <path d="M12.05 13.9q0.85 0.35 1.6 0"/>
+          <path d="M12.3 11.4q0.7 0.3 1.35 0"/>
+        </g>
         <g fill="url(#gFrond)">
           <path d="M13 8.6C9.4 6.7 5.8 7.2 3.6 9.7 6.8 8.7 10 9.2 13 8.6Z"/>
           <path d="M13 8.6C9.9 6 8.1 4 8 2.3 9.9 4 11.6 5.9 13 8.6Z"/>
@@ -67,8 +87,20 @@
           <path d="M13 8.6C16.6 6.4 20.3 6.7 22.4 9.2 19.1 8.3 15.9 8.7 13 8.6Z"/>
           <path d="M13 8.6C16.4 8 19.6 8.9 21.4 11.4 18 10.4 15.2 9.6 13 8.6Z"/>
         </g>
+        <g fill="none" stroke="#dff0ff" stroke-width="0.5" stroke-linecap="round" opacity="0.5">
+          <path d="M13 8.6C10 7.1 6.9 7.5 4.9 9.5"/>
+          <path d="M13 8.6C10.3 6.4 8.8 4.7 8.6 3.1"/>
+          <path d="M13 8.6C13.5 5.6 14.7 3.7 16.2 2.8"/>
+          <path d="M13 8.6C16 6.9 19 7.1 21 9"/>
+        </g>
+        <g fill="none" stroke="#0e1d34" stroke-width="0.4" stroke-linecap="round" opacity="0.4">
+          <path d="M13 8.6C10.5 9.1 8 9.5 6 10.3"/>
+          <path d="M13 8.6C15.5 9.3 18 10 20 11"/>
+        </g>
         <circle cx="12" cy="9.3" r="0.85" fill="url(#gTrunk)"/>
         <circle cx="13.9" cy="9.1" r="0.85" fill="url(#gTrunk)"/>
+        <circle cx="11.75" cy="9.05" r="0.28" fill="#8fbdde" opacity="0.7"/>
+        <circle cx="13.65" cy="8.85" r="0.28" fill="#8fbdde" opacity="0.7"/>
       </g>
     </symbol>
     <!-- 可約：行事曆 + 綠色打勾 -->
