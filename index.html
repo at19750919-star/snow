@@ -48,16 +48,17 @@
         <stop offset="0" stop-color="#e0584d"/><stop offset="1" stop-color="#c63a30"/>
       </linearGradient>
       <filter id="icoSoft" x="-50%" y="-50%" width="200%" height="220%">
-        <feDropShadow dx="0" dy="0.7" stdDeviation="0.4" flood-color="#050d1c" flood-opacity="0.55"/>
-        <feDropShadow dx="0" dy="1.8" stdDeviation="1.3" flood-color="#050d1c" flood-opacity="0.4"/>
-        <feDropShadow dx="0" dy="3.4" stdDeviation="2.2" flood-color="#050d1c" flood-opacity="0.28"/>
+        <feDropShadow dx="0" dy="0.7" stdDeviation="0.4" flood-color="#315d86" flood-opacity="0.32"/>
+        <feDropShadow dx="0" dy="1.8" stdDeviation="1.3" flood-color="#315d86" flood-opacity="0.20"/>
+        <feDropShadow dx="0" dy="3.4" stdDeviation="2.2" flood-color="#315d86" flood-opacity="0.12"/>
       </filter>
       <filter id="icoHalo" x="-70%" y="-70%" width="240%" height="240%">
         <feMorphology operator="dilate" radius="1"/>
         <feGaussianBlur stdDeviation="0.6"/>
       </filter>
-      <filter id="icoSoftW" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#7a1e16" flood-opacity="0.45"/>
+      <filter id="icoSoftW" x="-50%" y="-50%" width="200%" height="220%">
+        <feDropShadow dx="0" dy="0.7" stdDeviation="0.45" flood-color="#a6534a" flood-opacity="0.28"/>
+        <feDropShadow dx="0" dy="1.8" stdDeviation="1.3" flood-color="#a6534a" flood-opacity="0.16"/>
       </filter>
     </defs>
     <!-- 排休：椰子樹 + 沙灘 -->
@@ -489,6 +490,8 @@
     <script>
       // 後端 Google Apps Script 網址
       const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q/exec';
+      // 世紀-LINE預約 專案的 GAS：LINE 客人沒有電話，上面那支查不到歷史，改用 line_user_id 查（getLastVisitByLineUser）。
+      const LINE_BOOKING_GAS_URL = 'https://script.google.com/macros/s/AKfycbxcFJ3gT1OBqgS68RVI9ons-JgSvvIwk_qcxO6YeeRbszqbvfi-RjnCa21gQTsNcZ8q/exec';
       // 僅在網址帶有 ?diagnostic=1 時顯示，不影響一般預約畫面。
       if (window.CenturyDiagnostics) {
         window.CenturyDiagnostics.install({ apiUrl: APPS_SCRIPT_WEB_APP_URL });
@@ -1336,6 +1339,23 @@
             return LAST_VISIT_PREFIX + lv + NOTES_SEP + fr;
           }
 
+          // 依上次消費的剪髮金額／總金額，把對應的項目按鈕發亮提示（不自動勾選）。
+          // 電話查詢與 LINE 客人的 line_user_id 查詢共用這段。
+          function applyPriceSuggestion(history) {
+            const histCut = parseInt(history.cut_price, 10);
+            const histAmt = parseInt(history.amount, 10);
+            const target = Number.isFinite(histCut) && histCut > 0 ? histCut
+              : (Number.isFinite(histAmt) && histAmt > 0 ? histAmt : null);
+            const radios = document.querySelectorAll('input[name="cut_price"]');
+            radios.forEach(r => {
+              const item = r.closest('.price-item');
+              if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
+              if (target !== null && parseInt(r.value, 10) === target) {
+                if (item) item.classList.add('price-item--suggested');
+              }
+            });
+          }
+
           // 更新表單裡的「上次消費」唯讀區塊
           function setLastVisitNote(text) {
             const el = document.getElementById('last-visit-note');
@@ -1509,27 +1529,7 @@
                       if (dyeWrap) dyeWrap.style.display = 'grid'; // 強制顯示區塊
                     }
                     // 3. 嘗試匹配剪髮分類（依剪髮金額發亮提示，不自動勾選）
-                    const histCut = parseInt(history.cut_price, 10);
-                    const histAmt = parseInt(history.amount, 10);
-                    if (Number.isFinite(histCut) && histCut > 0) {
-                      const radios = document.querySelectorAll('input[name="cut_price"]');
-                      radios.forEach(r => {
-                        const item = r.closest('.price-item');
-                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
-                        if (parseInt(r.value, 10) === histCut) {
-                          if (item) item.classList.add('price-item--suggested');
-                        }
-                      });
-                    } else if (Number.isFinite(histAmt) && histAmt > 0) {
-                      const radios = document.querySelectorAll('input[name="cut_price"]');
-                      radios.forEach(r => {
-                        const item = r.closest('.price-item');
-                        if (item) item.classList.remove('price-item--suggested'); // 清除舊狀
-                        if (parseInt(r.value, 10) === histAmt) {
-                          if (item) item.classList.add('price-item--suggested');
-                        }
-                      });
-                    }
+                    applyPriceSuggestion(history);
                     // 4. 自動填入上次消費資訊到「唯讀」上次消費區塊（不再受備註是否為空限制，查到就一定顯示）
                     {
                       const lastDate = formatLastVisitLabel(history.start);
@@ -2181,6 +2181,15 @@
                       });
                     }
                   } catch (err) { console.error('CRM查詢失敗(結帳上次剪髮價):', err); }
+                })();
+              } else if (ep.line_user_id) {
+                // LINE 客人沒有電話，上面那支正式 getLastVisit 查不到，改打世紀-LINE預約 GAS 用 line_user_id 查。
+                (async () => {
+                  try {
+                    const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getLastVisitByLineUser&line_user_id=${encodeURIComponent(ep.line_user_id)}`, { method: 'GET', mode: 'cors' });
+                    const history = await res.json();
+                    if (history && history.customer_name) applyPriceSuggestion(history);
+                  } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
                 })();
               }
             }
