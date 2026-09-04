@@ -95,7 +95,6 @@ body {
   height: auto !important;
   background: var(--bg-card);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-medium);
   overflow: visible;
   border: 1px solid var(--calendar-border);
   position: relative;
@@ -176,7 +175,6 @@ body {
   padding: clamp(8px, 0.67vw, 10px) clamp(15px, 1.26vw, 19px) clamp(15px, 1.26vw, 19px);
   background: var(--date-card-bg);
   border-radius: 22px;
-  box-shadow: var(--shadow-soft);
   color: var(--date-card-text);
   position: relative;
   overflow: visible;
@@ -208,7 +206,6 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .nav-btn:hover {
@@ -344,7 +341,7 @@ body {
 #calendar .fc-date-scroller .date-controls-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   width: fit-content;
 }
 
@@ -402,12 +399,10 @@ body {
   border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.9);
   color: var(--md3-primary);
-  box-shadow: var(--shadow-card);
 }
 
 #calendar .fc-date-scroller .utility-toolbar .report-trigger-btn:hover {
   background: var(--md3-primary-container);
-  box-shadow: var(--shadow-floating);
   transform: translateY(-1px);
 }
 
@@ -420,7 +415,6 @@ body {
 #calendar > .mobile-resource-toggle .resource-toggle-btn.is-active {
   background: #6750A4;
   color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
 }
 
 #calendar .fc-date-scroller .date-header-month {
@@ -563,11 +557,10 @@ body {
   background: var(--date-item-active-bg);
   border-color: var(--date-item-active-border);
   color: var(--date-item-active-text);
-  box-shadow: var(--date-item-shadow);
   width: clamp(44px, 6.07vw, 88px);
   height: clamp(56px, 7.76vw, 112px);
   padding: 10px 0 12px;
-  border-radius: 16px;
+  border-radius: 30px;
   justify-content: flex-start;
   gap: 8px;
   transform: translateY(-3px) !important;
@@ -718,7 +711,6 @@ body {
   justify-content: center;
   gap: 0;
   min-width: 40px;
-  box-shadow: var(--shadow-floating);
 }
 
 #calendar .header-button-group .hdr-ico {
@@ -734,7 +726,6 @@ body {
   background: rgba(255, 255, 255, 0.28) !important;
   border-color: rgba(255, 255, 255, 0.38) !important;
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(24, 34, 46, 0.22);
   outline: none;
 }
 
@@ -742,7 +733,6 @@ body {
   background: rgba(216, 75, 64, 0.35) !important;
   border-color: rgba(216, 75, 64, 0.6) !important;
   color: #fff !important;
-  box-shadow: 0 12px 26px rgba(216, 75, 64, 0.22);
 }
 
 /* ==================== 8) Timegrid + Gridlines (時間軸樣式) ==================== */
@@ -810,7 +800,6 @@ body {
 #calendar .fc-timegrid-event {
   border-radius: var(--radius-card);
   border: none !important;
-  box-shadow: var(--shadow-card) !important;
 }
 
 #calendar .fc-event,
@@ -843,7 +832,6 @@ body {
 
 #calendar .fc-timegrid-event:hover {
   transform: none;
-  box-shadow: var(--shadow-card) !important;
 }
 
 /* 觸控裝置：拉長時長的把手加大並顯示可見握把
@@ -1074,18 +1062,7 @@ body {
   --text-light: #fbfaf8;
   --text-muted: #8b837b;
   /* 全站背景與卡片 */
-  --bg-main:
-    radial-gradient(
-      1200px 700px at 10% -10%,
-      rgba(235, 224, 213, 0.18),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 600px at 90% 10%,
-      rgba(120, 150, 165, 0.18),
-      transparent 55%
-    ),
-    linear-gradient(180deg, #f6f1ea 0%, #e9eef2 100%);
+  --bg-main: #ffffff;
   --bg-card: #ffffff;
   /* 框線/陰影/圓角 */
   --calendar-border: #e3ddd6;
@@ -1173,7 +1150,7 @@ body {
   --stylist-3-text: #fbfaf7;
   --stylist-3-bg-light: #afb4cc;
   /* 不約時段卡片：全設計師統一底色＋深色字 */
-  --blocked-bg: #e8cf59;
+  --blocked-bg: #f3e05f;
   --blocked-text: #3b3208;
 }
 
@@ -1219,24 +1196,13 @@ body {
   border-color: var(--blocked-bg) !important;
   color: var(--blocked-text) !important;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow:
-    inset 0 0 0 1px rgba(81, 65, 0, 0.22),
-    inset 0 -3px 0 rgba(129, 104, 4, 0.18) !important;
+  border-radius: var(--radius-card);
 }
 
 /* 標題排版規則（.fc-event-title.evt-line）寫死白字，這裡以同權重後位覆寫成深色 */
 #calendar .fc-event.blocked-time .fc-event-title.evt-line {
   color: var(--blocked-text);
   text-shadow: none;
-}
-
-#calendar .fc-event.blocked-time:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 0 0 1px rgba(81, 65, 0, 0.28),
-    inset 0 -3px 0 rgba(129, 104, 4, 0.22),
-    0 3px 8px rgba(93, 75, 4, 0.18) !important;
 }
 
 /* Paid status */
@@ -1246,12 +1212,10 @@ body {
   background: var(--status-paid) !important;
   border: 1px solid rgba(255, 255, 255, 0.44) !important;
   color: rgba(255, 255, 255, 0.96) !important;
-  box-shadow: var(--shadow-card) !important;
 }
 
 #calendar .fc-event.is-paid:not(.blocked-time):hover {
   background: var(--status-paid-hover) !important;
-  box-shadow: var(--shadow-floating) !important;
 }
 
 #calendar .fc-event.is-paid:not(.blocked-time)::before {
@@ -1288,13 +1252,7 @@ body {
   border: 1px solid rgba(103, 80, 164, 0.24);
   border-radius: var(--border-radius);
   padding: 24px;
-  box-shadow: var(--notes-shadow);
   transition: all 0.3s ease;
-}
-
-.notes-container:hover {
-  box-shadow: var(--shadow-medium);
-  transform: translateY(-2px);
 }
 
 .notes-header {
@@ -1302,7 +1260,6 @@ body {
   align-items: center;
   margin-bottom: 0;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(103, 80, 164, 0.18);
 }
 
 .notes-header h4 {
@@ -1342,7 +1299,6 @@ body {
   border-radius: var(--border-radius-small);
   font-weight: 500;
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -1351,7 +1307,6 @@ body {
 
 #save-notes-btn:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-medium);
   background: #59438f;
   filter: none;
 }
@@ -1989,7 +1944,6 @@ body {
   color: var(--md3-on-primary);
   padding: 0 32px;
   font-size: 15px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 #deleteLeaveBtn {
@@ -2002,7 +1956,6 @@ body {
 #submit-btn:hover,
 #submitLeaveBtn:hover {
   background: #7965b3;
-  box-shadow: 0 2px 6px rgba(103, 80, 164, 0.3);
   transform: none;
 }
 
@@ -2220,7 +2173,6 @@ body {
   letter-spacing: 0.06em;
   padding: 6px 6px;
   border-radius: 999px;
-  box-shadow: 0 6px 16px rgba(28, 39, 45, 0.08);
   color: rgba(48, 62, 72, 0.92);
 }
 
@@ -2235,7 +2187,6 @@ body {
   font-weight: 500;
   color: rgba(48, 62, 72, 0.55);
   background: rgba(255, 255, 255, 0.62);
-  box-shadow: 0 4px 12px rgba(28, 39, 45, 0.06);
   padding: 6px 6px;
 }
 
@@ -2420,7 +2371,6 @@ body {
   cursor: pointer;
   font-weight: 600;
   letter-spacing: 0.08em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -3320,14 +3270,12 @@ body #appointmentModal .settlement-section .price-item--suggested {
   justify-content: center;
   font-size: 20px;
   transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   background: var(--md3-primary);
   color: var(--md3-on-primary);
 }
 
 .theme-toggle-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 
 /* ==================== 19) 預約彈窗：配色與元件層（Tonal） ==================== */
