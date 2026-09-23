@@ -741,9 +741,10 @@ body {
   opacity: 1;
 }
 
+/* 開著就亮綠色（週六日預設開著，一眼看得出來） */
 #calendar .slot-interval-button.si-active {
-  background: rgba(205, 111, 71, 0.38) !important;
-  border-color: rgba(205, 111, 71, 0.62) !important;
+  background: rgba(46, 125, 50, 0.42) !important;
+  border-color: rgba(46, 125, 50, 0.68) !important;
   color: #fff !important;
 }
 
