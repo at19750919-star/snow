@@ -1157,6 +1157,12 @@
                 paintMondayClosed(info);
                 paintEmployeeLeave();
                 syncFullyBookedButtons();
+                // 換日時表頭的按鈕不一定會重畫，15 分開關要自己跟著新的日期更新。
+                if (info.view && info.view.type === 'resourceTimeGridDay') {
+                  const dayStr = ymd(info.view.currentStart);
+                  syncSlotIntervalButtons(dayStr);
+                  loadSlotIntervals(dayStr);
+                }
                 schedulePerResourceTimeAxis(80);
                 // 更新 currentYmd
                 currentYmd = ymd(info.start);
