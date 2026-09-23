@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=235">
+  <link rel="stylesheet" href="styles.css?v=236">
 
 
 </head>
@@ -554,10 +554,11 @@
       function syncSlotIntervalButtons(dateStr) {
         if (!dateStr) return;
         document.querySelectorAll('#calendar .slot-interval-button[data-resource-id]').forEach(btn => {
-          const minutes = slotIntervalOf(dateStr, btn.dataset.resourceId);
-          btn.textContent = minutes + '分';
-          btn.title = minutes + ' 分鐘排一位（點一下切換）';
-          btn.classList.toggle('si-active', minutes === 15);
+          const on = slotIntervalOf(dateStr, btn.dataset.resourceId) === 15;
+          // 一顆開關：亮起＝15 分鐘排一位，沒亮＝維持 20 分鐘。
+          btn.textContent = '15分';
+          btn.title = on ? '15 分鐘排一位：開（點一下關掉，改回 20 分）' : '15 分鐘排一位：關（點一下打開）';
+          btn.classList.toggle('si-active', on);
         });
       }
       const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
@@ -1218,10 +1219,10 @@
                   siBtn.type = 'button';
                   siBtn.className = 'slot-interval-button';
                   siBtn.dataset.resourceId = String(arg.resource.id);
-                  const minutes = slotIntervalOf(dStr, arg.resource.id);
-                  siBtn.textContent = minutes + '分';
-                  siBtn.title = minutes + ' 分鐘排一位（點一下切換）';
-                  if (minutes === 15) siBtn.classList.add('si-active');
+                  const on = slotIntervalOf(dStr, arg.resource.id) === 15;
+                  siBtn.textContent = '15分';
+                  siBtn.title = on ? '15 分鐘排一位：開（點一下關掉，改回 20 分）' : '15 分鐘排一位：關（點一下打開）';
+                  if (on) siBtn.classList.add('si-active');
                   btnGroup.appendChild(siBtn);
                   siBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -1246,7 +1247,7 @@
                         slotIntervalData.push({ date, employee_id: resourceId, minutes: next });
                       }
                       syncSlotIntervalButtons(date);
-                      showToast(next === 15 ? '改成 15 分鐘排一位' : '改回 20 分鐘排一位', 'success');
+                      showToast(next === 15 ? '已開：15 分鐘排一位' : '已關：維持 20 分鐘排一位', 'success');
                     } catch (err) { alert('切換時距失敗：' + err.message); }
                     finally { siBtn.disabled = false; }
                   });

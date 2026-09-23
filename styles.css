@@ -734,6 +734,11 @@ body {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.5px;
+  opacity: 0.55;
+}
+
+#calendar .header-button-group .slot-interval-button.si-active {
+  opacity: 1;
 }
 
 #calendar .slot-interval-button.si-active {
