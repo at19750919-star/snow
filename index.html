@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=234">
+  <link rel="stylesheet" href="styles.css?v=235">
 
 
 </head>
@@ -521,6 +521,45 @@
         '2': '雅婷',
         '3': '小白'
       };
+      /**
+       * 幾分鐘排一位：店長（1）與雅婷（2）平常 20 分鐘一位，假日人多時改 15 分鐘一位。
+       * 設定存在 LINE 預約那支 GAS，LINE 客人查空位時就照這個排。小白的班表是固定時間點，不適用。
+       */
+      const SLOT_INTERVAL_DESIGNERS = ['1', '2'];
+      let slotIntervalData = [];
+      let slotIntervalLoadedFor = null;
+      /** 沒特別設定時：週六日 15 分、平日 20 分，跟 LINE 那邊的班表規則一致。 */
+      function defaultSlotInterval(dateStr) {
+        const weekday = new Date(dateStr + 'T12:00:00+08:00').getDay();
+        return (weekday === 0 || weekday === 6) ? 15 : 20;
+      }
+      function slotIntervalOf(dateStr, resourceId) {
+        const found = slotIntervalData.find(item => item.date === dateStr && String(item.employee_id) === String(resourceId));
+        return found ? Number(found.minutes) : defaultSlotInterval(dateStr);
+      }
+      async function loadSlotIntervals(dateStr, force) {
+        if (!dateStr || (!force && slotIntervalLoadedFor === dateStr)) return;
+        slotIntervalLoadedFor = dateStr;
+        try {
+          const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getSlotIntervals&start=${dateStr}&end=${dateStr}`, { method: 'GET', mode: 'cors' });
+          const body = await res.json();
+          slotIntervalData = Array.isArray(body.intervals) ? body.intervals : [];
+        } catch (err) {
+          console.error('讀取時距設定失敗:', err);
+          slotIntervalData = [];
+        }
+        syncSlotIntervalButtons(dateStr);
+      }
+      /** 按鈕在行事曆的 IIFE 裡才畫得出來，所以日期由呼叫端傳進來，不從這裡讀 calendar。 */
+      function syncSlotIntervalButtons(dateStr) {
+        if (!dateStr) return;
+        document.querySelectorAll('#calendar .slot-interval-button[data-resource-id]').forEach(btn => {
+          const minutes = slotIntervalOf(dateStr, btn.dataset.resourceId);
+          btn.textContent = minutes + '分';
+          btn.title = minutes + ' 分鐘排一位（點一下切換）';
+          btn.classList.toggle('si-active', minutes === 15);
+        });
+      }
       const MOBILE_RESOURCE_STORAGE_KEY = 'sj_mobile_resource_id';
       const MOBILE_RESOURCE_MEDIA_QUERY = '(max-width: 480px)';
 
@@ -1045,25 +1084,28 @@
               resources: RESOURCE_LIST,
               events: function (info, successCallback, failureCallback) {
                 const url = buildEventsUrl(info.start, info.end);
+                /* 先給快取畫面，再背景重抓：LINE 從外部新增的預約不必等快取過期就會出現 */
                 const memoryCached = getFreshMemoryCache(url);
                 if (memoryCached) {
                   deliverEventsAsync(successCallback, filterEventsForRange(memoryCached, info.start, info.end));
+                  revalidateEventsInBackground(url);
                   return;
                 }
 
                 const persistentCached = readPersistentEventCache(url);
                 if (persistentCached) {
                   deliverEventsAsync(successCallback, filterEventsForRange(persistentCached, info.start, info.end));
-                  deduplicatedFetch(url).then(data => {
-                    if (!Array.isArray(data)) return;
-                    if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
-                  }).catch(error => console.error('背景更新事件失敗:', error));
+                  revalidateEventsInBackground(url);
                   return;
                 }
 
+                /* 完全沒有快取時等的最久（GAS 要 5～30 秒），燈號一定要亮著 */
+                setSyncStatus('loading');
                 deduplicatedFetch(url).then(data => {
+                  setSyncStatus('done');
                   successCallback(filterEventsForRange(data, info.start, info.end));
                 }).catch(error => {
+                  setSyncStatus('error');
                   console.error('讀取事件資料失敗:', error);
                   successCallback([]);
                   window.setTimeout(() => {
@@ -1169,7 +1211,48 @@
                 fbBtn.innerHTML = iconSvg(isFB ? 'ic-calban-on' : 'ic-calchk');
                 fbBtn.title = isFB ? '已約滿' : '約滿';
                 btnGroup.appendChild(fbBtn);
+
+                // 幾分鐘排一位：只有店長與雅婷有這顆，切了只影響當天那一位。
+                if (SLOT_INTERVAL_DESIGNERS.includes(String(arg.resource.id))) {
+                  const siBtn = document.createElement('button');
+                  siBtn.type = 'button';
+                  siBtn.className = 'slot-interval-button';
+                  siBtn.dataset.resourceId = String(arg.resource.id);
+                  const minutes = slotIntervalOf(dStr, arg.resource.id);
+                  siBtn.textContent = minutes + '分';
+                  siBtn.title = minutes + ' 分鐘排一位（點一下切換）';
+                  if (minutes === 15) siBtn.classList.add('si-active');
+                  btnGroup.appendChild(siBtn);
+                  siBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (siBtn.disabled) return;
+                    siBtn.disabled = true;
+                    const date = ymd(calendar.view.currentStart);
+                    const resourceId = String(arg.resource.id);
+                    const next = slotIntervalOf(date, resourceId) === 15 ? 20 : 15;
+                    try {
+                      const url = `${LINE_BOOKING_GAS_URL}?action=setSlotInterval&date=${date}&employee_id=${resourceId}&minutes=${next}`;
+                      const res = await fetch(url, { method: 'GET', mode: 'cors' });
+                      // GAS 偶爾會回一頁 HTML（轉址／暖機），這時不能直接當成失敗，要回去讀一次確認。
+                      const text = await res.text();
+                      let body = null;
+                      try { body = JSON.parse(text); } catch (parseError) { body = null; }
+                      if (body && body.ok === false) throw new Error(body.error || '寫入失敗');
+                      if (!body) {
+                        await loadSlotIntervals(date, true);
+                        if (slotIntervalOf(date, resourceId) !== next) throw new Error('沒有寫進去，請再試一次');
+                      } else {
+                        slotIntervalData = slotIntervalData.filter(item => !(item.date === date && String(item.employee_id) === resourceId));
+                        slotIntervalData.push({ date, employee_id: resourceId, minutes: next });
+                      }
+                      syncSlotIntervalButtons(date);
+                      showToast(next === 15 ? '改成 15 分鐘排一位' : '改回 20 分鐘排一位', 'success');
+                    } catch (err) { alert('切換時距失敗：' + err.message); }
+                    finally { siBtn.disabled = false; }
+                  });
+                }
                 hostEl.appendChild(btnGroup);
+                loadSlotIntervals(dStr);
 
                 fbBtn.addEventListener('click', async (e) => {
                   e.stopPropagation();
@@ -1257,6 +1340,7 @@
               },
             });
             calendar.render();
+            startAutoRefresh();
           }
 
           async function fetchAllCloudData() {
@@ -1413,6 +1497,62 @@
 
           function isCalendarViewingEventsUrl(url) {
             return !!url && url === currentEventsUrl();
+          }
+
+          /* GAS 讀一次要 5～30 秒，畫面先給快取；這顆小燈號讓店裡看得出資料是不是剛更新過，
+             不必靠重整猜。重整反而會把還沒回來的那次請求砍掉重抓。 */
+          function syncBadge() {
+            let el = document.getElementById('sync-badge');
+            if (!el) {
+              el = document.createElement('div');
+              el.id = 'sync-badge';
+              el.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:9999;padding:4px 10px;border-radius:999px;' +
+                'font-size:12px;line-height:1.6;background:rgba(0,0,0,.72);color:#fff;pointer-events:none;' +
+                'opacity:0;transition:opacity .25s;white-space:nowrap;';
+              document.body.appendChild(el);
+            }
+            return el;
+          }
+          function setSyncStatus(state) {
+            const el = syncBadge();
+            if (state === 'loading') { el.textContent = '更新中…'; el.style.opacity = '1'; return; }
+            if (state === 'error') { el.textContent = '更新失敗，稍後自動再試'; el.style.opacity = '1'; window.setTimeout(() => { el.style.opacity = '0'; }, 4000); return; }
+            const now = new Date();
+            el.textContent = '已更新 ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            el.style.opacity = '1';
+            window.setTimeout(() => { el.style.opacity = '0'; }, 2500);
+          }
+
+          /* 快取命中後仍在背景向 GAS 重抓一次；拿到新資料才 refetchEvents，
+             否則 LINE 從外部新增的預約要等有人操作畫面才看得到。 */
+          var EVENT_REVALIDATE_AFTER = 20 * 1000;
+          function revalidateEventsInBackground(url) {
+            if (!url || _inflightRequests[url]) return;
+            const cached = _apiCache[apiCacheKey(url)];
+            if (cached && (Date.now() - cached.ts) < EVENT_REVALIDATE_AFTER) return;
+            setSyncStatus('loading');
+            const request = fetchFreshJson(url).finally(() => { delete _inflightRequests[url]; });
+            _inflightRequests[url] = request;
+            request.then(data => {
+              if (!Array.isArray(data)) return;
+              setSyncStatus('done');
+              if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
+            }).catch(error => { setSyncStatus('error'); console.error('背景更新事件失敗:', error); });
+          }
+
+          /* 頁面看得到就每 30 秒自動重抓一次，LINE 新增的預約不必等人重整；
+             分頁切走時不抓，切回來立刻抓一次。用 var：calendar.render() 在這段之前執行。 */
+          var AUTO_REFRESH_INTERVAL = 30 * 1000;
+          var _autoRefreshTimer = null;
+          function refreshEventsNow() {
+            if (document.hidden) return;
+            revalidateEventsInBackground(currentEventsUrl());
+          }
+          function startAutoRefresh() {
+            if (_autoRefreshTimer) return;
+            _autoRefreshTimer = window.setInterval(refreshEventsNow, AUTO_REFRESH_INTERVAL);
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshEventsNow(); });
+            window.addEventListener('focus', refreshEventsNow);
           }
 
           function formatLocalDateTime(date) {

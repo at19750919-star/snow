@@ -690,6 +690,7 @@ body {
 }
 
 #calendar .header-button-group .leave-icon-button,
+#calendar .header-button-group .slot-interval-button,
 #calendar .header-button-group .fully-booked-button {
   background: rgba(255, 255, 255, 0.18) !important;
   border: 3px solid rgba(255, 255, 255, 0.28) !important;
@@ -720,11 +721,25 @@ body {
 }
 
 #calendar .header-button-group .leave-icon-button:hover,
+#calendar .header-button-group .slot-interval-button:hover,
 #calendar .header-button-group .fully-booked-button:hover {
   background: rgba(255, 255, 255, 0.28) !important;
   border-color: rgba(255, 255, 255, 0.38) !important;
   transform: translateY(-1px);
   outline: none;
+}
+
+/* 幾分鐘排一位：只有店長與雅婷會出現，開 15 分時亮起來 */
+#calendar .header-button-group .slot-interval-button {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+#calendar .slot-interval-button.si-active {
+  background: rgba(205, 111, 71, 0.38) !important;
+  border-color: rgba(205, 111, 71, 0.62) !important;
+  color: #fff !important;
 }
 
 #calendar .fully-booked-button.fb-active {
