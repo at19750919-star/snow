@@ -1158,9 +1158,13 @@
                   return;
                 }
 
+                /* 完全沒有快取時等的最久（GAS 要 5～30 秒），燈號一定要亮著 */
+                setSyncStatus('loading');
                 deduplicatedFetch(url).then(data => {
+                  setSyncStatus('done');
                   successCallback(filterEventsForRange(data, info.start, info.end));
                 }).catch(error => {
+                  setSyncStatus('error');
                   console.error('讀取事件資料失敗:', error);
                   successCallback([]);
                   window.setTimeout(() => {
@@ -1404,6 +1408,7 @@
               },
             });
             calendar.render();
+            startAutoRefresh();
           }
 
           async function fetchAllCloudData() {
@@ -1556,18 +1561,60 @@
             return buildEventsUrl(calendar.view.activeStart, calendar.view.activeEnd);
           }
 
+          /* GAS 讀一次要 5～30 秒，畫面先給快取；這顆小燈號讓店裡看得出資料是不是剛更新過，
+             不必靠重整猜。重整反而會把還沒回來的那次請求砍掉重抓。 */
+          function syncBadge() {
+            let el = document.getElementById('sync-badge');
+            if (!el) {
+              el = document.createElement('div');
+              el.id = 'sync-badge';
+              el.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:9999;padding:4px 10px;border-radius:999px;' +
+                'font-size:12px;line-height:1.6;background:rgba(0,0,0,.72);color:#fff;pointer-events:none;' +
+                'opacity:0;transition:opacity .25s;white-space:nowrap;';
+              document.body.appendChild(el);
+            }
+            return el;
+          }
+          function setSyncStatus(state) {
+            const el = syncBadge();
+            if (state === 'loading') { el.textContent = '更新中…'; el.style.opacity = '1'; return; }
+            if (state === 'error') { el.textContent = '更新失敗，稍後自動再試'; el.style.opacity = '1'; window.setTimeout(() => { el.style.opacity = '0'; }, 4000); return; }
+            const now = new Date();
+            el.textContent = '已更新 ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            el.style.opacity = '1';
+            window.setTimeout(() => { el.style.opacity = '0'; }, 2500);
+          }
+
           /* 快取命中後仍在背景向 GAS 重抓一次；拿到新資料才 refetchEvents，避免快取讓外部新增的預約長時間看不到 */
-          const EVENT_REVALIDATE_AFTER = 60 * 1000;
+          const EVENT_REVALIDATE_AFTER = 20 * 1000;
           function revalidateEventsInBackground(url) {
             if (!url || _inflightRequests[url]) return;
             const cached = _apiCache[apiCacheKey(url)];
             if (cached && (Date.now() - cached.ts) < EVENT_REVALIDATE_AFTER) return;
+            setSyncStatus('loading');
             const request = fetchFreshJson(url).finally(() => { delete _inflightRequests[url]; });
             _inflightRequests[url] = request;
             request.then(data => {
               if (!Array.isArray(data)) return;
+              setSyncStatus('done');
               if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
-            }).catch(error => console.error('背景更新事件失敗:', error));
+            }).catch(error => { setSyncStatus('error'); console.error('背景更新事件失敗:', error); });
+          }
+
+          /* 頁面看得到就每 30 秒自動重抓一次，LINE 新增的預約不必等人重整；
+             分頁切走時不抓，切回來立刻抓一次。 */
+          /* 用 var：calendar.render() 在這段之前執行，let/const 會因為 TDZ 直接丟錯 */
+          var AUTO_REFRESH_INTERVAL = 30 * 1000;
+          var _autoRefreshTimer = null;
+          function refreshEventsNow() {
+            if (document.hidden) return;
+            revalidateEventsInBackground(currentEventsUrl());
+          }
+          function startAutoRefresh() {
+            if (_autoRefreshTimer) return;
+            _autoRefreshTimer = window.setInterval(refreshEventsNow, AUTO_REFRESH_INTERVAL);
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshEventsNow(); });
+            window.addEventListener('focus', refreshEventsNow);
           }
 
           function isCalendarViewingEventsUrl(url) {

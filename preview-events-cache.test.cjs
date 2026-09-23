@@ -42,8 +42,15 @@ function loadEventsSource() {
     },
     setTimeout,
     clearTimeout,
-    window: { setTimeout },
-    document: { addEventListener() {} },
+    window: { setTimeout, addEventListener() {}, setInterval: fn => { context.autoRefreshTick = fn; return 1; } },
+    document: {
+      addEventListener() {},
+      hidden: false,
+      getElementById: () => null,
+      createElement: () => ({ style: { cssText: '' }, textContent: '' }),
+      body: { appendChild() {} }
+    },
+    autoRefreshTick: null,
     calendar: null,
     Promise, JSON, Array, Number, String, Object, Set, Error, encodeURIComponent, decodeURIComponent
   };
@@ -95,4 +102,36 @@ test('記憶體快取尚新時仍會在背景重新抓取並更新日曆', async
 
   const third = await runEventsSource(env);
   assert.deepEqual(third.map(e => e.id), ['LINE-1'], '日曆最終必須顯示 LINE 新增的預約');
+});
+
+test('沒人重整，頁面自己每 30 秒重抓一次', async () => {
+  const env = loadEventsSource();
+  const newEvent = { id: 'LINE-2', resourceId: '3', start: '2026-09-03T15:30:00+08:00', end: '2026-09-03T16:30:00+08:00' };
+  env.setResponder(() => []);
+  env.context.calendar = { view: { activeStart: viewStart, activeEnd: viewEnd }, refetchEvents() { env.refetches.push(1); } };
+
+  await runEventsSource(env);
+  assert.equal(env.fetched.length, 1);
+
+  env.context.startAutoRefresh();
+  assert.equal(typeof env.context.autoRefreshTick, 'function', '必須註冊自動重抓的計時器');
+
+  // 快取還很新的那一刻不重抓，過了間隔才抓。
+  env.context.autoRefreshTick();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(env.fetched.length, 1, '快取剛寫入時不必重抓');
+
+  env.setResponder(() => [newEvent]);
+  env.advance(31 * 1000);
+  env.context.autoRefreshTick();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(env.fetched.length, 2, '沒人操作也要自己重抓');
+  assert.ok(env.refetches.length >= 1, '抓到新資料要更新日曆');
+
+  // 分頁被切走時不浪費請求。
+  env.context.document.hidden = true;
+  env.advance(31 * 1000);
+  env.context.autoRefreshTick();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(env.fetched.length, 2, '頁面看不到時不應該繼續打 API');
 });
