@@ -262,7 +262,7 @@
                       編輯
                     </button>
                     <button type="button" id="deleteBtn" style="display:none;">刪除</button>
-                    <button type="button" id="assignmentToggleBtn" class="assignment-toggle-btn">指定</button>
+                    <button type="button" id="assignmentToggleBtn" class="assignment-toggle-btn">不指定</button>
                     <button type="submit" id="submit-btn">儲存</button>
                   </div>
                 </div>
@@ -809,14 +809,11 @@
             if (!input) return;
             input.value = type || '';
             if (!btn) return;
-            if (type === '不指定') {
-              btn.textContent = '⚡ 不指定';
-              btn.classList.add('is-unassigned');
-            } else if (type === '店長或雅婷') {
-              btn.textContent = '⚡ 店長或雅婷';
+            if (type === '不指定' || type === '店長或雅婷') {
+              btn.textContent = '✔ 不指定';
               btn.classList.add('is-unassigned');
             } else {
-              btn.textContent = '指定';
+              btn.textContent = '不指定';
               btn.classList.remove('is-unassigned');
             }
           }
