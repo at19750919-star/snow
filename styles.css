@@ -1207,6 +1207,13 @@ body {
   color: var(--stylist-3-text) !important;
 }
 
+/* 不指定事件卡片：獨立深磚橘色底色，不套漸層，突出顯示 */
+#calendar .fc-event.evt-unassigned:not(.blocked-time):not(.is-paid) {
+  background: #C85A32 !important;
+  border-color: #A44622 !important;
+  color: #FFFFFF !important;
+}
+
 /* 不約時段：不分設計師，統一螢光黃綠（取代原本三條 sty-N.blocked-time 各自用淺色的規則） */
 #calendar .fc-event.blocked-time {
   background: var(--blocked-bg) !important;
@@ -3958,7 +3965,8 @@ body #appointmentModal .settlement-section .price-item--suggested {
 }
 
 #appointmentModal #submit-btn,
-#appointmentModal #deleteBtn {
+#appointmentModal #deleteBtn,
+#appointmentModal #assignmentToggleBtn {
   min-height: 40px;
   padding: 0 16px !important;
   border-radius: 11px !important;
@@ -3966,6 +3974,21 @@ body #appointmentModal .settlement-section .price-item--suggested {
   font-weight: 900;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+#appointmentModal #assignmentToggleBtn {
+  background: #f0eee9;
+  border: 1px solid #d2cdc4;
+  color: #6a645c;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+#appointmentModal #assignmentToggleBtn.is-unassigned {
+  background: #C85A32 !important;
+  border-color: #A44622 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(200, 90, 50, 0.35) !important;
 }
 
 /* 三顆底部按鈕（編輯 / 刪除 / 儲存）等寬等高：flex:1 1 0 平均分配 */
@@ -6092,6 +6115,44 @@ body #appointmentModal.is-create .appointment-bottom-bar {
 body #appointmentModal.is-create .appointment-actions {
   width: auto !important;
   display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+body #appointmentModal.is-create #assignmentToggleBtn {
+  flex: none !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  padding: 10px 18px !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: all .2s ease !important;
+}
+
+body #appointmentModal.is-create #assignmentToggleBtn:not(.is-unassigned) {
+  background: #f2efe9 !important;
+  border: 1px solid #cfc8bc !important;
+  color: #6f675c !important;
+}
+
+body #appointmentModal.is-create #assignmentToggleBtn:not(.is-unassigned):hover {
+  background: #e6e2da !important;
+}
+
+body #appointmentModal.is-create #assignmentToggleBtn.is-unassigned {
+  background: #C85A32 !important;
+  border: 1px solid #A44622 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 16px -7px rgba(200, 90, 50, 0.45) !important;
+}
+
+body #appointmentModal.is-create #assignmentToggleBtn.is-unassigned:hover {
+  background: #b54f2a !important;
 }
 
 body #appointmentModal.is-create #submit-btn {

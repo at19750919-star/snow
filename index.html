@@ -136,6 +136,7 @@
           <input type="hidden" id="start_time" name="start_time">
           <input type="hidden" id="employee_id" name="employee_id">
           <input type="hidden" id="amount_input" name="amount_input">
+          <input type="hidden" id="assignment_type_input" name="assignment_type" value="">
 
           <div class="modal-layout-grid appointment-grid">
             <section class="modal-section blue-card-section appointment-panel appointment-panel--details" id="appointment-info-card">
@@ -153,7 +154,6 @@
                   <span class="sliding-glider"></span>
                 </div>
               </div>
-
               <!-- 既有預約預設唯讀，按底部「編輯」鈕才解鎖左側預約資訊欄位 -->
 
               <div class="appointment-fields">
@@ -262,6 +262,7 @@
                       編輯
                     </button>
                     <button type="button" id="deleteBtn" style="display:none;">刪除</button>
+                    <button type="button" id="assignmentToggleBtn" class="assignment-toggle-btn">指定</button>
                     <button type="submit" id="submit-btn">儲存</button>
                   </div>
                 </div>
@@ -827,6 +828,11 @@
             // 刪除/儲存：既有預約模式常駐顯示；新增模式維持原本（由 placeAppointmentActions 控制 is-create 樣式）。
             if (submitBtn) submitBtn.style.display = 'inline-block';
             if (deleteBtn) deleteBtn.style.display = isEdit ? 'inline-block' : 'none';
+            const assignBtn = document.getElementById('assignmentToggleBtn');
+            if (assignBtn) {
+              assignBtn.style.display = 'inline-block';
+              assignBtn.disabled = isEdit && !!on;
+            }
             syncVisualAppointmentControls();
           }
 
@@ -1340,6 +1346,9 @@
                 const r = arg.event.getResources();
                 const cls = (r && r[0]) ? ['sty-' + r[0].id] : [];
                 const ep = arg.event.extendedProps || {};
+                const isUnassigned = ep.assignment_type === '不指定' || ep.assignment_type === '店長或雅婷' ||
+                  (ep.notes && (ep.notes.indexOf('【不指定】') >= 0 || ep.notes.indexOf('【店長或雅婷】') >= 0 || ep.notes.indexOf('不指定') >= 0));
+                if (isUnassigned) cls.push('evt-unassigned');
                 if (ep.appointment_type === 'blocked') cls.push('blocked-time');
                 const paidAmount = Number(ep.amount);
                 if (ep.appointment_type !== 'blocked' && !Number.isNaN(paidAmount) && paidAmount > 0) cls.push('is-paid');
@@ -1743,6 +1752,12 @@
               // 確保總金額計算最新
               updateCalculatedTotal();
 
+              const assignType = document.getElementById('assignment_type_input')?.value || '';
+              let encodedNote = encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || '');
+              if (assignType && encodedNote.indexOf(`【${assignType}】`) < 0) {
+                encodedNote = `【${assignType}】` + encodedNote;
+              }
+
               const payload = {
                 action: isEditing ? 'edit' : 'create',
                 id: fd.get('event_id') || undefined,
@@ -1750,6 +1765,7 @@
                 employee_id: fd.get('employee_id'),
                 start: fd.get('start_time'),
                 appointment_type: fd.get('appointment_type'),
+                assignment_type: assignType,
                 customer_name: fd.get('customer_name') || '',
                 customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
                 service_id: fd.get('service_id') || '',
@@ -1757,7 +1773,7 @@
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
                 assistant_id: fd.get('assistant_select') || '',
-                notes: encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || ''),
+                notes: encodedNote,
                 duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
                 dye_color: document.getElementById('dye_color_input').value,
@@ -1793,6 +1809,7 @@
                     service_id: payload.service_id,
                     notes: payload.notes,
                     appointment_type: payload.appointment_type,
+                    assignment_type: payload.assignment_type || '',
                     amount: payload.amount,
                     cut_price: payload.cut_price,
                     total_amount: payload.total_amount,
@@ -1881,6 +1898,34 @@
               if (e.target === warnlistModal) warnlistModal.style.display = 'none';
             });
             window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
+
+            function setAssignmentType(type) {
+              const input = document.getElementById('assignment_type_input');
+              const btn = document.getElementById('assignmentToggleBtn');
+              if (!input) return;
+              input.value = type || '';
+              if (!btn) return;
+              if (type === '不指定') {
+                btn.textContent = '⚡ 不指定';
+                btn.classList.add('is-unassigned');
+              } else if (type === '店長或雅婷') {
+                btn.textContent = '⚡ 店長或雅婷';
+                btn.classList.add('is-unassigned');
+              } else {
+                btn.textContent = '指定';
+                btn.classList.remove('is-unassigned');
+              }
+            }
+
+            const assignmentBtn = document.getElementById('assignmentToggleBtn');
+            if (assignmentBtn) {
+              assignmentBtn.onclick = function (e) {
+                e.preventDefault();
+                const input = document.getElementById('assignment_type_input');
+                const current = input ? input.value : '';
+                setAssignmentType(current === '不指定' ? '' : '不指定');
+              };
+            }
 
             document.querySelectorAll('input[name="appointment_type"]').forEach(radio => {
               radio.addEventListener('change', function () {
@@ -2119,6 +2164,7 @@
             if (operatorSelect) operatorSelect.classList.remove('has-value');
             if (assistantSelect) assistantSelect.classList.remove('has-value');
             document.querySelector('input[name="appointment_type"][value="normal"]').checked = true;
+            setAssignmentType('');
             document.getElementById('customer-fields-left').style.display = 'grid';
             document.getElementById('settlement-col').style.display = 'none';
             placeAppointmentActions('create');
@@ -2206,6 +2252,8 @@
               setLastVisitNote(decoded.lastVisit);
               document.getElementById('notes').value = decoded.free;
             }
+            const rawAssign = ep.assignment_type || (ep.notes && ep.notes.indexOf('【不指定】') >= 0 ? '不指定' : (ep.notes && ep.notes.indexOf('【店長或雅婷】') >= 0 ? '店長或雅婷' : ''));
+            setAssignmentType(rawAssign);
             if (assistantSelect) {
               assistantSelect.value = ep.assistant_id || '';
               assistantSelect.classList.toggle('has-value', !!assistantSelect.value);
