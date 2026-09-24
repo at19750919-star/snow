@@ -803,6 +803,25 @@
 
           deleteLeaveBtn = document.getElementById('deleteLeaveBtn');
 
+          function setAssignmentType(type) {
+            const input = document.getElementById('assignment_type_input');
+            const btn = document.getElementById('assignmentToggleBtn');
+            if (!input) return;
+            input.value = type || '';
+            if (!btn) return;
+            if (type === '不指定') {
+              btn.textContent = '⚡ 不指定';
+              btn.classList.add('is-unassigned');
+            } else if (type === '店長或雅婷') {
+              btn.textContent = '⚡ 店長或雅婷';
+              btn.classList.add('is-unassigned');
+            } else {
+              btn.textContent = '指定';
+              btn.classList.remove('is-unassigned');
+            }
+          }
+          window.setAssignmentType = setAssignmentType;
+
           function setAppointmentModalMode(mode) {
             if (!appointmentModal) return;
             appointmentModal.classList.toggle('is-create', mode === 'create');
@@ -1898,24 +1917,6 @@
               if (e.target === warnlistModal) warnlistModal.style.display = 'none';
             });
             window.addEventListener('resize', () => { schedulePerResourceTimeAxis(150); applyMobileResourceVisibility(); });
-
-            function setAssignmentType(type) {
-              const input = document.getElementById('assignment_type_input');
-              const btn = document.getElementById('assignmentToggleBtn');
-              if (!input) return;
-              input.value = type || '';
-              if (!btn) return;
-              if (type === '不指定') {
-                btn.textContent = '⚡ 不指定';
-                btn.classList.add('is-unassigned');
-              } else if (type === '店長或雅婷') {
-                btn.textContent = '⚡ 店長或雅婷';
-                btn.classList.add('is-unassigned');
-              } else {
-                btn.textContent = '指定';
-                btn.classList.remove('is-unassigned');
-              }
-            }
 
             const assignmentBtn = document.getElementById('assignmentToggleBtn');
             if (assignmentBtn) {
