@@ -2349,7 +2349,18 @@
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
             if (!isBlocked) {
               const editPhone = normalizePhone(ep.customer_phone || '');
-              if (editPhone.length === 10) {
+              if (ep.line_user_id) {
+                // LINE 回流客即使已帶入上次電話，仍優先用 line_user_id 查詢，
+                // 並排除目前這筆尚未結帳的新預約，才能亮高真正的上次剪髮價位。
+                (async () => {
+                  try {
+                    const beforeStart = event.start ? `&before_start=${encodeURIComponent(event.start.toISOString())}` : '';
+                    const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getLastVisitByLineUser&line_user_id=${encodeURIComponent(ep.line_user_id)}${beforeStart}`, { method: 'GET', mode: 'cors' });
+                    const history = await res.json();
+                    if (history && history.customer_name) applyPriceSuggestion(history);
+                  } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
+                })();
+              } else if (editPhone.length === 10) {
                 // 射後不理，不阻擋彈窗開啟；沿用 create 流程的 _crmCache 快取
                 (async () => {
                   try {
@@ -2374,15 +2385,6 @@
                       });
                     }
                   } catch (err) { console.error('CRM查詢失敗(結帳上次剪髮價):', err); }
-                })();
-              } else if (ep.line_user_id) {
-                // LINE 客人沒有電話，上面那支正式 getLastVisit 查不到，改打世紀-LINE預約 GAS 用 line_user_id 查。
-                (async () => {
-                  try {
-                    const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getLastVisitByLineUser&line_user_id=${encodeURIComponent(ep.line_user_id)}`, { method: 'GET', mode: 'cors' });
-                    const history = await res.json();
-                    if (history && history.customer_name) applyPriceSuggestion(history);
-                  } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
                 })();
               }
             }
