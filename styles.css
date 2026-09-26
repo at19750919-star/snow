@@ -1208,7 +1208,7 @@ body {
 }
 
 /* 不指定事件卡片：獨立深磚橘色底色，不套漸層，突出顯示 */
-#calendar .fc-event.evt-unassigned:not(.blocked-time):not(.is-paid) {
+#calendar .fc-event.evt-unassigned:not(.blocked-time) {
   background: #C85A32 !important;
   border-color: #A44622 !important;
   color: #FFFFFF !important;
@@ -1261,6 +1261,17 @@ body {
 }
 
 #calendar .fc-event.is-paid:not(.blocked-time) .evt-col-phone { color: rgba(255, 255, 255, 0.9); }
+
+/* 不指定事件卡片結帳後：維持深磚橘色底色，電話欄位顯示之金額維持清晰白字 */
+#calendar .fc-event.evt-unassigned.is-paid:not(.blocked-time) {
+  background: #C85A32 !important;
+  border-color: #A44622 !important;
+  color: #FFFFFF !important;
+}
+
+#calendar .fc-event.evt-unassigned.is-paid:not(.blocked-time):hover {
+  background: #B34E2A !important;
+}
 
 /* ==================== 10) Notes ==================== */
 
