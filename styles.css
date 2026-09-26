@@ -1208,7 +1208,7 @@ body {
 }
 
 /* 不指定事件卡片：獨立深磚橘色底色，不套漸層，突出顯示 */
-#calendar .fc-event.evt-unassigned:not(.blocked-time) {
+#calendar .fc-event.evt-unassigned:not(.blocked-time):not(.is-paid) {
   background: #C85A32 !important;
   border-color: #A44622 !important;
   color: #FFFFFF !important;
