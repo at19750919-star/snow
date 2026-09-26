@@ -1482,6 +1482,29 @@
             el.hidden = !t;
           }
 
+          // 結帳視窗的「上次消費」補上上次剪髮金額；亮高沒亮時店裡看這裡也知道。
+          // 備註裡記的日期跟查到的不同（預約後又來過）就照查到的那次重寫，避免日期和金額對不上。
+          function addPriceToLastVisitNote(history) {
+            const histCut = parseInt(history && history.cut_price, 10);
+            const histAmt = parseInt(history && history.amount, 10);
+            const price = Number.isFinite(histCut) && histCut > 0 ? histCut
+              : (Number.isFinite(histAmt) && histAmt > 0 ? histAmt : null);
+            const label = formatLastVisitLabel(history && history.start);
+            if (price === null || !label) return;
+            const noteEl = document.getElementById('last-visit-note');
+            let raw = noteEl ? (noteEl.dataset.raw || '') : '';
+            if (raw.includes('$')) return;
+            if (!raw.startsWith(label)) {
+              const parts = [label];
+              const lastDesigner = getDesignerNameById(history.employee_id);
+              if (lastDesigner) parts.push(lastDesigner);
+              if (history.service_id) parts.push(history.service_id);
+              if (history.dye_color) parts.push(`色號:${history.dye_color}`);
+              raw = parts.join(' / ');
+            }
+            setLastVisitNote(`${raw} / $${price}`);
+          }
+
           function formatLastVisitLabel(rawStart) {
             if (!rawStart) return null;
             const normalized = String(rawStart || '').trim().replace(/\s+/g, 'T');
@@ -2349,18 +2372,27 @@
             document.querySelectorAll('.price-item--suggested').forEach(el => el.classList.remove('price-item--suggested'));
             if (!isBlocked) {
               const editPhone = normalizePhone(ep.customer_phone || '');
-              if (ep.line_user_id) {
-                // LINE 回流客即使已帶入上次電話，仍優先用 line_user_id 查詢，
-                // 並排除目前這筆尚未結帳的新預約，才能亮高真正的上次剪髮價位。
-                (async () => {
-                  try {
-                    const beforeStart = event.start ? `&before_start=${encodeURIComponent(event.start.toISOString())}` : '';
-                    const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getLastVisitByLineUser&line_user_id=${encodeURIComponent(ep.line_user_id)}${beforeStart}`, { method: 'GET', mode: 'cors' });
-                    const history = await res.json();
-                    if (history && history.customer_name) applyPriceSuggestion(history);
-                  } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
-                })();
-              } else if (editPhone.length === 10) {
+              const openedId = eventIdInput.value;
+              // LINE 回流客：正式 getEvents 不帶 line_user_id，所以用預約編號請 LINE 預約 GAS 找出客人，
+              // 並排除目前這筆尚未結帳的新預約，才拿得到真正上一次的剪髮價位。
+              // 電話查詢同時進行（一般客人靠它）；LINE 查到的結果優先，電話結果晚到也不會蓋掉。
+              let lineApplied = false;
+              const lineQuery = ep.line_user_id
+                ? `line_user_id=${encodeURIComponent(ep.line_user_id)}${event.start ? `&before_start=${encodeURIComponent(event.start.toISOString())}` : ''}`
+                : (openedId ? `event_id=${encodeURIComponent(openedId)}` : '');
+              if (editPhone.length === 10) lookupByPhone();
+              if (lineQuery) (async () => {
+                try {
+                  const res = await fetch(`${LINE_BOOKING_GAS_URL}?action=getLastVisitByLineUser&${lineQuery}`, { method: 'GET', mode: 'cors' });
+                  const history = await res.json();
+                  // 不是 LINE 客人，或查詢回來前已經換開別筆，就不動畫面
+                  if (!history || !history.start || eventIdInput.value !== openedId) return;
+                  lineApplied = true;
+                  applyPriceSuggestion(history);
+                  addPriceToLastVisitNote(history);
+                } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
+              })();
+              function lookupByPhone() {
                 // 射後不理，不阻擋彈窗開啟；沿用 create 流程的 _crmCache 快取
                 (async () => {
                   try {
@@ -2373,6 +2405,7 @@
                       history = await res.json();
                       window._crmCache[editPhone] = history;
                     }
+                    if (lineApplied || eventIdInput.value !== openedId) return;
                     // 與新增流程完全相同的高亮邏輯：取最近一次非零剪髮價，標對應 cut_price 選項
                     const histCut = parseInt(history && history.cut_price, 10);
                     if (Number.isFinite(histCut) && histCut > 0) {
@@ -2384,6 +2417,9 @@
                         }
                       });
                     }
+                    // 查到的就是這一筆自己（已結帳的舊預約）時不算「上次」，備註不動
+                    const histStart = history && history.start ? new Date(history.start).getTime() : NaN;
+                    if (!(event.start && histStart === event.start.getTime())) addPriceToLastVisitNote(history);
                   } catch (err) { console.error('CRM查詢失敗(結帳上次剪髮價):', err); }
                 })();
               }
