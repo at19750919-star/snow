@@ -635,6 +635,44 @@
           }
         }
 
+        // 只重用相同 API / 查詢選項、且完整涵蓋目前畫面的快取，包含空陣列。
+        function findCoveringEventCache(url, startDate, endDate) {
+          const query = new URL(url);
+          const start = ymd(startDate);
+          const end = ymd(new Date(endDate.getTime() - 1));
+          const identity = parsed => {
+            const params = new URLSearchParams(parsed.search);
+            params.delete('start'); params.delete('end'); params.sort();
+            return parsed.origin + parsed.pathname + '?' + params.toString();
+          };
+          const expected = identity(query);
+          let best = null;
+          const consider = (candidateUrl, cached, ttl) => {
+            if (!cached || !Array.isArray(cached.data) || !Number.isFinite(cached.ts) ||
+                Date.now() - cached.ts >= ttl) return;
+            try {
+              const candidate = new URL(candidateUrl);
+              const from = candidate.searchParams.get('start');
+              const to = candidate.searchParams.get('end');
+              if (identity(candidate) !== expected || !/^\d{4}-\d{2}-\d{2}$/.test(from || '') ||
+                  !/^\d{4}-\d{2}-\d{2}$/.test(to || '') || from > start || to < end) return;
+              if (!best || cached.ts > best.ts) best = cached;
+            } catch (e) { /* 壞掉的快取不影響其他候選 */ }
+          };
+          Object.keys(_apiCache).forEach(key => consider(key, _apiCache[key], API_CACHE_TTL));
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (!key || !key.startsWith(PERSISTENT_EVENT_CACHE_PREFIX)) continue;
+              try {
+                consider(decodeURIComponent(key.slice(PERSISTENT_EVENT_CACHE_PREFIX.length)),
+                  JSON.parse(localStorage.getItem(key)), PERSISTENT_EVENT_CACHE_TTL);
+              } catch (e) { /* 單筆毀損時繼續檢查 */ }
+            }
+          } catch (e) { /* 瀏覽器禁用儲存時仍可使用記憶體快取 */ }
+          return best;
+        }
+
         function writePersistentEventCache(url, data) {
           if (!isPersistentEventUrl(url) || !Array.isArray(data)) return;
           const key = persistentEventCacheKey(url);
@@ -1122,6 +1160,14 @@
                   return;
                 }
 
+                // 已有其他查詢涵蓋畫面日期時先顯示；不可把局部資料冒充完整月窗。
+                const coveringCached = findCoveringEventCache(url, info.start, info.end);
+                if (coveringCached) {
+                  deliverEventsAsync(successCallback, filterEventsForRange(coveringCached.data, info.start, info.end));
+                  revalidateEventsInBackground(url);
+                  return;
+                }
+
                 /* 完全沒有快取時等的最久（GAS 要 5～30 秒），燈號一定要亮著 */
                 setSyncStatus('loading');
                 deduplicatedFetch(url).then(data => {
@@ -1540,7 +1586,9 @@
             /* 抓取視窗放大為「當月 ±7 天」：同視窗內切日/週共用同一份快取，不必每換一天打一次 API */
             const winStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
             winStart.setDate(winStart.getDate() - 7);
-            const winEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 1);
+            // FullCalendar 的 end 不包含當天：月底日視圖的 end 已是下個月。
+            const lastVisibleDate = new Date(endDate.getTime() - 1);
+            const winEnd = new Date(lastVisibleDate.getFullYear(), lastVisibleDate.getMonth() + 1, 1);
             winEnd.setDate(winEnd.getDate() + 7);
             return APPS_SCRIPT_WEB_APP_URL + '?action=getEvents&start=' + ymd(winStart) + '&end=' + ymd(winEnd);
           }
