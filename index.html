@@ -1301,10 +1301,14 @@
                   siBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     if (siBtn.disabled) return;
-                    siBtn.disabled = true;
                     const date = ymd(calendar.view.currentStart);
                     const resourceId = String(arg.resource.id);
                     const next = slotIntervalOf(date, resourceId) === 15 ? 20 : 15;
+                    // 碰一下就改太容易誤觸，先確認；取消就什麼都不動。
+                    const [, mm, dd] = date.split('-');
+                    const who = arg.resource.title || resourceId;
+                    if (!window.confirm(`確定把 ${Number(mm)}/${Number(dd)} ${who} 改成 ${next} 分鐘排一位？`)) return;
+                    siBtn.disabled = true;
                     try {
                       const url = `${LINE_BOOKING_GAS_URL}?action=setSlotInterval&date=${date}&employee_id=${resourceId}&minutes=${next}`;
                       const res = await fetch(url, { method: 'GET', mode: 'cors' });
