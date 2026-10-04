@@ -1,0 +1,105 @@
+{
+  "status": "deployed_independent_review_pass",
+  "site": "https://at19750919-star.github.io/snow/",
+  "gitCommit": "275bc92b66c4d205206e8f7a398db1f33d482218",
+  "pagesBuild": "built",
+  "gasDeployment": "AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q",
+  "gasVersion": 252,
+  "previousGasVersion": 251,
+  "homepageNormalizedSha256": "159b5d656389f1cd6eb5c7480a5c51514ca7261047f75cf30b0c34f24a76b170",
+  "publishedGasMatchesRelease": [
+    {
+      "file": "appsscript.json",
+      "matches": true,
+      "normalizedSha256": "3575f1701b2c2cff001aec42d64755d1b54fd83dc441efe15561368997651a54"
+    },
+    {
+      "file": "AvailabilityCache.js",
+      "matches": true,
+      "normalizedSha256": "eedc713edada13ac5684f4c16b2a1228ea98624a7f042e62a0725c72b6f30048"
+    },
+    {
+      "file": "FixApptHeader.js",
+      "matches": true,
+      "normalizedSha256": "80d27e83380f936d31d013e39fd92912dab052c47a4c7d2c8f140b0b414a0c9d"
+    },
+    {
+      "file": "排休去重.js",
+      "matches": true,
+      "normalizedSha256": "9add5cfda56cae1d06c9d52547ccb274da58ac3651f3a6f6e379855dae69aafe"
+    },
+    {
+      "file": "未命名.js",
+      "matches": true,
+      "normalizedSha256": "1c0ae60e6ad590bed683fec1af946bf18be704cb3c12b5303da6282fb7458713"
+    },
+    {
+      "file": "程式碼.js",
+      "matches": true,
+      "normalizedSha256": "75a0fbdc9bd6ed63c9ffe904613439ad8449ff52b5f4f3b52f28d27566cc924c"
+    },
+    {
+      "file": "自動排休.js",
+      "matches": true,
+      "normalizedSha256": "a2b8d68b43d5e737e48af6f40e98701436cb40a189910295e395c1f931f286b5"
+    }
+  ],
+  "liveReadSamples": [
+    {
+      "http": 200,
+      "count": 1362,
+      "chars": 476604,
+      "bytes": 519930,
+      "ms": 5198,
+      "sha256": "700c34108a1ee7787503803c8ce387b978cf2e7c7fa386a1026d5f0a91ed7777"
+    },
+    {
+      "http": 200,
+      "count": 1362,
+      "chars": 476604,
+      "bytes": 519930,
+      "ms": 1647,
+      "sha256": "700c34108a1ee7787503803c8ce387b978cf2e7c7fa386a1026d5f0a91ed7777"
+    }
+  ],
+  "browserMonthEnd": {
+    "date": "2026-09-30",
+    "sampleAfterMs": 222,
+    "cards": 44,
+    "newEventRequests": 0
+  },
+  "browserCrossMonth": {
+    "date": "2026-10-01",
+    "sampleAfterMs": 220,
+    "cards": 20,
+    "backgroundRequest": {
+      "start": "2026-09-24",
+      "end": "2026-11-08",
+      "done": false
+    }
+  },
+  "limits": [
+    "Read-only production verification; no customer appointment writes",
+    "Single samples, not latency guarantee",
+    "Cache hit inferred from code and local tests, not exposed in production headers"
+  ],
+  "independentReview": {
+    "reviewer": "Codex Luna /root/home_cache_a_deploy_review",
+    "verdict": "PASS",
+    "initialVerdict": "INSUFFICIENT EVIDENCE: CLI/browser quoting failures, resolved in scoped retry",
+    "pagesBuiltCommitVerified": true,
+    "gasDeployment252Verified": true,
+    "releaseFilesMatchVerified": true,
+    "liveMonthEnd": {
+      "cards": 44,
+      "sampleMs": 290,
+      "newEventRequest": false
+    },
+    "liveCrossMonth": {
+      "cards": 20,
+      "sampleMs": 273,
+      "backgroundRequestPendingAtMs": 220
+    },
+    "productionAppointmentWrites": false
+  }
+}

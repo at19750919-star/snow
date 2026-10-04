@@ -1,0 +1,127 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>calendar-snapshot</title><style>:root{--bg:#1a1030;--bg2:#241642;--ink:#ece6ff;--dim:#b3a6d6;--acc:#c6f24e;--line:#3a2a63;}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+body{font-family:"Noto Serif TC","Source Han Serif TC",Georgia,"PMingLiU",serif;font-size:19px;line-height:1.72;letter-spacing:.01em;}
+.wrap{max-width:none;padding:26px 60px 120px;}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:18px;background:rgba(26,16,48,.96);border-bottom:1px solid var(--line);padding:10px 60px;font-size:.82em;}
+.top a{color:var(--acc);border:0;}
+.top .sp{flex:1}
+.top button{background:#2f1e59;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:3px 10px;cursor:pointer;font-family:inherit;}
+.top .info{color:var(--dim)}
+h1,h2,h3,h4{font-weight:700;line-height:1.35;margin:1.5em 0 .5em;}
+h1{font-size:2.05em;color:var(--acc);margin-top:.3em;border-bottom:2px solid var(--line);padding-bottom:.35em;}
+h2{font-size:1.5em;color:var(--acc);border-left:5px solid var(--acc);padding-left:.5em;}
+h3{font-size:1.18em;color:#e8dcff;}
+p{margin:.62em 0;}
+ul,ol{margin:.5em 0 .8em;padding-left:1.5em;}
+li{margin:.24em 0;}
+li>ul{margin:.2em 0;}
+strong{color:var(--acc);font-weight:700;}
+em{color:#f0d9ff;}
+a{color:#9ad9ff;text-decoration:none;border-bottom:1px solid rgba(154,217,255,.35);}
+a:hover{color:var(--acc);border-color:var(--acc);}
+code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.86em;background:#2c1b52;color:#ffd98a;padding:.12em .4em;border-radius:4px;}
+pre{background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:6px;padding:14px 18px;overflow-x:auto;margin:.9em 0;}
+pre code{background:none;color:#d9ffb0;padding:0;font-size:.9em;line-height:1.5;}
+table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.95em;}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top;}
+th{background:#2f1e59;color:var(--acc);}
+tr:nth-child(even) td{background:rgba(255,255,255,.022);}
+blockquote{border-left:4px solid var(--dim);margin:.9em 0;padding:.2em 1em;color:var(--dim);}
+hr{border:0;border-top:1px solid var(--line);margin:1.8em 0;}
+details{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:10px 16px;margin:.8em 0;}
+summary{cursor:pointer;color:var(--acc);}
+.meta{color:var(--dim);font-size:.82em;}
+.cat{margin:2em 0 .6em;font-size:1.35em;color:var(--acc);border-left:5px solid var(--acc);padding-left:.5em;}
+.docs{list-style:none;padding:0;margin:0;}
+.docs li{display:flex;gap:18px;align-items:baseline;padding:9px 12px;border-bottom:1px solid var(--line);}
+.docs li:hover{background:rgba(198,242,78,.06)}
+.docs .d{color:var(--dim);font-size:.82em;white-space:nowrap;font-family:ui-monospace,Consolas,monospace;}
+.docs .t{flex:1}
+.docs .f{color:var(--dim);font-size:.75em;}
+.task{margin:1.2em 0 .25em;font-size:1.02em;color:#e8dcff;font-weight:700;border-left:3px solid var(--dim);padding-left:.55em;}
+.task-n{margin-left:.6em;font-size:.72em;font-weight:400;color:var(--dim);}
+.fold{background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 16px;margin:1.4em 0 0;}
+.fold>summary{color:var(--dim);font-size:.95em;padding:6px 0;}
+.fold>summary:hover{color:var(--acc);}
+@media print{body{background:#fff;color:#000}.top{display:none}}</style></head><body><div class="top"><a href="index.html">← 回本專案總覽</a> <a href="../../網頁版總入口.html">← 回總入口</a><span class="info">最後修改 2026-07-24</span><span class="sp"></span><button onclick="copyAll(this)">複製全文</button> 字級 <button onclick="z(-1)">－</button> <button onclick="z(1)">＋</button></div><script type="text/plain" id="raw-md">- generic [ref=e5]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic: "2026"
+          - generic [ref=e11]: 07 / 24
+          - generic [ref=e12]: Fri
+        - generic [ref=e13]:
+          - button "chevron_left" [ref=e14] [cursor=pointer]
+          - button "chevron_right" [ref=e16] [cursor=pointer]
+      - generic [ref=e18]:
+        - button "日" [ref=e19] [cursor=pointer]
+        - button "週" [ref=e20] [cursor=pointer]
+        - button "月" [ref=e21] [cursor=pointer]
+        - button "報表" [ref=e22] [cursor=pointer]
+        - button "預約" [ref=e23] [cursor=pointer]
+        - button "警示" [ref=e24] [cursor=pointer]
+    - generic [ref=e25]:
+      - button "四 16" [ref=e26] [cursor=pointer]:
+        - generic [ref=e27]: 四
+        - generic [ref=e28]: "16"
+      - button "五 17" [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]: 五
+        - generic [ref=e31]: "17"
+      - button "六 18" [ref=e32] [cursor=pointer]:
+        - generic [ref=e33]: 六
+        - generic [ref=e34]: "18"
+      - button "日 19" [ref=e35] [cursor=pointer]:
+        - generic [ref=e36]: 日
+        - generic [ref=e37]: "19"
+      - button "二 21" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 二
+        - generic [ref=e40]: "21"
+      - button "三 22" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 三
+        - generic [ref=e43]: "22"
+      - button "四 23" [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]: 四
+        - generic [ref=e46]: "23"
+      - button "五 24" [ref=e47] [cursor=pointer]:
+        - generic [ref=e48]: 五
+        - generic [ref=e49]: "24"
+      - button "六 25" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]: 六
+        - generic [ref=e52]: "25"
+      - button "日 26" [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: 日
+        - generic [ref=e55]: "26"
+      - button "二 28" [ref=e56] [cursor=pointer]:
+        - generic [ref=e57]: 二
+        - generic [ref=e58]: "28"
+      - button "三 29" [ref=e59] [cursor=pointer]:
+        - generic [ref=e60]: 三
+        - generic [ref=e61]: "29"
+      - button "四 30" [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 四
+        - generic [ref=e64]: "30"
+      - button "五 31" [ref=e65] [cursor=pointer]:
+        - generic [ref=e66]: 五
+        - generic [ref=e67]: "31"
+      - button "六 1" [ref=e68] [cursor=pointer]:
+        - generic [ref=e69]: 六
+        - generic [ref=e70]: "1"
+  - grid [ref=e73]:
+    - rowgroup [ref=e74]:
+      - row "店長 雅婷 小白" [ref=e77]:
+        - columnheader "店長" [ref=e78]:
+          - generic [ref=e80]
+        - columnheader "雅婷" [ref=e84]:
+          - generic [ref=e86]
+        - columnheader "小白" [ref=e90]:
+          - generic [ref=e92]
+    - rowgroup [ref=e96]:
+      - generic [ref=e99]:
+        - table [ref=e101]:
+          - rowgroup [ref=e102]
+        - row [ref=e176]:
+          - gridcell [ref=e177]
+          - gridcell [ref=e418]
+          - gridcell "剪 文 $450 白 剪 洗頭 snow 剪 Yuhung 白 剪 briann 白 剪 吳 白 剪 汪 白 剪 jensen 白 剪 張 白 剪 朴 白 燙 raylolz 白 剪 孫 白 剪 王斌彥3 0937-458238 陳 上次 2026/07/11 / 小白 / 剪髮 剪 何紹謙3 0978-355872 陳 上次 2026/05/29 / 小白 / 剪髮 12:00 12:15 12:30 12:45 13:00 13:15 13:30 13:45 14:00 14:15 14:30 14:45 15:00 15:15 15:30 15:45 16:00 16:15 16:30 16:45 17:00 17:15 17:30 17:45 18:00 18:15 18:30 18:45 19:00 19:15 19:30 19:45 20:00 20:15 20:30 20:45" [ref=e680]</script><div class="wrap"><ul><li>generic [ref=e5]:</li><ul><li>generic [ref=e7]:</li><li>generic [ref=e8]:</li><li>generic [ref=e9]:</li><li>generic [ref=e10]:</li><li>generic: "2026"</li><li>generic [ref=e11]: 07 / 24</li><li>generic [ref=e12]: Fri</li><li>generic [ref=e13]:</li><li>button "chevron_left" [ref=e14] [cursor=pointer]</li><li>button "chevron_right" [ref=e16] [cursor=pointer]</li><li>generic [ref=e18]:</li><li>button "日" [ref=e19] [cursor=pointer]</li><li>button "週" [ref=e20] [cursor=pointer]</li><li>button "月" [ref=e21] [cursor=pointer]</li><li>button "報表" [ref=e22] [cursor=pointer]</li><li>button "預約" [ref=e23] [cursor=pointer]</li><li>button "警示" [ref=e24] [cursor=pointer]</li><li>generic [ref=e25]:</li><li>button "四 16" [ref=e26] [cursor=pointer]:</li><li>generic [ref=e27]: 四</li><li>generic [ref=e28]: "16"</li><li>button "五 17" [ref=e29] [cursor=pointer]:</li><li>generic [ref=e30]: 五</li><li>generic [ref=e31]: "17"</li><li>button "六 18" [ref=e32] [cursor=pointer]:</li><li>generic [ref=e33]: 六</li><li>generic [ref=e34]: "18"</li><li>button "日 19" [ref=e35] [cursor=pointer]:</li><li>generic [ref=e36]: 日</li><li>generic [ref=e37]: "19"</li><li>button "二 21" [ref=e38] [cursor=pointer]:</li><li>generic [ref=e39]: 二</li><li>generic [ref=e40]: "21"</li><li>button "三 22" [ref=e41] [cursor=pointer]:</li><li>generic [ref=e42]: 三</li><li>generic [ref=e43]: "22"</li><li>button "四 23" [ref=e44] [cursor=pointer]:</li><li>generic [ref=e45]: 四</li><li>generic [ref=e46]: "23"</li><li>button "五 24" [ref=e47] [cursor=pointer]:</li><li>generic [ref=e48]: 五</li><li>generic [ref=e49]: "24"</li><li>button "六 25" [ref=e50] [cursor=pointer]:</li><li>generic [ref=e51]: 六</li><li>generic [ref=e52]: "25"</li><li>button "日 26" [ref=e53] [cursor=pointer]:</li><li>generic [ref=e54]: 日</li><li>generic [ref=e55]: "26"</li><li>button "二 28" [ref=e56] [cursor=pointer]:</li><li>generic [ref=e57]: 二</li><li>generic [ref=e58]: "28"</li><li>button "三 29" [ref=e59] [cursor=pointer]:</li><li>generic [ref=e60]: 三</li><li>generic [ref=e61]: "29"</li><li>button "四 30" [ref=e62] [cursor=pointer]:</li><li>generic [ref=e63]: 四</li><li>generic [ref=e64]: "30"</li><li>button "五 31" [ref=e65] [cursor=pointer]:</li><li>generic [ref=e66]: 五</li><li>generic [ref=e67]: "31"</li><li>button "六 1" [ref=e68] [cursor=pointer]:</li><li>generic [ref=e69]: 六</li><li>generic [ref=e70]: "1"</li><li>grid [ref=e73]:</li><li>rowgroup [ref=e74]:</li><li>row "店長 雅婷 小白" [ref=e77]:</li><li>columnheader "店長" [ref=e78]:</li><li>generic [ref=e80]</li><li>columnheader "雅婷" [ref=e84]:</li><li>generic [ref=e86]</li><li>columnheader "小白" [ref=e90]:</li><li>generic [ref=e92]</li><li>rowgroup [ref=e96]:</li><li>generic [ref=e99]:</li><li>table [ref=e101]:</li><li>rowgroup [ref=e102]</li><li>row [ref=e176]:</li><li>gridcell [ref=e177]</li><li>gridcell [ref=e418]</li><li>gridcell "剪 文 $450 白 剪 洗頭 snow 剪 Yuhung 白 剪 briann 白 剪 吳 白 剪 汪 白 剪 jensen 白 剪 張 白 剪 朴 白 燙 raylolz 白 剪 孫 白 剪 王斌彥3 0937-458238 陳 上次 2026/07/11 / 小白 / 剪髮 剪 何紹謙3 0978-355872 陳 上次 2026/05/29 / 小白 / 剪髮 12:00 12:15 12:30 12:45 13:00 13:15 13:30 13:45 14:00 14:15 14:30 14:45 15:00 15:15 15:30 15:45 16:00 16:15 16:30 16:45 17:00 17:15 17:30 17:45 18:00 18:15 18:30 18:45 19:00 19:15 19:30 19:45 20:00 20:15 20:30 20:45" [ref=e680]</li></ul></ul><hr><div class="meta">原始檔：calendar-snapshot.md</div></div><script>var s=parseInt(localStorage.getItem('fs')||'19');document.body.style.fontSize=s+'px';function z(d){s=Math.max(13,Math.min(32,s+d));document.body.style.fontSize=s+'px';localStorage.setItem('fs',s);}function copyAll(btn){ var raw=document.getElementById('raw-md'); var text=raw?raw.textContent:''; var done=function(){btn.textContent='已複製 ✓';setTimeout(function(){btn.textContent='複製全文';},1600);}; var fail=function(){btn.textContent='複製失敗';setTimeout(function(){btn.textContent='複製全文';},1600);}; try{  var ta=document.createElement('textarea');ta.value=text;  ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);  ta.select();var ok=document.execCommand('copy');document.body.removeChild(ta);  if(ok){done();return;} }catch(e){} if(navigator.clipboard&&navigator.clipboard.writeText){  navigator.clipboard.writeText(text).then(done,fail); }else{fail();}}</script></body></html>

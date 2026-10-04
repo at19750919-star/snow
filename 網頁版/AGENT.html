@@ -1,0 +1,60 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent 低級錯誤防止規則</title><style>:root{--bg:#1a1030;--bg2:#241642;--ink:#ece6ff;--dim:#b3a6d6;--acc:#c6f24e;--line:#3a2a63;}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+body{font-family:"Noto Serif TC","Source Han Serif TC",Georgia,"PMingLiU",serif;font-size:19px;line-height:1.72;letter-spacing:.01em;}
+.wrap{max-width:none;padding:26px 60px 120px;}
+.top{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:18px;background:rgba(26,16,48,.96);border-bottom:1px solid var(--line);padding:10px 60px;font-size:.82em;}
+.top a{color:var(--acc);border:0;}
+.top .sp{flex:1}
+.top button{background:#2f1e59;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:3px 10px;cursor:pointer;font-family:inherit;}
+.top .info{color:var(--dim)}
+h1,h2,h3,h4{font-weight:700;line-height:1.35;margin:1.5em 0 .5em;}
+h1{font-size:2.05em;color:var(--acc);margin-top:.3em;border-bottom:2px solid var(--line);padding-bottom:.35em;}
+h2{font-size:1.5em;color:var(--acc);border-left:5px solid var(--acc);padding-left:.5em;}
+h3{font-size:1.18em;color:#e8dcff;}
+p{margin:.62em 0;}
+ul,ol{margin:.5em 0 .8em;padding-left:1.5em;}
+li{margin:.24em 0;}
+li>ul{margin:.2em 0;}
+strong{color:var(--acc);font-weight:700;}
+em{color:#f0d9ff;}
+a{color:#9ad9ff;text-decoration:none;border-bottom:1px solid rgba(154,217,255,.35);}
+a:hover{color:var(--acc);border-color:var(--acc);}
+code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.86em;background:#2c1b52;color:#ffd98a;padding:.12em .4em;border-radius:4px;}
+pre{background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:6px;padding:14px 18px;overflow-x:auto;margin:.9em 0;}
+pre code{background:none;color:#d9ffb0;padding:0;font-size:.9em;line-height:1.5;}
+table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.95em;}
+th,td{border:1px solid var(--line);padding:9px 13px;text-align:left;vertical-align:top;}
+th{background:#2f1e59;color:var(--acc);}
+tr:nth-child(even) td{background:rgba(255,255,255,.022);}
+blockquote{border-left:4px solid var(--dim);margin:.9em 0;padding:.2em 1em;color:var(--dim);}
+hr{border:0;border-top:1px solid var(--line);margin:1.8em 0;}
+details{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:10px 16px;margin:.8em 0;}
+summary{cursor:pointer;color:var(--acc);}
+.meta{color:var(--dim);font-size:.82em;}
+.cat{margin:2em 0 .6em;font-size:1.35em;color:var(--acc);border-left:5px solid var(--acc);padding-left:.5em;}
+.docs{list-style:none;padding:0;margin:0;}
+.docs li{display:flex;gap:18px;align-items:baseline;padding:9px 12px;border-bottom:1px solid var(--line);}
+.docs li:hover{background:rgba(198,242,78,.06)}
+.docs .d{color:var(--dim);font-size:.82em;white-space:nowrap;font-family:ui-monospace,Consolas,monospace;}
+.docs .t{flex:1}
+.docs .f{color:var(--dim);font-size:.75em;}
+.task{margin:1.2em 0 .25em;font-size:1.02em;color:#e8dcff;font-weight:700;border-left:3px solid var(--dim);padding-left:.55em;}
+.task-n{margin-left:.6em;font-size:.72em;font-weight:400;color:var(--dim);}
+.fold{background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 16px;margin:1.4em 0 0;}
+.fold>summary{color:var(--dim);font-size:.95em;padding:6px 0;}
+.fold>summary:hover{color:var(--acc);}
+@media print{body{background:#fff;color:#000}.top{display:none}}</style></head><body><div class="top"><a href="index.html">← 回本專案總覽</a> <a href="../../網頁版總入口.html">← 回總入口</a><span class="info">最後修改 2026-07-08</span><span class="sp"></span><button onclick="copyAll(this)">複製全文</button> 字級 <button onclick="z(-1)">－</button> <button onclick="z(1)">＋</button></div><script type="text/plain" id="raw-md"># Agent 低級錯誤防止規則
+
+- 使用者指定 skill / plugin 時，先完整讀完對應 `SKILL.md` 與它要求的 reference；不准只讀標題或一部分就開始做。
+- skill 明確要求「停止、詢問、等待確認」時，必須真的停止；不准先改檔再補流程。
+- 缺 `PRODUCT.md` / `DESIGN.md` 等前置脈絡時，先完成 skill 規定的前置步驟；沒有完成前禁止修改頁面或程式碼。
+- Product Design / redesign / prototype 類工作若要求 brief gate，必須先用自然語言回放 brief，等使用者確認後才實作。
+- 不准把「我會照 skill」當成已完成 skill 流程；必須逐步完成 skill 列出的檢查、提問、文件與驗證。
+- 不准事後補流程來假裝一開始有照流程；若已經違規，先明確回報並詢問是否還原或重新跑。
+- 回答使用者是否照 skill 時，只能依實際工具紀錄回答；不准含糊說「已補正」來掩蓋中間違規。
+- 不確定檔案名稱時先查證。使用者說 `AGENT.md` 但專案實際是 `AGENTS.md` 時，要說明並改正確檔案。
+- 發現檔案內容或終端輸出疑似亂碼時，不准整檔重寫；只能最小差異修改，或先停下確認。
+- 完成後只回報核心結果、改了哪些檔案、驗證方式；不要長篇辯解、推責或反覆自我修正浪費 token。
+</script><div class="wrap"><h1>Agent 低級錯誤防止規則</h1>
+<ul><li>使用者指定 skill / plugin 時，先完整讀完對應 <code>SKILL.md</code> 與它要求的 reference；不准只讀標題或一部分就開始做。</li><li>skill 明確要求「停止、詢問、等待確認」時，必須真的停止；不准先改檔再補流程。</li><li>缺 <code>PRODUCT.md</code> / <code>DESIGN.md</code> 等前置脈絡時，先完成 skill 規定的前置步驟；沒有完成前禁止修改頁面或程式碼。</li><li>Product Design / redesign / prototype 類工作若要求 brief gate，必須先用自然語言回放 brief，等使用者確認後才實作。</li><li>不准把「我會照 skill」當成已完成 skill 流程；必須逐步完成 skill 列出的檢查、提問、文件與驗證。</li><li>不准事後補流程來假裝一開始有照流程；若已經違規，先明確回報並詢問是否還原或重新跑。</li><li>回答使用者是否照 skill 時，只能依實際工具紀錄回答；不准含糊說「已補正」來掩蓋中間違規。</li><li>不確定檔案名稱時先查證。使用者說 <code>AGENT.md</code> 但專案實際是 <code>AGENTS.md</code> 時，要說明並改正確檔案。</li><li>發現檔案內容或終端輸出疑似亂碼時，不准整檔重寫；只能最小差異修改，或先停下確認。</li><li>完成後只回報核心結果、改了哪些檔案、驗證方式；不要長篇辯解、推責或反覆自我修正浪費 token。</li></ul><hr><div class="meta">原始檔：AGENT.md</div></div><script>var s=parseInt(localStorage.getItem('fs')||'19');document.body.style.fontSize=s+'px';function z(d){s=Math.max(13,Math.min(32,s+d));document.body.style.fontSize=s+'px';localStorage.setItem('fs',s);}function copyAll(btn){ var raw=document.getElementById('raw-md'); var text=raw?raw.textContent:''; var done=function(){btn.textContent='已複製 ✓';setTimeout(function(){btn.textContent='複製全文';},1600);}; var fail=function(){btn.textContent='複製失敗';setTimeout(function(){btn.textContent='複製全文';},1600);}; try{  var ta=document.createElement('textarea');ta.value=text;  ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);  ta.select();var ok=document.execCommand('copy');document.body.removeChild(ta);  if(ok){done();return;} }catch(e){} if(navigator.clipboard&&navigator.clipboard.writeText){  navigator.clipboard.writeText(text).then(done,fail); }else{fail();}}</script></body></html>
