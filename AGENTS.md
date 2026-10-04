@@ -1,3 +1,28 @@
+# 世紀-cy
+
+## 已定案
+<!-- 使用者拍板過的決定。AI 不得自行推翻；要改先問使用者。 -->
+- [2026-10-04｜Claude] 預約時段的「15 分／20 分」是單純開關，沒開就是 20 分（取自 9 月版本紀錄「15 分改成單純的開關」）
+
+## 專案說明
+
+世紀髮廊景美店的預約排班系統。前端為單頁應用（FullCalendar Scheduler + Vanilla JS），後端為 Google Apps Script Web App，資料存於 Google Sheets。
+
+- 開發伺服器：VS Code LiveServer，port 5502；純靜態檔案，無建置步驟
+- 樣式快取：`styles.css?v=N`，改 CSS 後要遞增 `index.html` 中的版號
+- GAS 端點：API URL 寫死在 `index.html` 頂部的 `APPS_SCRIPT_WEB_APP_URL`
+- CSS 檢查：`npm run lint`（stylelint）
+- 主要檔案：`index.html`（SPA，HTML + 內嵌 JS）、`styles.css`（全站樣式，含 CSS 變數與章節目錄）、`AI_GUIDE.md`（回覆風格提示詞）
+
+## 規則
+
+### 程式碼風格
+
+- CSS：依章節組織（檔案頂部有目錄註解），新增樣式放到對應章節；使用 CSS Variables (`--*`) 管理顏色、間距、字型
+- JS：Vanilla JS + ES6 async/await，無框架；DOM 操作用 `querySelector` / `getElementById`
+- 動態插入 HTML 必須用 `escapeHtml()` 防 XSS
+- API 呼叫統一用 fetch + JSON
+
 ## 本專案的 AI 協作規範（必讀）
 
 在開始回覆或修改程式碼前，請先閱讀 `AI_GUIDE.md`，並且**優先採用其中的「B) 進階提示詞（助教風格）」**來回覆與執行。
@@ -21,3 +46,16 @@
 - 禁止使用會整檔重寫的方式修改含中文檔案（例如先 ReadAll/Replace 再整檔寫回）。
 - 優先使用最小差異編輯（apply_patch），僅改必要區塊。
 - 若偵測到編碼不明或內容疑似亂碼：停止修改，先回報並詢問再處理。
+
+## Agent 低級錯誤防止規則
+
+- 使用者指定 skill / plugin 時，先完整讀完對應 `SKILL.md` 與它要求的 reference；不准只讀標題或一部分就開始做。
+- skill 明確要求「停止、詢問、等待確認」時，必須真的停止；不准先改檔再補流程。
+- 缺 `PRODUCT.md` / `DESIGN.md` 等前置脈絡時，先完成 skill 規定的前置步驟；沒有完成前禁止修改頁面或程式碼。
+- Product Design / redesign / prototype 類工作若要求 brief gate，必須先用自然語言回放 brief，等使用者確認後才實作。
+- 不准把「我會照 skill」當成已完成 skill 流程；必須逐步完成 skill 列出的檢查、提問、文件與驗證。
+- 不准事後補流程來假裝一開始有照流程；若已經違規，先明確回報並詢問是否還原或重新跑。
+- 回答使用者是否照 skill 時，只能依實際工具紀錄回答；不准含糊說「已補正」來掩蓋中間違規。
+- 不確定檔案名稱時先查證。使用者說 `AGENT.md` 但專案實際是 `AGENTS.md` 時，要說明並改正確檔案。
+- 發現檔案內容或終端輸出疑似亂碼時，不准整檔重寫；只能最小差異修改，或先停下確認。
+- 完成後只回報核心結果、改了哪些檔案、驗證方式；不要長篇辯解、推責或反覆自我修正浪費 token。
