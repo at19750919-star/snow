@@ -977,6 +977,47 @@ body {
   /* 外框跟著文字一起變粉紫色 */
 }
 
+/* [樣式] 洗頭勳章（第二顆）：反白系列，靠形狀區分
+   按摩洗＝白底實心「按」、字用卡片主色；基礎洗＝深色半透明底白框「洗」；不洗＝淡白虛線框加斜槓 */
+
+.evt-svc.evt-wash {
+  position: relative;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+.evt-svc.wash-massage {
+  background-color: #ffffff;
+  color: #3a4660;
+}
+
+#calendar .fc-event.sty-1 .evt-svc.wash-massage { color: var(--stylist-1-bg); }
+#calendar .fc-event.sty-2 .evt-svc.wash-massage { color: var(--stylist-2-bg); }
+#calendar .fc-event.sty-3 .evt-svc.wash-massage { color: var(--stylist-3-bg); }
+#calendar .fc-event.evt-unassigned .evt-svc.wash-massage { color: #C85A32; }
+
+.evt-svc.wash-basic {
+  background-color: rgba(0, 0, 0, 0.18);
+}
+
+.evt-svc.wash-none {
+  background-color: transparent;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.evt-svc.wash-none::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 .evt-col-phone {
   color: rgba(255, 255, 255, 0.88);
   font-family: var(--font-display);
@@ -3868,6 +3909,32 @@ body #appointmentModal .settlement-section .price-item--suggested {
 
 #appointmentModal .service-icon-buttons button.is-on { transform: scale(1.06); }
 
+/* 洗頭三顆按鈕：放在項目圖示下方，選中時反白亮起 */
+
+#appointmentModal .wash-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#appointmentModal .wash-buttons button {
+  min-height: 40px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  transition: background-color .15s ease, transform .12s ease;
+}
+
+#appointmentModal .wash-buttons button.is-on {
+  background-color: #ffffff;
+  border: 2px solid #ffffff;
+  color: #3a4660;
+}
+
 #appointmentModal .appointment-field--notes {
   grid-template-columns: 1fr;
   order: 6;
@@ -5634,6 +5701,27 @@ body #appointmentModal.is-create .operator-segmented button {
 
 body #appointmentModal.is-create .operator-segmented button.is-on,
 body #appointmentModal.is-create .service-icon-buttons button.is-on {
+  border-color: var(--preview-accent) !important;
+  background: var(--preview-accent-soft) !important;
+  color: var(--preview-ink) !important;
+  box-shadow: inset 0 0 0 2px var(--preview-accent) !important;
+}
+
+/* 新增模式的洗頭三顆按鈕：沿用紙本版型的按鈕外觀與選中綠框 */
+
+body #appointmentModal.is-create .wash-buttons button {
+  min-height: 44px;
+  border: 1.5px solid var(--preview-line) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #fff, #f3ecdc) !important;
+  color: var(--preview-ink) !important;
+  font-family: "Noto Serif TC", "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+
+body #appointmentModal.is-create .wash-buttons button.is-on {
   border-color: var(--preview-accent) !important;
   background: var(--preview-accent-soft) !important;
   color: var(--preview-ink) !important;

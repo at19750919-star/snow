@@ -18,7 +18,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chiron-sung-hk-webfont/css/vf.css">
 
-  <link rel="stylesheet" href="styles.css?v=237">
+  <link rel="stylesheet" href="styles.css?v=242">
 
 
 </head>
@@ -235,6 +235,13 @@
                       <button type="button" data-service-value="燙" title="燙"><img class="service-icon-img" src="icons/svc-perm-gpt.png" alt="" aria-hidden="true"></button>
                       <button type="button" data-service-value="染+燙" title="染+燙"><img class="service-icon-img" src="icons/svc-dye-perm-gpt.png" alt="" aria-hidden="true"></button>
                       <button type="button" data-service-value="頭皮護理" title="頭皮護理"><img class="service-icon-img" src="icons/svc-scalp-gpt.png" alt="" aria-hidden="true"></button>
+                    </div>
+                    <!-- 洗頭：存進備註的「加購：…」標記，跟 LINE 預約同一套寫法 -->
+                    <input type="hidden" id="wash_value" value="">
+                    <div class="wash-buttons" aria-label="洗頭">
+                      <button type="button" data-wash-value="none">不洗</button>
+                      <button type="button" data-wash-value="basic">基礎洗</button>
+                      <button type="button" data-wash-value="massage">按摩洗</button>
                     </div>
                   </div>
                 </div>
@@ -965,6 +972,16 @@
             });
           }
 
+          function syncWashButtons() {
+            const current = document.getElementById('wash_value')?.value || '';
+            const readonly = !!appointmentModal && appointmentModal.classList.contains('is-readonly');
+            document.querySelectorAll('#appointmentModal [data-wash-value]').forEach(btn => {
+              const selected = btn.dataset.washValue === current;
+              btn.classList.toggle('is-on', selected);
+              btn.style.display = (readonly && !selected) ? 'none' : '';
+            });
+          }
+
           function syncPaxToggle() {
             const input = document.getElementById('pax_count');
             const btnX2 = document.getElementById('pax_x2');
@@ -981,6 +998,7 @@
             syncCustomerAvatar();
             syncOperatorButtons();
             syncServiceButtons();
+            syncWashButtons();
             syncPaxToggle();
           }
 
@@ -1016,6 +1034,15 @@
                 serviceSelect.value = serviceSelect.value === btn.dataset.serviceValue ? '' : (btn.dataset.serviceValue || '');
                 serviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
                 syncServiceButtons();
+              });
+            });
+
+            const washInput = document.getElementById('wash_value');
+            document.querySelectorAll('#appointmentModal [data-wash-value]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!washInput) return;
+                washInput.value = washInput.value === btn.dataset.washValue ? '' : (btn.dataset.washValue || '');
+                syncWashButtons();
               });
             });
 
@@ -1383,7 +1410,7 @@
                 const svcClassMap = { '剪': 'svc-cut', '染': 'svc-dye', '燙': 'svc-perm', '護': 'svc-treat', '預': 'svc-default' };
                 const safeTrim = (v) => (v != null ? String(v).trim() : '');
                 const decodedNotes = decodeNotes(ep.notes);
-                const name = safeTrim(ep.customer_name) || safeTrim(decodedNotes.free);
+                const name = safeTrim(ep.customer_name) || stripWashTag(decodedNotes.free);
                 const paxNum = parseInt(ep.pax, 10);
                 const paxExtra = (paxNum >= 2 && paxNum <= 4) ? (paxNum - 1) : 0;
                 const phone = safeTrim(ep.customer_phone);
@@ -1400,7 +1427,11 @@
                 const badgeText = svcList.join('');
                 const badgeKey = (svcList && svcList[0]) ? svcList[0] : '預';
                 const badgeCls = svcClassMap[badgeKey] || 'svc-default';
-                const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>`;
+                // 第二顆勳章：洗頭。按摩洗＝實心「按」、基礎洗＝空心「洗」、不洗＝虛線斜槓；沒資料不顯示。
+                const wash = washFromNotes(ep.notes);
+                const washBadge = { massage: ['按', 'wash-massage', '按摩洗'], basic: ['洗', 'wash-basic', '基礎洗'], none: ['洗', 'wash-none', '不洗'] }[wash];
+                const washHtml = washBadge ? `<span class="evt-svc evt-wash ${washBadge[1]}" title="${washBadge[2]}">${washBadge[0]}</span>` : '';
+                const servicesHtml = `<span class="evt-svc ${badgeCls}">${badgeText}</span>${washHtml}`;
                 const operator = safeTrim(ep.entered_by);
                 // 輸入人短代號對照表（固定對照，非統一取字規則：婷/白取末字、陳/洪/曹取首字、店長用英文 snow）
                 const operatorShortMap = { '店長': 'snow', '雅婷': '婷', '小白': '白', '陳翎': '陳', '洪苡芳': '洪', '曹家溱': '曹', '吳佩珈': '珈', '羅雨凡': '凡' };
@@ -1497,6 +1528,24 @@
               return { lastVisit: body.trim(), free: '' };
             }
             return { lastVisit: '', free: s };
+          }
+
+          // 洗頭標記：LINE 預約與彈窗都寫「加購：基礎洗 +50／按摩洗 +150／不洗」；舊 LINE 單的「沖洗」視同基礎洗。
+          const WASH_TAG_RE = /\s*加購：(基礎洗|沖洗|按摩洗|不洗)(?:\s*\+\d+)?/;
+          const WASH_TAGS = { basic: '加購：基礎洗 +50', massage: '加購：按摩洗 +150', none: '加購：不洗' };
+          function washFromNotes(raw) {
+            const m = String(raw == null ? '' : raw).match(WASH_TAG_RE);
+            if (!m) return '';
+            return m[1] === '按摩洗' ? 'massage' : m[1] === '不洗' ? 'none' : 'basic';
+          }
+          function stripWashTag(raw) {
+            return String(raw == null ? '' : raw).replace(WASH_TAG_RE, '').trim();
+          }
+          function withWashTag(free, wash) {
+            const rest = stripWashTag(free);
+            const tag = WASH_TAGS[wash] || '';
+            if (!tag) return rest;
+            return rest ? rest + '\n' + tag : tag;
           }
 
           // 組合 → 單一 notes 字串。lastVisit 為空時只存自由備註(不加前綴)。
@@ -1846,7 +1895,8 @@
               updateCalculatedTotal();
 
               const assignType = document.getElementById('assignment_type_input')?.value || '';
-              let encodedNote = encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', fd.get('notes') || '');
+              const washValue = document.getElementById('wash_value')?.value || '';
+              let encodedNote = encodeNotes(document.getElementById('last-visit-note')?.dataset.raw || '', withWashTag(fd.get('notes') || '', washValue));
               if (assignType && encodedNote.indexOf(`【${assignType}】`) < 0) {
                 encodedNote = `【${assignType}】` + encodedNote;
               }
@@ -2272,6 +2322,7 @@
             document.getElementById('dye_color_input').value = '';
             document.getElementById('duration_select').value = '15'; // 預設 15 分鐘
             document.getElementById('pax_count').value = '1';
+            document.getElementById('wash_value').value = '';
             const warnBanner = document.getElementById('warn-banner');
             if (warnBanner) warnBanner.style.display = 'none';
 
@@ -2325,7 +2376,8 @@
             {
               const decoded = decodeNotes(ep.notes);
               setLastVisitNote(decoded.lastVisit);
-              document.getElementById('notes').value = decoded.free;
+              document.getElementById('notes').value = stripWashTag(decoded.free);
+              document.getElementById('wash_value').value = washFromNotes(ep.notes);
             }
             const rawAssign = ep.assignment_type || (ep.notes && ep.notes.indexOf('【不指定】') >= 0 ? '不指定' : (ep.notes && ep.notes.indexOf('【店長或雅婷】') >= 0 ? '店長或雅婷' : ''));
             setAssignmentType(rawAssign);
