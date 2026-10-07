@@ -17,6 +17,13 @@
 
 ## 規則
 
+### 部署後預熱
+
+- GAS 每次 `clasp deploy` 出新版本後，第一次被呼叫會冷啟動，主頁曾因此等約兩分鐘才出卡片。部署完立刻由部署者呼叫一次，讓店裡打開時已是熱的：
+  - 正式行事曆 GAS：`curl -sL "https://script.google.com/macros/s/AKfycbyICaHAciRLstbnMvKLxkCopi7oxblP4goUSD8yj2CI6SmugltRcQOwTeBBiHS99VzW2Q/exec?action=getEvents&start=<今天>&end=<明天>"`，確認回傳預約資料。
+  - LINE GAS：`curl -sL "https://script.google.com/macros/s/AKfycbxcFJ3gT1OBqgS68RVI9ons-JgSvvIwk_qcxO6YeeRbszqbvfi-RjnCa21gQTsNcZ8q/exec?action=health"`。
+- 平時不需另設定時預熱：LINE Worker 排程每 3 分鐘會讀兩支 GAS。
+
 ### 程式碼風格
 
 - CSS：依章節組織（檔案頂部有目錄註解），新增樣式放到對應章節；使用 CSS Variables (`--*`) 管理顏色、間距、字型
