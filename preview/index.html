@@ -3105,19 +3105,22 @@
               listContainer.innerHTML = '<div style="text-align:center; color:var(--md3-on-surface-variant); padding:12px;">目前沒有警示名單</div>';
               return;
             }
+            // LINE 客人那列的鍵是「LINE:使用者ID」，畫面上只寫「LINE 客人」，名字在備註裡。
+            const warnLabel = item => String(item.phone).indexOf('LINE:') === 0 ? 'LINE 客人' : item.phone;
             listContainer.innerHTML = data.list.map(item => `
               <div class="warnlist-item">
                 <div class="warnlist-item-info">
-                  <span class="warnlist-phone">${escapeHtml(item.phone)}</span>
+                  <span class="warnlist-phone">${escapeHtml(warnLabel(item))}</span>
                   <span class="warnlist-note">${escapeHtml(item.note || '')}</span>
                 </div>
-                <button type="button" class="warnlist-delete-btn" data-phone="${escapeHtml(item.phone)}">刪除</button>
+                <button type="button" class="warnlist-delete-btn" data-phone="${escapeHtml(item.phone)}" data-label="${escapeHtml(warnLabel(item))}">刪除</button>
               </div>
             `).join('');
             listContainer.querySelectorAll('.warnlist-delete-btn').forEach(btn => {
               btn.addEventListener('click', async function () {
                 const phone = this.dataset.phone;
-                if (!confirm(`確定要從警示名單移除 ${phone} 嗎？`)) return;
+                const lineNote = phone.indexOf('LINE:') === 0 ? '（移除後恢復他用 LINE 預約）' : '';
+                if (!confirm(`確定要從警示名單移除 ${this.dataset.label}${lineNote} 嗎？`)) return;
                 try {
                   await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: 'deleteWarn', phone }) });
                   loadWarnList();
