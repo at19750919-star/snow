@@ -2350,6 +2350,21 @@
             appointmentModal.style.display = 'block';
           }
 
+          // LINE 回流客：這筆電話空白（姓名多半是 LINE 暱稱）時，用上次預約的姓名、電話填進結帳視窗。
+          // 只改畫面欄位，不直接寫回試算表；店員按「儲存／結帳」時才會隨表單一起存。
+          function applyLineGuestIdentity(history) {
+            const phoneInput = document.getElementById('customer_phone');
+            const nameInput = document.getElementById('customer_name');
+            if (!phoneInput || !nameInput || !history) return false;
+            const lastPhone = normalizePhone(history.customer_phone || '');
+            if (lastPhone.length !== 10) return false;
+            if (normalizePhone(phoneInput.value || '')) return false;
+            phoneInput.value = String(history.customer_phone).trim();
+            const lastName = String(history.customer_name || '').trim();
+            if (lastName) nameInput.value = lastName;
+            return true;
+          }
+
           function openApptModalForEdit(event) {
             form.reset();
             const ep = event.extendedProps || {};
@@ -2495,6 +2510,7 @@
                   if (!history || !history.start || eventIdInput.value !== openedId) return;
                   lineApplied = true;
                   applyPriceSuggestion(history);
+                  applyLineGuestIdentity(history);
                   addPriceToLastVisitNote(history);
                 } catch (err) { console.error('CRM查詢失敗(LINE上次消費):', err); }
               })();
