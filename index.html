@@ -495,7 +495,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/zh-tw.js"></script>
     <script src="diagnostics.js?v=1"></script>
-    <script src="appointment-delete.js?v=1"></script>
+    <script src="appointment-delete.js?v=2"></script>
 
     <script>
       // 後端 Google Apps Script 網址
@@ -600,6 +600,7 @@
         let lastVisitInfoRight;
         let lastVisitLabelValue = '';
         let lastVisitPhoneValue = '';
+        let openedEventIdentity = {}; // 開啟編輯時記下的原本身分（orig_start／orig_employee_id／orig_line_user_id）
         let lastVisitDesignerValue = '';
 
         /* ====== API 請求優化：debounce + cache ====== */
@@ -1127,7 +1128,9 @@
               notes: ep.notes || '',
               duration: durationMin,
               dye_color: ep.dye_color || '',
-              pax: ep.pax || 1
+              pax: ep.pax || 1,
+              // 原本身分取拖曳前的事件（info.oldEvent），不能用新時間
+              ...eventIdentityForApi(info.oldEvent, info.oldResource ? info.oldResource.id : undefined)
             };
             stashEventsCacheBeforeInvalidate();
             invalidateCache('getEvents');
@@ -1135,13 +1138,18 @@
             try {
               const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
               const data = await res.json();
-              if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+              if (!res.ok || data.status !== 'success') {
+                const error = new Error(data.message || '儲存失敗');
+                error.code = data.code || '';
+                throw error;
+              }
               saveCurrentEventsToCache();
               showToast('已更新', 'success', 2000);
             } catch (err) {
               info.revert();
               calendar.refetchEvents();
               showToast('更新失敗', 'error', 2000);
+              if (isIdGuardCode(err.code)) alert('❌ ' + err.message);
             }
           }
 
@@ -1920,7 +1928,9 @@
                 duration: fd.get('duration_select') || 15,
                 // [新增] 染髮顏色傳送給後端
                 dye_color: document.getElementById('dye_color_input').value,
-                pax: fd.get('pax_count') || 1
+                pax: fd.get('pax_count') || 1,
+                // 編輯時帶開啟事件當下記下的原本身分（start 是新時間，不能當身分）
+                ...(isEditing ? openedEventIdentity : {})
               };
               submitBtn.disabled = true; appointmentModal.style.display = 'none'; stashEventsCacheBeforeInvalidate(); invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
               let saveOk = false;
@@ -1936,6 +1946,7 @@
                 const startDt = new Date(payload.start);
                 const endDt = new Date(startDt.getTime() + durationMin * 60000);
                 const previousEnteredBy = isEditing ? (calendar.getEventById(eventId)?.extendedProps?.entered_by || '') : '';
+                const previousLineUserId = isEditing ? calendar.getEventById(eventId)?.extendedProps?.line_user_id : data.line_user_id;
                 if (isEditing) {
                   const oldEv = calendar.getEventById(eventId);
                   if (oldEv) oldEv.remove();
@@ -1959,7 +1970,9 @@
                     assistant_id: payload.assistant_id,
                     dye_color: payload.dye_color,
                     pax: payload.pax,
-                    entered_by: payload.operator_name || previousEnteredBy
+                    entered_by: payload.operator_name || previousEnteredBy,
+                    // 下次編輯／刪除要當原本身分送回；undefined（舊快取）就不帶
+                    ...(previousLineUserId !== undefined && previousLineUserId !== null ? { line_user_id: previousLineUserId } : {})
                   }
                   /* 第二參數 true＝掛進事件來源：之後任何 refetch 會用來源新資料「取代」這張樂觀卡。
                      不掛來源的話，refetch 供出的同一筆會和這張並存 → 畫面出現兩張重複卡片 */
@@ -1980,7 +1993,7 @@
                 try {
                   const res = await fetch(APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'delete', id: eventId }),
+                    body: JSON.stringify({ action: 'delete', id: eventId, ...openedEventIdentity }),
                     mode: 'cors',
                     signal: controller.signal
                   });
@@ -2021,6 +2034,13 @@
               onFailed: result => {
                 showToast('刪除失敗，資料仍存在', 'error', 3500);
                 alert('❌ 刪除失敗：' + result.message);
+                // 身分驗證擋下（編號重複／被別人改過／網頁太舊）：關掉視窗並重新抓事件
+                if (isIdGuardCode(result.code)) {
+                  appointmentModal.style.display = 'none';
+                  stashEventsCacheBeforeInvalidate();
+                  invalidateCache('getEvents');
+                  calendar.refetchEvents();
+                }
               },
               onUncertain: () => {
                 showToast('刪除結果尚未確認', 'error', 4500);
@@ -2284,7 +2304,7 @@
 
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
-            form.reset(); eventIdInput.value = ''; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
+            form.reset(); eventIdInput.value = ''; openedEventIdentity = {}; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             syncOperatorRequired();
             if (operatorSelect) operatorSelect.classList.remove('has-value');
             if (assistantSelect) assistantSelect.classList.remove('has-value');
@@ -2369,6 +2389,7 @@
             form.reset();
             const ep = event.extendedProps || {};
             eventIdInput.value = event.id;
+            openedEventIdentity = eventIdentityForApi(event);
             syncOperatorRequired();
             deleteBtn.style.display = 'inline-block';
             const rs = event.getResources();
@@ -2567,6 +2588,31 @@
               return acc;
             }, {});
             return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
+          }
+
+          // 編輯／刪除時送回後端的「原本身分」：原開始時間（台北 yyyy-MM-dd HH:mm）、原設計師、原 LINE 使用者 ID。
+          // 後端用它確認要動的是哪一列，同號多列時不會改到、刪到別人的預約。
+          // 舊快取的事件沒有 line_user_id 欄位時不送這一項（只比時間與設計師）。
+          function eventIdentityForApi(event, resourceId) {
+            if (!event) return {};
+            const iso = toTaipeiIsoForApi(event.start);
+            let empId = resourceId;
+            if (empId == null) {
+              const rs = typeof event.getResources === 'function' ? event.getResources() : [];
+              empId = rs && rs[0] ? rs[0].id : '';
+            }
+            const out = {
+              orig_start: iso ? iso.slice(0, 16).replace('T', ' ') : '',
+              orig_employee_id: String(empId || '')
+            };
+            const uid = (event.extendedProps || {}).line_user_id;
+            if (uid !== undefined && uid !== null) out.orig_line_user_id = String(uid).trim();
+            return out;
+          }
+
+          // 後端身分驗證擋下的錯誤碼（編號重複／被別人改過／網頁太舊）：顯示訊息並重新整理事件。
+          function isIdGuardCode(code) {
+            return code === 'duplicate_id' || code === 'row_changed' || code === 'need_refresh';
           }
 
           function populateTimeSelects(hour, minute) {

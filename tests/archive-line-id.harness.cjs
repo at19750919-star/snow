@@ -15,7 +15,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync(require('path').join(__dir
 ctx.auditLog_=()=>{};ctx.clearEventsCache=()=>{};ctx.allocateNextAppointmentId_=()=>18167;
 const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)process.exitCode=1};
 // 1 delete+recreate same slot
-ctx.doDelete({id:'18167',start:'2026-09-24T16:20:00',employee_id:'2'},main);
+ctx.doDelete({id:'18167',orig_start:'2026-09-24 16:20',orig_employee_id:'2',orig_line_user_id:'U-abc'},main);
 ok(main.v.length===1,'deleted');
 ctx.doCreate({start:'2026-09-24T16:20:00',employee_id:'2',operator_name:'店長',customer_name:'林致緯1',customer_phone:'0970151515',service_id:'剪髮',duration:15},main);
 let r=main.v[1];ok(r[16]==='LINE'&&r[17]==='U-abc'&&r[18]==='','recreate keeps 來源/LINE ID, no webhook: '+JSON.stringify(r.slice(14)));
@@ -28,7 +28,7 @@ ctx.allocateNextAppointmentId_=()=>19001;
 ctx.doCreate({start:'2026-10-20T11:00:00',employee_id:'1',operator_name:'店長',customer_name:'X',customer_phone:'0999999999',duration:15},main);
 ok(main.v[3][17]==='','no match stays blank');
 // 4 edit keeps LINE
-ctx.doEdit({id:'18167',start:'2026-09-24T16:20:00',employee_id:'2',operator_name:'店長',customer_name:'林致緯1',customer_phone:'0970151515',service_id:'剪髮',amount:'450',duration:15},main);
+ctx.doEdit({id:'18167',start:'2026-09-24T16:20:00',employee_id:'2',orig_start:'2026-09-24 16:20',orig_employee_id:'2',orig_line_user_id:'U-abc',operator_name:'店長',customer_name:'林致緯1',customer_phone:'0970151515',service_id:'剪髮',amount:'450',duration:15},main);
 ok(main.v[1][17]==='U-abc'&&main.v[1][16]==='LINE','edit keeps LINE');
 // 5 getLastVisit via phone from archive
 const out=ctx.doGet?JSON.parse(ctx.doGet({parameter:{action:'getLastVisit',phone:'0912000111',before:'2026-10-01'}})):null;

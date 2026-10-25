@@ -105,7 +105,8 @@ test('後端重複刪除不存在的 ID 時回覆已完成而不是拋錯', () =
 test('主頁使用刪除控制器並檢查後端結果', () => {
   loadController();
   const html = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
-  assert.match(html, /appointment-delete\.js\?v=1/);
+  assert.match(html, /appointment-delete\.js\?v=2/);
+  assert.match(html, /action: 'delete', id: eventId, \.\.\.openedEventIdentity/);
   assert.match(html, /installDeleteButton/);
   assert.doesNotMatch(html, /deleteBtn\.onclick\s*=\s*async function/);
 
@@ -113,4 +114,29 @@ test('主頁使用刪除控制器並檢查後端結果', () => {
   assert.match(preview, /\.\.\/appointment-delete\.js\?v=1/);
   assert.match(preview, /installDeleteButton/);
   assert.doesNotMatch(preview, /deleteBtn\.onclick\s*=\s*async function/);
+});
+
+test('後端以身分驗證擋下刪除時直接回失敗與錯誤碼，不再查一次', async () => {
+  const { createDeleteController } = loadController();
+  for (const code of ['duplicate_id', 'row_changed', 'need_refresh']) {
+    let verifyCount = 0;
+    const controller = createDeleteController({
+      requestDelete: async () => ({ status: 'error', code, message: '請重新整理後再試' }),
+      verifyDeleted: async () => { verifyCount += 1; return false; },
+      onBusyChange: () => {}
+    });
+    assert.deepEqual(await controller.run('19542'), { status: 'failed', code, message: '請重新整理後再試' });
+    assert.equal(verifyCount, 0);
+  }
+});
+
+test('後端找到列但身分驗證不過時不刪，回錯誤碼', () => {
+  let deleted = 0;
+  const doDelete = loadGasDelete({
+    getRowById: () => ({ error: 'duplicate_id' }),
+    idGuardErrorResult_: code => ({ status: 'error', code })
+  });
+  const result = doDelete({ id: '19542' }, { deleteRow: () => { deleted += 1; } });
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { status: 'error', code: 'duplicate_id' });
+  assert.equal(deleted, 0);
 });

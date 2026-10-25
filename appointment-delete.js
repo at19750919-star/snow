@@ -3,6 +3,8 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.AppointmentDelete = api;
 })(typeof window !== 'undefined' ? window : globalThis, function () {
+  const GUARD_CODES = ['duplicate_id', 'row_changed', 'need_refresh'];
+
   function createDeleteController(options) {
     const pendingIds = new Set();
 
@@ -21,6 +23,10 @@
             verified: false,
             alreadyDeleted: response.alreadyDeleted === true
           };
+        }
+        // 後端身分驗證擋下（編號重複／被別人改過／網頁太舊）：確定沒刪，不必再查
+        if (response && GUARD_CODES.indexOf(response.code) !== -1) {
+          return { status: 'failed', code: response.code, message: String(response.message || '請重新整理後再試') };
         }
 
         const verified = await options.verifyDeleted(id);
