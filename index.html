@@ -605,6 +605,7 @@
         let lastVisitPhoneValue = '';
         let openedEventIdentity = {}; // 開啟編輯時記下的原本身分（orig_start／orig_employee_id／orig_line_user_id）
         let lastVisitDesignerValue = '';
+        let billingTouched = false;
 
         /* ====== API 請求優化：debounce + cache ====== */
         function debounce(fn, ms) {
@@ -1902,8 +1903,8 @@
               const parsedAmount = parseInt(amountRaw, 10);
               const amountValue = Number.isFinite(parsedAmount) ? String(Math.max(0, parsedAmount)) : '';
 
-              // 確保總金額計算最新
-              updateCalculatedTotal();
+              // 編輯舊單沒動價目時不重算，保留原總額（其他項目重開不會勾回，重算會變少）
+              if (!isEditing || billingTouched) updateCalculatedTotal();
 
               const assignType = document.getElementById('assignment_type_input')?.value || '';
               const washValue = document.getElementById('wash_value')?.value || '';
@@ -1923,7 +1924,12 @@
                 customer_name: fd.get('customer_name') || '',
                 customer_phone: (fd.get('customer_phone') || '').replace(/\D/g, ''),
                 service_id: fd.get('service_id') || '',
-                cut_price: (document.querySelector('input[name="cut_price"]:checked')?.value) || '',
+                cut_price: (() => {
+                  const v = document.querySelector('input[name="cut_price"]:checked')?.value || '';
+                  if (v && v !== '0') return v;
+                  const c = parseInt(document.getElementById('cut_custom').value, 10) || 0;
+                  return c > 0 ? String(c) : v;
+                })(),
                 amount: amountValue,
                 total_amount: window.displayTotal,  // 新增總金額欄位
                 assistant_id: fd.get('assistant_select') || '',
@@ -2138,9 +2144,16 @@
             });
 
             const priceInputs = document.querySelectorAll('input[name="cut_price"], input[name="other_item"], input[name="perm_price"], #retail_price, #bleach4000_cost, #cut_custom, #perm_custom, #other_custom');
+            const markTouched = () => { billingTouched = true; updateCalculatedTotal(); };
+            // 舊價自動填進剪髮自訂後，改點剪髮按鈕就清掉，避免新舊價重複加總
+            document.querySelectorAll('input[name="cut_price"]').forEach(r => r.addEventListener('change', () => {
+              const cc = document.getElementById('cut_custom');
+              if (cc.dataset.legacy === '1') { cc.value = '0'; delete cc.dataset.legacy; updateCalculatedTotal(); }
+            }));
+            document.getElementById('cut_custom').addEventListener('input', function () { delete this.dataset.legacy; });
             priceInputs.forEach(input => {
-              input.addEventListener('change', updateCalculatedTotal);
-              if (input.type === 'number' || input.type === 'text') input.addEventListener('input', updateCalculatedTotal);
+              input.addEventListener('change', markTouched);
+              if (input.type === 'number' || input.type === 'text') input.addEventListener('input', markTouched);
             });
 
             // 讓剪髮 / 燙髮的 radio 跟「其他項目」一樣支援「再點一次取消選取」(切回 value=0 的未選狀態)
@@ -2307,6 +2320,8 @@
 
           function openApptModalForCreate(startDate, resource) {
             if (!resource) return;
+            billingTouched = false;
+            delete document.getElementById('cut_custom').dataset.legacy;
             form.reset(); eventIdInput.value = ''; openedEventIdentity = {}; submitBtn.textContent = '儲存'; deleteBtn.style.display = 'none';
             syncOperatorRequired();
             if (operatorSelect) operatorSelect.classList.remove('has-value');
@@ -2390,6 +2405,8 @@
           }
 
           function openApptModalForEdit(event) {
+            billingTouched = false;
+            delete document.getElementById('cut_custom').dataset.legacy;
             form.reset();
             const ep = event.extendedProps || {};
             eventIdInput.value = event.id;
@@ -2473,6 +2490,10 @@
                 // 若選中的項目在折疊區內，自動展開
                 const detailsParent = cutRadio.closest('details.more-options-details');
                 if (detailsParent) detailsParent.open = true;
+              } else if (Number(ep.cut_price) > 0) {
+                // 舊價目按鈕已不存在，例如舊指定剪髮600，改填剪髮自訂避免重算歸零
+                document.getElementById('cut_custom').value = Number(ep.cut_price);
+                document.getElementById('cut_custom').dataset.legacy = '1';
               }
             }
 
