@@ -312,7 +312,7 @@
                   </div>
                   <div class="price-group">
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                          value="150" data-cost="0"> 洗髮</span> <span class="price-val">$ 150</span></label>
+                          value="150" data-cost="50"> 洗髮</span> <span class="price-val">$ 150</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="50" data-cost="0"> 基礎洗</span> <span class="price-val">$ 50</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
@@ -2123,12 +2123,31 @@
               calendar.next();
             });
 
-            // [新增] 監聽染髮選項，顯示顏色輸入框
+            const xiaobaiCutOption = document.querySelector('#xiaobai-cut-opt input[name="cut_price"][value="600"]');
+            const shampooOption = document.querySelector('input[name="other_item"][value="150"]');
+            const basicWashOption = document.querySelector('input[name="other_item"][value="50"]');
+
+            // 小白一定洗頭：指定剪髮 600 自動帶基礎洗；升級按摩洗（洗髮150）取代基礎洗，等於只加100
+            xiaobaiCutOption?.addEventListener('change', function () {
+              if (this.checked && !shampooOption.checked) {
+                basicWashOption.checked = true;
+                updateCalculatedTotal();
+              }
+            });
+
+            // [新增] 監聽染髮與小白洗髮選項
             document.querySelectorAll('input[name="other_item"]').forEach(cb => {
               cb.addEventListener('change', function () {
                 const label = this.parentElement.textContent;
                 if (label.includes('染髮')) {
                   document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
+                }
+                if (xiaobaiCutOption?.checked) {
+                  if (this === shampooOption) {
+                    basicWashOption.checked = !this.checked;
+                  } else if (this === basicWashOption && this.checked) {
+                    shampooOption.checked = false;
+                  }
                 }
                 updateCalculatedTotal();
               });
