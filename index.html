@@ -296,8 +296,11 @@
                     <label class="price-item"><span class="price-label"><input type="radio" name="cut_price" value="900"
                           data-cost="200"> 剪髮+護髮</span> <span class="price-val">$ 900</span></label>
                     <label class="price-item" id="xiaobai-cut-opt" style="display:none;"><span class="price-label"><input
-                          type="radio" name="cut_price" value="600" data-cost="0">指定剪髮</span> <span
-                        class="price-val">$ 600</span></label>
+                          type="radio" name="cut_price" value="650" data-cost="0">指定剪髮</span> <span
+                        class="price-val">$ 650</span></label>
+                    <label class="price-item" id="xiaobai-cut-massage-opt" style="display:none;"><span class="price-label"><input
+                          type="radio" name="cut_price" value="750" data-cost="50">指定剪髮+按摩洗</span> <span
+                        class="price-val">$ 750</span></label>
                     <label class="price-item price-item--custom">
                       <span class="price-label">剪髮自訂</span>
                       <span class="price-val custom-val-wrap">$<input type="number" id="cut_custom" class="custom-price-input" value="0" min="0"></span>
@@ -312,7 +315,7 @@
                   </div>
                   <div class="price-group">
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
-                          value="150" data-cost="50"> 洗髮</span> <span class="price-val">$ 150</span></label>
+                          value="150" data-cost="50"> 按摩洗</span> <span class="price-val">$ 150</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
                           value="50" data-cost="0"> 基礎洗</span> <span class="price-val">$ 50</span></label>
                     <label class="price-item"><span class="price-label"><input type="checkbox" name="other_item"
@@ -2123,31 +2126,12 @@
               calendar.next();
             });
 
-            const xiaobaiCutOption = document.querySelector('#xiaobai-cut-opt input[name="cut_price"][value="600"]');
-            const shampooOption = document.querySelector('input[name="other_item"][value="150"]');
-            const basicWashOption = document.querySelector('input[name="other_item"][value="50"]');
-
-            // 小白一定洗頭：指定剪髮 600 自動帶基礎洗；升級按摩洗（洗髮150）取代基礎洗，等於只加100
-            xiaobaiCutOption?.addEventListener('change', function () {
-              if (this.checked && !shampooOption.checked) {
-                basicWashOption.checked = true;
-                updateCalculatedTotal();
-              }
-            });
-
-            // [新增] 監聽染髮與小白洗髮選項
+            // 監聽染髮選項
             document.querySelectorAll('input[name="other_item"]').forEach(cb => {
               cb.addEventListener('change', function () {
                 const label = this.parentElement.textContent;
                 if (label.includes('染髮')) {
                   document.getElementById('dye-color-wrap').style.display = this.checked ? 'grid' : 'none';
-                }
-                if (xiaobaiCutOption?.checked) {
-                  if (this === shampooOption) {
-                    basicWashOption.checked = !this.checked;
-                  } else if (this === basicWashOption && this.checked) {
-                    shampooOption.checked = false;
-                  }
                 }
                 updateCalculatedTotal();
               });
@@ -2243,7 +2227,7 @@
                 chemTriggerActive = true;
                 defaultChemCost += c; // 累計漂4000的預設成本
               } else {
-                totalCost += c; // 染髮、洗髮或其他
+                totalCost += c; // 染髮、按摩洗或其他
               }
               chemTotal += p;
             });
@@ -2340,6 +2324,7 @@
 
             const isXiaobai = String(resource.id) === '3';
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+            document.getElementById('xiaobai-cut-massage-opt').style.display = isXiaobai ? 'flex' : 'none';
 
             amountInput.value = '';
             if (operatorSelect) operatorSelect.value = '';
@@ -2468,6 +2453,7 @@
 
             const isXiaobai = (rs && rs[0] && String(rs[0].id) === '3');
             document.getElementById('xiaobai-cut-opt').style.display = isXiaobai ? 'flex' : 'none';
+            document.getElementById('xiaobai-cut-massage-opt').style.display = isXiaobai ? 'flex' : 'none';
 
             // Reset billing default
             document.querySelectorAll('input[name="cut_price"][value="0"]').forEach(r => r.checked = true);
