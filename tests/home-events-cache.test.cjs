@@ -12,6 +12,7 @@ function section(start, end) {
 }
 function setup() {
   const store = new Map(), requests = [], refetches = [];
+  let currentEvents = [];
   let time = Date.now();
   class Clock extends Date { static now() { return time; } }
   const ctx = vm.createContext({
@@ -23,10 +24,12 @@ function setup() {
     fetch: url => new Promise(resolve => requests.push({ url, resolve: data => resolve({ ok:true, text:async()=>JSON.stringify(data) }) })),
     window: { setTimeout, setInterval() {}, addEventListener() {} },
     document: { hidden:false, getElementById() {}, createElement:()=>({style:{}}), body:{appendChild() {}}, addEventListener() {} },
-    calendar: { view: {}, refetchEvents:()=>refetches.push(1) }
+    calendar: { view: {}, refetchEvents:()=>refetches.push(1), getEvents:()=>currentEvents }
   });
   vm.runInContext(section('        /* 簡易快取：key', '        /* ===== 新版預覽入口') + '\n' +
-    section('          function buildEventsUrl(', '          function formatLocalDateTime(') + '\nvar eventsSource = { ' +
+    section('          function buildEventsUrl(', '          function formatLocalDateTime(') + '\n' +
+    section('          function formatLocalDateTime(', '          /* 寫入前先留存') + '\n' +
+    section('          function currentCalendarEventsForSource(', '          function saveCurrentEventsToCache(') + '\nvar eventsSource = { ' +
     section('events: function (info, successCallback, failureCallback) {', '\n              views: {') + ' };', ctx);
   const seed = (url, data, age=0, persistent=false) => {
     ctx.seedUrl=url; ctx.seedData=data; ctx.seedTs=time-age;
@@ -37,7 +40,7 @@ function setup() {
     ctx.calendar.view = { activeStart:start, activeEnd:end };
     return new Promise(resolve => ctx.eventsSource.events({start,end},resolve,assert.fail));
   };
-  return {ctx,store,requests,refetches,seed,show,advance:ms=>{time+=ms;}};
+  return {ctx,store,requests,refetches,seed,show,advance:ms=>{time+=ms;},setCurrentEvents:data=>{currentEvents=data;}};
 }
 const day = (month, date) => new Date(2026,month-1,date);
 const event = (id,date) => ({id,start:`2026-${date}T12:00:00`,end:`2026-${date}T13:00:00`,resourceId:'1'});
@@ -106,4 +109,39 @@ test('背景更新反映外部新增、修改及刪除，不累積已刪除卡�
   const cards=await e.show(day(9,29),day(9,30));
   assert.deepEqual(cards.map(e=>e.id),['changed','added']);
   assert.equal(cards[0].title,'new title');
+});
+
+test('儲存前已在途的 getEvents 不可寫回舊快取，儲存後的新查詢可正常更新',async()=>{
+  const e=setup(),url=e.ctx.buildEventsUrl(day(11,25),day(11,26));
+  let staleDelivered=null;
+  e.ctx.eventsSource.events({start:day(11,25),end:day(11,26)},data=>{staleDelivered=data;},assert.fail);
+  assert.equal(e.requests.length,1);
+  e.ctx.beginEventsSave();
+  e.setCurrentEvents([{
+    ...event('_temp_1','11-25'), title:'新卡', extendedProps:{},
+    start:new Date('2026-11-25T12:00:00'), end:new Date('2026-11-25T13:00:00'),
+    getResources:()=>[{id:'1'}]
+  }]);
+  e.requests[0].resolve([event('stale','11-25')]);
+  await tick();
+  assert.deepEqual(staleDelivered.map(x=>x.id),['_temp_1']);
+  assert.equal(e.ctx.getFreshMemoryCache(url),null);
+  assert.equal(e.store.size,0);
+  e.ctx.finishEventsSave();
+  const fresh=e.show(day(11,25),day(11,26));
+  assert.equal(e.requests.length,2);
+  e.requests[1].resolve([event('official','11-25')]);
+  assert.deepEqual((await fresh).map(x=>x.id),['official']);
+});
+
+test('儲存進行中啟動的 getEvents 回應也不寫入記憶體或持久快取',async()=>{
+  const e=setup(),url=e.ctx.buildEventsUrl(day(11,25),day(11,26));
+  e.ctx.beginEventsSave();
+  const request=e.ctx.fetchFreshJson(url);
+  assert.equal(e.requests.length,1);
+  e.requests[0].resolve([event('during-save','11-25')]);
+  assert.equal(await request,null);
+  assert.equal(e.ctx.getFreshMemoryCache(url),null);
+  assert.equal(e.store.size,0);
+  e.ctx.finishEventsSave();
 });

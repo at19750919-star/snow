@@ -716,6 +716,32 @@
           return new Promise(resolve => setTimeout(resolve, ms));
         }
 
+        /* 儲存期間所有舊／途中 getEvents 都作廢，避免舊資料蓋掉樂觀卡或寫回快取。 */
+        let _eventsRequestGeneration = 0;
+        let _eventsSaveInProgress = false;
+        function isEventsRequestUrl(url) {
+          try { return new URL(url, location.href).searchParams.get('action') === 'getEvents'; }
+          catch (e) { return String(url || '').includes('action=getEvents'); }
+        }
+        function dropInflightEventsRequests() {
+          Object.keys(_inflightRequests).forEach(url => {
+            if (isEventsRequestUrl(url)) delete _inflightRequests[url];
+          });
+        }
+        function beginEventsSave() {
+          _eventsSaveInProgress = true;
+          _eventsRequestGeneration += 1;
+          dropInflightEventsRequests();
+        }
+        function finishEventsSave() {
+          _eventsSaveInProgress = false;
+          _eventsRequestGeneration += 1;
+          dropInflightEventsRequests();
+        }
+        function isStaleEventsRequest(url, generation) {
+          return isEventsRequestUrl(url) && (_eventsSaveInProgress || generation !== _eventsRequestGeneration);
+        }
+
         async function parseJsonResponse(response, url) {
           const text = await response.text();
           const trimmed = text.trim();
@@ -735,10 +761,12 @@
 
         async function fetchFreshJson(url, retryCount = 2) {
           let lastError;
+          const requestGeneration = _eventsRequestGeneration;
           for (let attempt = 0; attempt <= retryCount; attempt++) {
             try {
               const response = await fetch(url, { method: 'GET', mode: 'cors' });
               const data = await parseJsonResponse(response, url);
+              if (isStaleEventsRequest(url, requestGeneration)) return null;
               _apiCache[apiCacheKey(url)] = { data, ts: Date.now() };
               writePersistentEventCache(url, data);
               return data;
@@ -765,8 +793,11 @@
         const _inflightRequests = {};
         function deduplicatedFetch(url) {
           if (_inflightRequests[url]) return _inflightRequests[url];
-          _inflightRequests[url] = cachedFetch(url).finally(() => { delete _inflightRequests[url]; });
-          return _inflightRequests[url];
+          const request = cachedFetch(url).finally(() => {
+            if (_inflightRequests[url] === request) delete _inflightRequests[url];
+          });
+          _inflightRequests[url] = request;
+          return request;
         }
 
         function deliverEventsAsync(successCallback, data) {
@@ -1183,6 +1214,11 @@
               resources: RESOURCE_LIST,
               events: function (info, successCallback, failureCallback) {
                 const url = buildEventsUrl(info.start, info.end);
+                const requestGeneration = _eventsRequestGeneration;
+                if (_eventsSaveInProgress) {
+                  deliverEventsAsync(successCallback, filterEventsForRange(currentCalendarEventsForSource(), info.start, info.end));
+                  return;
+                }
                 /* 先給快取畫面，再背景重抓：LINE 從外部新增的預約不必等快取過期就會出現 */
                 const memoryCached = getFreshMemoryCache(url);
                 if (memoryCached) {
@@ -1209,6 +1245,10 @@
                 /* 完全沒有快取時等的最久（GAS 要 5～30 秒），燈號一定要亮著 */
                 setSyncStatus('loading');
                 deduplicatedFetch(url).then(data => {
+                  if (isStaleEventsRequest(url, requestGeneration) || !Array.isArray(data)) {
+                    deliverEventsAsync(successCallback, filterEventsForRange(currentCalendarEventsForSource(), info.start, info.end));
+                    return;
+                  }
                   setSyncStatus('done');
                   successCallback(filterEventsForRange(data, info.start, info.end));
                 }).catch(error => {
@@ -1697,11 +1737,15 @@
             if (!url || _inflightRequests[url]) return;
             const cached = _apiCache[apiCacheKey(url)];
             if (cached && (Date.now() - cached.ts) < EVENT_REVALIDATE_AFTER) return;
+            if (_eventsSaveInProgress) return;
             setSyncStatus('loading');
-            const request = fetchFreshJson(url).finally(() => { delete _inflightRequests[url]; });
+            const requestGeneration = _eventsRequestGeneration;
+            const request = fetchFreshJson(url).finally(() => {
+              if (_inflightRequests[url] === request) delete _inflightRequests[url];
+            });
             _inflightRequests[url] = request;
             request.then(data => {
-              if (!Array.isArray(data)) return;
+              if (isStaleEventsRequest(url, requestGeneration) || !Array.isArray(data)) return;
               setSyncStatus('done');
               if (isCalendarViewingEventsUrl(url)) calendar.refetchEvents();
             }).catch(error => { setSyncStatus('error'); console.error('背景更新事件失敗:', error); });
@@ -1737,10 +1781,9 @@
             _stashedEventsCache = Array.isArray(data) ? { url, data } : null;
           }
 
-          function saveCurrentEventsToCache() {
-            const url = currentEventsUrl();
-            if (!url) return;
-            const data = calendar.getEvents().map(ev => {
+          function currentCalendarEventsForSource() {
+            if (!calendar || typeof calendar.getEvents !== 'function') return [];
+            return calendar.getEvents().map(ev => {
               const resources = ev.getResources();
               const resourceId = resources && resources[0] ? String(resources[0].id) : '';
               return {
@@ -1752,6 +1795,12 @@
                 extendedProps: { ...ev.extendedProps }
               };
             });
+          }
+
+          function saveCurrentEventsToCache() {
+            const url = currentEventsUrl();
+            if (!url) return;
+            const data = currentCalendarEventsForSource();
             /* 快取視窗比目前檢視寬：只覆蓋檢視範圍內的事件，視窗內其他天的既有快取要保留 */
             const viewStart = calendar.view.activeStart.getTime();
             const viewEnd = calendar.view.activeEnd.getTime();
@@ -1770,6 +1819,79 @@
             const merged = outside.concat(data);
             _apiCache[url] = { data: merged, ts: Date.now() };
             writePersistentEventCache(url, merged);
+          }
+
+          function makeAppointmentCalendarEvent(payload, eventId, lineUserId, previousEnteredBy) {
+            const durationMin = parseInt(payload.duration, 10) || 15;
+            const startDt = new Date(payload.start);
+            const endDt = new Date(startDt.getTime() + durationMin * 60000);
+            return {
+              id: String(eventId),
+              resourceId: String(payload.employee_id),
+              start: startDt,
+              end: endDt,
+              title: payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || ''),
+              extendedProps: {
+                customer_name: payload.customer_name,
+                customer_phone: payload.customer_phone,
+                service_id: payload.service_id,
+                notes: payload.notes,
+                appointment_type: payload.appointment_type,
+                assignment_type: payload.assignment_type || '',
+                amount: payload.amount,
+                cut_price: payload.cut_price,
+                total_amount: payload.total_amount,
+                assistant_id: payload.assistant_id,
+                dye_color: payload.dye_color,
+                pax: payload.pax,
+                entered_by: payload.operator_name || previousEnteredBy || '',
+                ...(lineUserId !== undefined && lineUserId !== null ? { line_user_id: lineUserId } : {})
+              }
+            };
+          }
+
+          async function saveAppointmentOptimistically(payload, isEditing) {
+            const officialId = isEditing ? String(payload.id) : '';
+            const oldEvent = isEditing ? calendar.getEventById(officialId) : null;
+            const previousEnteredBy = oldEvent?.extendedProps?.entered_by || '';
+            const previousLineUserId = oldEvent?.extendedProps?.line_user_id;
+            const tempId = isEditing ? '' : `_temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            let tempEvent = null;
+            let saveFinished = false;
+
+            beginEventsSave();
+            stashEventsCacheBeforeInvalidate();
+            invalidateCache('getEvents');
+            if (!isEditing) {
+              tempEvent = calendar.addEvent(makeAppointmentCalendarEvent(payload, tempId, undefined, ''), true);
+              saveCurrentEventsToCache();
+            }
+
+            try {
+              const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
+              const data = await res.json();
+              if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
+
+              finishEventsSave();
+              saveFinished = true;
+              const currentTemp = tempId ? calendar.getEventById(tempId) : null;
+              if (currentTemp) currentTemp.remove();
+              const eventId = isEditing ? officialId : String(data.id);
+              const current = calendar.getEventById(eventId);
+              if (current) current.remove();
+              const lineUserId = data.line_user_id !== undefined ? data.line_user_id : previousLineUserId;
+              calendar.addEvent(makeAppointmentCalendarEvent(payload, eventId, lineUserId, previousEnteredBy), true);
+              saveCurrentEventsToCache();
+              return true;
+            } catch (err) {
+              if (!saveFinished) finishEventsSave();
+              const currentTemp = tempId ? calendar.getEventById(tempId) : null;
+              if (currentTemp) currentTemp.remove();
+              invalidateCache('getEvents');
+              alert('❌ 儲存失敗：' + err.message);
+              calendar.refetchEvents();
+              return false;
+            }
           }
 
           function bindEventListeners() {
@@ -1938,55 +2060,10 @@
                 // 編輯時帶開啟事件當下記下的原本身分（start 是新時間，不能當身分）
                 ...(isEditing ? openedEventIdentity : {})
               };
-              submitBtn.disabled = true; appointmentModal.style.display = 'none'; stashEventsCacheBeforeInvalidate(); invalidateCache('getEvents'); showToast('儲存中...', 'loading', 3000);
-              let saveOk = false;
-              try {
-                const res = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload), mode: 'cors' });
-                const data = await res.json();
-                if (!res.ok || data.status !== 'success') throw new Error(data.message || '儲存失敗');
-                saveOk = true;
-
-                // 樂觀更新：立刻在行事曆上顯示，不等 refetch
-                const eventId = isEditing ? String(payload.id) : String(data.id || '_opt_' + Date.now());
-                const durationMin = parseInt(payload.duration, 10) || 15;
-                const startDt = new Date(payload.start);
-                const endDt = new Date(startDt.getTime() + durationMin * 60000);
-                const previousEnteredBy = isEditing ? (calendar.getEventById(eventId)?.extendedProps?.entered_by || '') : '';
-                const previousLineUserId = isEditing ? calendar.getEventById(eventId)?.extendedProps?.line_user_id : data.line_user_id;
-                if (isEditing) {
-                  const oldEv = calendar.getEventById(eventId);
-                  if (oldEv) oldEv.remove();
-                }
-                calendar.addEvent({
-                  id: eventId,
-                  resourceId: String(payload.employee_id),
-                  start: startDt,
-                  end: endDt,
-                  title: payload.appointment_type === 'blocked' ? (payload.notes || '不約時段') : (payload.customer_name || ''),
-                  extendedProps: {
-                    customer_name: payload.customer_name,
-                    customer_phone: payload.customer_phone,
-                    service_id: payload.service_id,
-                    notes: payload.notes,
-                    appointment_type: payload.appointment_type,
-                    assignment_type: payload.assignment_type || '',
-                    amount: payload.amount,
-                    cut_price: payload.cut_price,
-                    total_amount: payload.total_amount,
-                    assistant_id: payload.assistant_id,
-                    dye_color: payload.dye_color,
-                    pax: payload.pax,
-                    entered_by: payload.operator_name || previousEnteredBy,
-                    // 下次編輯／刪除要當原本身分送回；undefined（舊快取）就不帶
-                    ...(previousLineUserId !== undefined && previousLineUserId !== null ? { line_user_id: previousLineUserId } : {})
-                  }
-                  /* 第二參數 true＝掛進事件來源：之後任何 refetch 會用來源新資料「取代」這張樂觀卡。
-                     不掛來源的話，refetch 供出的同一筆會和這張並存 → 畫面出現兩張重複卡片 */
-                }, true);
-                saveCurrentEventsToCache();
-
-              } catch (err) { alert('❌ 儲存失敗：' + err.message); calendar.refetchEvents(); }
-              finally { submitBtn.disabled = false; showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000); }
+              submitBtn.disabled = true; appointmentModal.style.display = 'none'; showToast('儲存中...', 'loading', 3000);
+              const saveOk = await saveAppointmentOptimistically(payload, isEditing);
+              submitBtn.disabled = false;
+              showToast(saveOk ? '已儲存' : '儲存失敗', saveOk ? 'success' : 'error', 2000);
             });
 
             window.AppointmentDelete.installDeleteButton({

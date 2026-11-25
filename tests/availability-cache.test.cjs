@@ -171,5 +171,5 @@ test('existing GAS bytes and CRLF remain unchanged outside availability hooks an
     .replace("  if (e && e.parameter && e.parameter.view === 'availability') {\r\n    if (action === 'getEvents' || action === 'get' || !action) return getAvailabilityEvents_(e);\r\n    if (action === 'getLeave') return getAvailabilityLeaves_();\r\n  }\r\n", '')
     .replace('      clearEventsCache();\r\n\r\n', '')
     .replace('      clearEventsCache();\r\n', '');
-  assert.equal(crypto.createHash('sha256').update(original).digest('hex'), '7e881cf74ace4548ec1ab96b66f4eb95ce3b162db0e511d7c10463885b8beba2');
+  assert.equal(crypto.createHash('sha256').update(original).digest('hex'), '189251014b9aa10f18915267a6da328d047e9b9b60b6e1791a00513de4b2c93a');
 });

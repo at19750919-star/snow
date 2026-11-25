@@ -11,16 +11,19 @@ const COL = Object.fromEntries(H.map((h, i) => [h, i]));
 const source = fs.readFileSync(path.join(__dirname, '..', '.gas-line-fix', '程式碼.js'), 'utf8');
 
 function makeSheet(name, values) {
+  const stats = { getDataRangeCalls: 0, ranges: [] };
   return {
     values,
+    stats,
     getName: () => name,
     getLastRow: () => values.length,
     getLastColumn: () => Math.max(...values.map(r => r.length)),
     getDataRange() {
+      stats.getDataRangeCalls += 1;
       const w = this.getLastColumn();
       return { getValues: () => values.map(r => Array.from({ length: w }, (_, j) => r[j] ?? '')) };
     },
-    getRange: (r, c, nr = 1, nc = 1) => ({
+    getRange: (r, c, nr = 1, nc = 1) => (stats.ranges.push({ r, c, nr, nc }), {
       getValues: () => values.slice(r - 1, r - 1 + nr).map(x => Array.from({ length: nc }, (_, j) => x[c - 1 + j] ?? '')),
       setValues: inc => inc.forEach((row, i) => { const t = values[r - 1 + i] || (values[r - 1 + i] = []); row.forEach((x, j) => { t[c - 1 + j] = x; }); }),
       setValue: v => { (values[r - 1] || (values[r - 1] = []))[c - 1] = v; }
@@ -43,6 +46,7 @@ function setup(mainRows = [], archiveRows = null, props = {}) {
   const store = Object.assign({}, props);
   const cache = {};
   const audits = [];
+  const appStats = { flushes: 0 };
   const lockStats = { waits: 0, held: false, maxWaitMs: 0 };
   const ss = {
     getSpreadsheetTimeZone: () => 'Asia/Taipei',
@@ -52,7 +56,7 @@ function setup(mainRows = [], archiveRows = null, props = {}) {
     console: { log() {}, error() {} },
     Utilities: { formatDate: formatTaipei, getUuid: () => 'uuid' },
     CacheService: { getScriptCache: () => ({ get: k => cache[k] || null, put: (k, v) => { cache[k] = v; }, remove: k => { delete cache[k]; } }) },
-    SpreadsheetApp: { getActiveSpreadsheet: () => ss, getActive: () => ss, flush() {} },
+    SpreadsheetApp: { getActiveSpreadsheet: () => ss, getActive: () => ss, flush: () => { appStats.flushes += 1; } },
     LockService: { getScriptLock: () => ({
       waitLock(ms) {
         if (lockStats.held) throw new Error('script lock 重入');
@@ -67,6 +71,7 @@ function setup(mainRows = [], archiveRows = null, props = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(source, ctx);
+  const auditLogImpl = ctx.auditLog_;
   ctx.clearEventsCache = () => {};
   ctx.auditLog_ = (type, action, detail) => audits.push({ type, action, detail });
   const post = payload => {
@@ -74,7 +79,7 @@ function setup(mainRows = [], archiveRows = null, props = {}) {
     assert.equal(lockStats.held, false, '請求結束後鎖要放掉');
     return out;
   };
-  return { ctx, main, arch, store, audits, lockStats, post };
+  return { ctx, main, arch, store, audits, lockStats, appStats, auditLogImpl, post };
 }
 
 function row(id, emp, start, name, extra = {}) {
@@ -239,6 +244,31 @@ test('寫後檢查：剛寫入的編號表上已有別列 → 記 duplicate_id_d
   const detail = JSON.parse(hit[0].detail);
   assert.equal(String(detail.id), '19542');
   assert.deepEqual(detail.rows.map(r => [r.start, String(r.employee_id), r.source]), [['2026-10-27 17:00', '1', 'LINE'], ['2026-10-25 15:10', '2', '陳翎']]);
+});
+
+test('正常新增只讀編號欄，不以 getDataRange 全掃主表或歷史表，且寫後 flush', () => {
+  const s = setup([], [row(19000, 1, '2026-09-01 12:00', '舊客')], { LAST_APPOINTMENT_ID: '20000' });
+  const res = s.post({ action: 'create', operator_name: '陳翎', employee_id: '2', start: '2026-11-25T15:10:00', appointment_type: 'normal', customer_name: '新客', customer_phone: '0912000111', duration: 15 });
+  assert.equal(res.status, 'success');
+  assert.equal(s.main.stats.getDataRangeCalls, 0);
+  assert.equal(s.arch.stats.getDataRangeCalls, 0);
+  assert.equal(s.main.stats.ranges.some(x => x.r > 1 && x.nc === H.length), false, '正常路徑不可讀主表完整資料列');
+  assert.equal(s.arch.stats.ranges.some(x => x.r > 1 && x.nc === H.length), false, '正常路徑不可讀歷史表完整資料列');
+  assert.equal(s.appStats.flushes, 1);
+});
+
+test('auditLog_ 在 audit_log 底部 appendRow，不插入第二列', () => {
+  const s = setup();
+  const calls = { appended: [], inserted: 0 };
+  s.ctx.ensureSheet = () => ({
+    appendRow: row => calls.appended.push(row),
+    insertRowBefore: () => { calls.inserted += 1; },
+    getRange: () => ({ setValues() {} })
+  });
+  s.auditLogImpl('crud', 'create', 'detail');
+  assert.equal(calls.inserted, 0);
+  assert.equal(calls.appended.length, 1);
+  assert.deepEqual(Array.from(calls.appended[0].slice(1)), ['crud', 'create', 'detail']);
 });
 
 test('getEvents 回傳 line_user_id 與來源，前端才帶得出原本身分', () => {
